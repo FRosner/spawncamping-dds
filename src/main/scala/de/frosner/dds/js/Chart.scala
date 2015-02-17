@@ -4,6 +4,6 @@ import de.frosner.dds.util.StringResource
 
 object Chart {
 
-  val js = StringResource.read("/js/chart.js")
+  lazy val js = StringResource.read("/js/chart.js")
 
 }
