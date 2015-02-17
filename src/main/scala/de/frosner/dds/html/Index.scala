@@ -11,6 +11,7 @@ object Index {
       </head>
       <body>
         <div id="chart"></div>
+        <script src="/app/chart.js"></script>
       </body>
     </html>
 

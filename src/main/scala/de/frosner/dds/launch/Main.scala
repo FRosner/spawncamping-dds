@@ -5,7 +5,7 @@ import java.net.URI
 
 import akka.actor.ActorSystem
 import de.frosner.dds.html.Index
-import de.frosner.dds.js.{C3, D3}
+import de.frosner.dds.js.{C3, D3, Chart}
 import spray.routing.SimpleRoutingApp
 
 object Main extends App with SimpleRoutingApp {
@@ -20,7 +20,8 @@ object Main extends App with SimpleRoutingApp {
     path("hello"){          get{ complete{ Index.html } } } ~
     path("lib" / "d3.js"){  get{ complete{ D3.js } } } ~
     path("lib" / "c3.js"){  get{ complete{ C3.js } } } ~
-    path("css" / "c3.css"){ get{ complete{ C3.css } } }
+    path("css" / "c3.css"){ get{ complete{ C3.css } } } ~
+    path("app" / "chart.js"){ get{ complete{ Chart.js } } }
   }
 
   println("Opening browser")
