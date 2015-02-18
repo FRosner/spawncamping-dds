@@ -1,5 +1,7 @@
 package de.frosner.dds.html
 
+import de.frosner.dds.chart.Chart
+
 object Index {
 
   val html =
@@ -11,8 +13,8 @@ object Index {
         <script src="/lib/jquery.js"></script>
       </head>
       <body>
-        <div id="chart"></div>
-        <script src="/app/chart.js"></script>
+        <div id={Chart.id}></div>
+        <script src="/app/main.js"></script>
       </body>
     </html>
 
