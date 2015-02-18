@@ -20,7 +20,7 @@ object DDS extends SimpleRoutingApp {
   def start() = {
     println(s"""Starting server on $interface:$port""")
     val server = startServer(interface, port) {
-      path("hello"){             get{ complete{ Index.html } } } ~
+      path(""){                  get{ complete{ Index.html } } } ~
       path("lib" / "d3.js"){     get{ complete{ D3.js } } } ~
       path("lib" / "c3.js"){     get{ complete{ C3.js } } } ~
       path("css" / "c3.css"){    get{ complete{ C3.css } } } ~
@@ -34,7 +34,7 @@ object DDS extends SimpleRoutingApp {
     }
     println("Opening browser")
     if (Desktop.isDesktopSupported()) {
-      Desktop.getDesktop().browse(new URI( s"""http://$interface:$port/hello"""))
+      Desktop.getDesktop().browse(new URI( s"""http://$interface:$port/"""))
     }
   }
 
