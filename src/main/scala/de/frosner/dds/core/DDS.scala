@@ -1,4 +1,4 @@
-package de.frosner.dds.launch
+package de.frosner.dds.core
 
 import java.awt.Desktop
 import java.net.URI
