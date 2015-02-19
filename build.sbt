@@ -1,6 +1,6 @@
 organization  := "de.frosner"
 
-version       := "1.0.0-alpha"
+version       := "1.0.0-alpha-SNAPSHOT"
 
 scalaVersion  := "2.11.2"
 
