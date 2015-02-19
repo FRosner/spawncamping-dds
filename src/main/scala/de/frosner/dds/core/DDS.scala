@@ -10,7 +10,7 @@ object DDS {
     ChartServer.start();
   }
 
-  def plot[T](o: Iterable[T])(implicit num: Numeric[T]) = {
+  def linePlot[T](o: Iterable[T])(implicit num: Numeric[T]) = {
     val series = Series("data",o)
     val chart = Chart(SeriesData(series))
     ChartServer.serve(chart)
