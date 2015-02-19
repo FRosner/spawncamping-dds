@@ -2,7 +2,7 @@ package de.frosner.dds.chart
 
 import spray.json.{JsNumber, JsString, JsArray, JsObject}
 
-case class SeriesData(series: Iterable[Series]) extends Data {
+case class SeriesData[T](series: Iterable[Series[T]]) extends Data {
 
   override def toJson: JsObject = {
     JsObject(("columns", JsArray(series.map(_.toJson).toVector)))
@@ -11,14 +11,13 @@ case class SeriesData(series: Iterable[Series]) extends Data {
 }
 
 object SeriesData {
-  def apply(series: Series): SeriesData = SeriesData(List(series))
+  def apply[T](series: Series[T]) = new SeriesData(List(series))
 }
 
-case class Series(name: String, values: Iterable[Any]) {
+case class Series[T](name: String, values: Iterable[T])(implicit num: Numeric[T]) {
 
   def toJson: JsArray = {
     val jsValues = values.map{
-      case v: String => JsNumber(v)
       case v: Double => JsNumber(v)
       case v: Int => JsNumber(v)
       case v: Long => JsNumber(v)
