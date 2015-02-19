@@ -1,7 +1,7 @@
 package de.frosner.dds.core
 
 import de.frosner.dds.chart.ChartTypeEnum.ChartType
-import de.frosner.dds.chart.{Series, SeriesData, Chart, ChartTypeEnum}
+import de.frosner.dds.chart._
 
 object DDS {
 
@@ -11,22 +11,29 @@ object DDS {
     ChartServer.start();
   }
 
-  private def seriesPlot[T](o: Iterable[T], chartType: ChartType)(implicit num: Numeric[T]) = {
-    val series = Series("data",o)
-    val chart = Chart(SeriesData(series, chartType))
+  private def seriesPlot[T](series: Seq[Seq[T]], chartTypes: ChartTypes)(implicit num: Numeric[T]): Unit = {
+    require(series.size == chartTypes.types.size)
+    val chartSeries = series.zip(1 to series.size).map { case (values, idx) => {
+      Series("data" + idx, values)
+    }}
+    val chart = Chart(SeriesData(chartSeries, chartTypes))
     ChartServer.serve(chart)
   }
 
-  def linePlot[T](o: Iterable[T])(implicit num: Numeric[T]) = {
-    seriesPlot(o, ChartTypeEnum.Line)
+  private def seriesPlot[T](series: Seq[Seq[T]], chartType: ChartType)(implicit num: Numeric[T]): Unit = {
+    seriesPlot(series, ChartTypes((1 to series.size).map(x => chartType).toList))
   }
 
-  def piePlot[T](o: Iterable[T])(implicit num: Numeric[T]) = {
-    seriesPlot(o, ChartTypeEnum.Pie)
+  def linePlot[T](values: Seq[T], otherValues: Seq[T]*)(implicit num: Numeric[T]): Unit = {
+    seriesPlot(values +: otherValues, ChartTypeEnum.Line)
+  }
+  
+  def piePlot[T](values: Seq[T], otherValues: Seq[T]*)(implicit num: Numeric[T]): Unit = {
+    seriesPlot(values +: otherValues, ChartTypeEnum.Pie)
   }
 
-  def barPlot[T](o: Iterable[T])(implicit num: Numeric[T]) = {
-    seriesPlot(o, ChartTypeEnum.Bar)
+  def barPlot[T](values: Seq[T], otherValues: Seq[T]*)(implicit num: Numeric[T]): Unit = {
+    seriesPlot(values +: otherValues, ChartTypeEnum.Bar)
   }
-
+  
 }
