@@ -33,6 +33,8 @@ object ChartServer extends SimpleRoutingApp {
         response
       } } }
     }
+
+    Thread.sleep(1000)
     println("Opening browser")
     if (Desktop.isDesktopSupported()) {
       Desktop.getDesktop().browse(new URI( s"""http://$interface:$port/"""))
