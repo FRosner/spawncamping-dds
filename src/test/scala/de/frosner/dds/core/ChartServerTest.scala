@@ -8,22 +8,23 @@ import scalaj.http.Http
 
 class ChartServerTest extends FlatSpec with Matchers with BeforeAndAfter{
 
+  private val waitTime = 2000
   private var testNumber = 0
 
   before {
-    Thread.sleep(1000)
+    Thread.sleep(waitTime)
     ChartServer.system = ActorSystem("test-system-" + testNumber)
     ChartServer.isInTestMode = true
     ChartServer.actorName += testNumber
     testNumber += 1
     ChartServer.start()
-    Thread.sleep(1000)
+    Thread.sleep(waitTime)
   }
 
   after {
-    Thread.sleep(1000)
+    Thread.sleep(waitTime)
     ChartServer.stop()
-    Thread.sleep(1000)
+    Thread.sleep(waitTime)
   }
 
   "A chart server" should "be available on localhost with port 8080" in {
