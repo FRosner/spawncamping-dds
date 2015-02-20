@@ -39,6 +39,14 @@ you quick insights in your data.
 
 You can either grab the [latest release artifact](https://github.com/FRosner/spawncamping-dds/releases) or build from source (`sbt assembly`).
 
+### Contribution
+
+Any contribution, e.g. in form of feature requests, comments, code reviews, pull requests are very welcome. Pull requests will be reviewed before they are merged and it makes sense to coordinate with one of the main committers before starting to work on something big. 
+
+Please follow the general code style convention of Scala. It is advised to stick to the formatting / code style of the surrounding code when making changes to existing files. Reformatting should be done is separate commits.
+
+All (most of the) code committed should be covered by some automated unit tests. All existing tests need to pass before committing changes.
+
 ### Authors
 
 - [Frank Rosner](https://github.com/FRosner) (Creator)
