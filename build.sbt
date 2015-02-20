@@ -20,3 +20,7 @@ libraryDependencies ++= {
     "org.specs2"          %%  "specs2-core"   % "2.3.11" % "test"
   )
 }
+
+libraryDependencies += "org.scalatest" % "scalatest_2.11" % "2.2.4" % "test"
+
+libraryDependencies +=  "org.scalaj" %% "scalaj-http" % "1.1.4" % "test"
