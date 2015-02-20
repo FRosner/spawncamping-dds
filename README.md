@@ -35,6 +35,10 @@ you quick insights in your data.
     histogram(grades)
     ```
     
+### Get Data Driven Spark
+
+You can either grab the [latest release artifact](https://github.com/FRosner/spawncamping-dds/releases) or build from source (`sbt assembly`).
+    
 ### Licensing
 
 This project is licensed under the Apache License Version 2.0. For details please see the file called LICENSE.
