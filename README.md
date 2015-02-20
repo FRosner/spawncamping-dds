@@ -1,5 +1,4 @@
-## Data Driven Spark (spawncamping-dds) [![Build Status](https://travis-ci.org/FRosner/spawncamping-dds.svg)](https://travis-ci.org/FRosner/spawncamping-dds)
-
+## Data Driven Spark (spawncamping-dds) [![Build Status](https://travis-ci.org/FRosner/spawncamping-dds.svg?branch=master)](https://travis-ci.org/FRosner/spawncamping-dds)
 ### Description
 
 This library provides a comprehensible and simple interface for quick data exploration based on 
