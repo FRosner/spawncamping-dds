@@ -12,7 +12,7 @@ you quick insights in your data.
 1. Add spawncamping-dds jar to Spark shell classpath
 
     ```sh
-    ./bin/spark-shell --jars spawncamping-dds-1.0.0-alpha.jar
+    ./bin/spark-shell --driver-class-path spawncamping-dds-1.0.0-alpha.jar
     ```
 2. Import core functions
 
