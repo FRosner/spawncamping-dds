@@ -34,3 +34,7 @@ you quick insights in your data.
     summary(grades)
     histogram(grades)
     ```
+    
+### Licensing
+
+This project is licensed under the Apache License Version 2.0. For details please see the file called LICENSE.
