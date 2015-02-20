@@ -1,4 +1,4 @@
-## Data Driven Spark (spawncamping-dds)
+## Data Driven Spark (spawncamping-dds) [![Build Status](https://travis-ci.org/FRosner/spawncamping-dds.svg)](https://travis-ci.org/FRosner/spawncamping-dds)
 
 ### Description
 
