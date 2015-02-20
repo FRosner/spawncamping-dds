@@ -36,7 +36,7 @@ you quick insights in your data.
     
 ### Get Data Driven Spark
 
-You can either grab the [latest release artifact](https://github.com/FRosner/spawncamping-dds/releases) or build from source (`sbt assembly`).
+You can either grab the [latest release artifact](https://github.com/FRosner/spawncamping-dds/releases) or build from source (`sbt assembly`). Data Driven Spark requires Scala 2.11.2.
 
 ### Contribution
 
