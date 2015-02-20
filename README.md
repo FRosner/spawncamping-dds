@@ -38,6 +38,10 @@ you quick insights in your data.
 ### Get Data Driven Spark
 
 You can either grab the [latest release artifact](https://github.com/FRosner/spawncamping-dds/releases) or build from source (`sbt assembly`).
+
+### Authors
+
+- [Frank Rosner](https://github.com/FRosner) (Creator)
     
 ### Licensing
 
