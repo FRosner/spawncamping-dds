@@ -10,7 +10,7 @@ import scala.reflect.ClassTag
 
 object DDS {
 
-  private var chart: Option[Chart] = Option.empty
+  private var chart: Option[Servable] = Option.empty
 
   private var chartServer: Option[ChartServer] = Option.empty
   private var serverNumber = 1
@@ -90,6 +90,10 @@ object DDS {
 
   def bar[N](values: Seq[N], otherValues: Seq[N]*)(implicit num: Numeric[N]): Unit = {
     seriesPlotWithDefaultLabels(values +: otherValues, ChartTypeEnum.Bar)
+  }
+
+  def summary[N](values: RDD[N])(implicit num: Numeric[N]): Unit = {
+    chartServer.map(_.serve(Stats(values.stats())))
   }
 
 }

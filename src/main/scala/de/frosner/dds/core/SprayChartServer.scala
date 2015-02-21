@@ -4,7 +4,7 @@ import java.awt.Desktop
 import java.net.URI
 
 import akka.actor.ActorSystem
-import de.frosner.dds.chart.Chart
+import de.frosner.dds.chart.{Stats, Chart}
 import de.frosner.dds.html.Index
 import de.frosner.dds.js.{Main, JQuery, C3, D3}
 import spray.routing.SimpleRoutingApp
@@ -12,7 +12,7 @@ import scala.concurrent.duration._
 
 class SprayChartServer(val name: String, val launchBrowser: Boolean) extends SimpleRoutingApp with ChartServer {
 
-  private var chart: Option[Chart] = Option.empty
+  private var servable: Option[Servable] = Option.empty
 
   private implicit val system = ActorSystem(name + "-system")
 
@@ -31,8 +31,8 @@ class SprayChartServer(val name: String, val launchBrowser: Boolean) extends Sim
       path("lib" / "jquery.js"){ get{ complete{ JQuery.js } } } ~
       path("app" / "main.js"){   get{ complete{ Main.js } } } ~
       path("chart" / "update"){  get{ complete{
-        val response = chart.map(_.toJsonString).getOrElse("{}")
-        chart = Option.empty
+        val response = servable.map(_.toJsonString).getOrElse("{}")
+        servable = Option.empty
         response
       } } }
     }
@@ -46,12 +46,12 @@ class SprayChartServer(val name: String, val launchBrowser: Boolean) extends Sim
 
   def stop() = {
     println("Stopping server")
-    chart = Option.empty
+    servable = Option.empty
     system.scheduler.scheduleOnce(1.milli)(system.shutdown())(system.dispatcher)
   }
 
-  def serve(chart: Chart) = {
-    this.chart = Option(chart)
+  def serve(servable: Servable) = {
+    this.servable = Option(servable)
   }
 
 }

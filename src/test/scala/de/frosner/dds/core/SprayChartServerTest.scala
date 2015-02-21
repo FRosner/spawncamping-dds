@@ -1,7 +1,8 @@
 package de.frosner.dds.core
 
 import akka.actor.ActorSystem
-import de.frosner.dds.chart.{DummyData, Chart}
+import de.frosner.dds.chart.{Stats, DummyData, Chart}
+import org.apache.spark.util.StatCounter
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfter, Matchers, FlatSpec}
 
 import scalaj.http.Http
@@ -40,7 +41,13 @@ class SprayChartServerTest extends FlatSpec with Matchers with BeforeAndAfter{
     Http("http://localhost:8080/chart/update").asString.body shouldBe chart.toJsonString
   }
 
-  it should "respond with an empty object after serving a chart once" in {
+  it should "respond with a stats object if stats are served" in {
+    val stats = Stats(StatCounter(0D, 1D, 2D))
+    chartServer.serve(stats)
+    Http("http://localhost:8080/chart/update").asString.body shouldBe stats.toJsonString
+  }
+
+  it should "respond with an empty object after serving a servable once" in {
     val chart = Chart(new DummyData("key", "value"))
     chartServer.serve(chart)
     Http("http://localhost:8080/chart/update").asString.body shouldBe chart.toJsonString

@@ -1,6 +1,6 @@
 package de.frosner.dds.core
 
-import de.frosner.dds.chart.Chart
+import de.frosner.dds.chart.{Stats, Chart}
 
 trait ChartServer {
 
@@ -8,6 +8,6 @@ trait ChartServer {
 
   def stop()
 
-  def serve(chart: Chart)
+  def serve(servable: Servable)
 
 }

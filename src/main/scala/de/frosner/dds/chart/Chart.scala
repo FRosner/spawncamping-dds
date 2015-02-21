@@ -1,14 +1,15 @@
 package de.frosner.dds.chart
 
+import de.frosner.dds.core.Servable
 import spray.json._
 
-case class Chart(data: Data) {
+case class Chart(data: Data) extends Servable {
+
+  val servableType = "chart"
 
   val bindTo = "#" + Chart.id
 
-  def toJsonString: String = this.toJson.prettyPrint
-
-  def toJson: JsValue = JsObject(
+  def contentAsJson: JsValue = JsObject(
     ("bindto", JsString(bindTo)),
     ("data", data.toJson)
   )
