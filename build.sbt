@@ -27,3 +27,7 @@ libraryDependencies +=  "org.scalaj" %% "scalaj-http" % "1.1.4" % "test"
 libraryDependencies +=  "org.scalamock" %% "scalamock-scalatest-support" % "3.2.1" % "test"
 
 test in assembly := {}
+
+assemblyOption in assembly := (assemblyOption in assembly).value.copy(includeScala = false)
+
+fork := true

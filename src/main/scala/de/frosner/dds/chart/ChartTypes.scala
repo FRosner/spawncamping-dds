@@ -1,7 +1,7 @@
 package de.frosner.dds.chart
 
 import de.frosner.dds.chart.ChartTypeEnum.ChartType
-import spray.json.{JsString, JsObject, JsValue}
+import spray.json.{JsObject, JsString}
 
 case class ChartTypes(types: Iterable[ChartType]) {
   
@@ -15,6 +15,8 @@ case class ChartTypes(types: Iterable[ChartType]) {
 
 object ChartTypes {
 
-  def apply[T](singleType: ChartType) = new ChartTypes(List(singleType))
+  def apply(singleType: ChartType): ChartTypes = ChartTypes(List(singleType))
+
+  def multiple(multipleType: ChartType, amount: Int) = ChartTypes((1 to amount).map(x => multipleType).toList)
 
 }
