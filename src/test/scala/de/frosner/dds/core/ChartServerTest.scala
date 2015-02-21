@@ -36,13 +36,13 @@ class ChartServerTest extends FlatSpec with Matchers with BeforeAndAfter{
   }
 
   it should "respond with a chart object if a chart is served" in {
-    val chart = Chart(new DummyData())
+    val chart = Chart(new DummyData("key", "value"))
     ChartServer.serve(chart)
     Http("http://localhost:8080/chart/update").asString.body shouldBe chart.toJsonString
   }
 
   it should "respond with an empty object after serving a chart once" in {
-    val chart = Chart(new DummyData())
+    val chart = Chart(new DummyData("key", "value"))
     ChartServer.serve(chart)
     Http("http://localhost:8080/chart/update").asString.body shouldBe chart.toJsonString
     Http("http://localhost:8080/chart/update").asString.body shouldBe "{}"
