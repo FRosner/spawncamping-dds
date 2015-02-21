@@ -10,20 +10,19 @@ class ChartServerTest extends FlatSpec with Matchers with BeforeAndAfter{
 
   private val waitTime = 2000
   private var testNumber = 0
+  private var chartServer: ChartServer = _
 
   before {
     Thread.sleep(waitTime)
-    ChartServer.system = ActorSystem("test-system-" + testNumber)
-    ChartServer.isInTestMode = true
-    ChartServer.actorName += testNumber
+    chartServer = ChartServer.withoutLaunchingBrowser("server-" + testNumber)
     testNumber += 1
-    ChartServer.start()
+    chartServer.start()
     Thread.sleep(waitTime)
   }
 
   after {
     Thread.sleep(waitTime)
-    ChartServer.stop()
+    chartServer.stop()
     Thread.sleep(waitTime)
   }
 
@@ -37,13 +36,13 @@ class ChartServerTest extends FlatSpec with Matchers with BeforeAndAfter{
 
   it should "respond with a chart object if a chart is served" in {
     val chart = Chart(new DummyData("key", "value"))
-    ChartServer.serve(chart)
+    chartServer.serve(chart)
     Http("http://localhost:8080/chart/update").asString.body shouldBe chart.toJsonString
   }
 
   it should "respond with an empty object after serving a chart once" in {
     val chart = Chart(new DummyData("key", "value"))
-    ChartServer.serve(chart)
+    chartServer.serve(chart)
     Http("http://localhost:8080/chart/update").asString.body shouldBe chart.toJsonString
     Http("http://localhost:8080/chart/update").asString.body shouldBe "{}"
   }

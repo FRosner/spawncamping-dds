@@ -10,16 +10,13 @@ import de.frosner.dds.js.{Main, JQuery, C3, D3}
 import spray.routing.SimpleRoutingApp
 import scala.concurrent.duration._
 
-object ChartServer extends SimpleRoutingApp {
+class ChartServer(val name: String, val launchBrowser: Boolean) extends SimpleRoutingApp {
 
   private var chart: Option[Chart] = Option.empty
 
-  // package private var to allow multiple systems in unit test environment
-  private[core] implicit var system = ActorSystem("dds-system")
+  private implicit val system = ActorSystem(name + "-system")
 
-  // only for testing
-  private[core] var isInTestMode = false
-  private[core] var actorName = "chart-server-actor"
+  private val actorName = "chart-server-" + name + "-actor"
 
   val interface = "localhost"
   val port = 8080
@@ -41,7 +38,7 @@ object ChartServer extends SimpleRoutingApp {
     }
 
     Thread.sleep(1000)
-    if (!isInTestMode && Desktop.isDesktopSupported()) {
+    if (launchBrowser && Desktop.isDesktopSupported()) {
       println("Opening browser")
       Desktop.getDesktop().browse(new URI( s"""http://$interface:$port/"""))
     }
@@ -56,5 +53,13 @@ object ChartServer extends SimpleRoutingApp {
   def serve(chart: Chart) = {
     this.chart = Option(chart)
   }
+
+}
+
+object ChartServer {
+
+  def apply(name: String) = new ChartServer(name, true)
+
+  def withoutLaunchingBrowser(name: String) = new ChartServer(name, false)
 
 }
