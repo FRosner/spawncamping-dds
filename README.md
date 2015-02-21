@@ -33,6 +33,12 @@ when working on the cluster. It does not offer a fully flexible plotting mechani
     histogram(grades)
     ```
     
+5. Stop the server once you are done
+
+    ```scala
+    stop()
+    ```
+    
 ### Get Data-Driven Spark
 
 You can either grab the [latest release artifact](https://github.com/FRosner/spawncamping-dds/releases) or build from source (`sbt assembly`). Data-Driven Spark requires Scala 2.11.2.
