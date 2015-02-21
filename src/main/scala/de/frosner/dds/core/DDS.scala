@@ -12,18 +12,30 @@ object DDS {
   private var serverNumber = 1
 
   private[core] def start(server: ChartServer): Unit = {
-    chartServer = Option(server)
-    serverNumber += 1
-    chartServer.map(_.start())
+    if (chartServer.isDefined) {
+      println("Server already started! Type 'help()' to see a list of available commands.")
+    } else {
+      chartServer = Option(server)
+      serverNumber += 1
+      chartServer.map(_.start())
+    }
   }
 
   def start(): Unit = {
     start(SprayChartServer("dds-" + serverNumber))
   }
 
-  def stop() = {
-    chartServer.map(_.stop())
+  private[core] def resetServer() = {
     chartServer = Option.empty
+  }
+
+  def stop() = {
+    if (!chartServer.isDefined) {
+      println("No server there to stop! Type 'start()' to start one.")
+    } else {
+      chartServer.map(_.stop())
+      resetServer()
+    }
   }
 
   private def seriesPlot[T](series: Seq[Seq[T]], chartTypes: ChartTypes)(implicit num: Numeric[T]): Unit = {
@@ -51,6 +63,4 @@ object DDS {
     seriesPlot(values +: otherValues, ChartTypeEnum.Bar)
   }
 
-  def test(rdd: RDD[Double]) = rdd.count
-  
 }
