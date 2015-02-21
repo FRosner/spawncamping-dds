@@ -6,15 +6,15 @@ import org.scalatest.{BeforeAndAfterAll, BeforeAndAfter, Matchers, FlatSpec}
 
 import scalaj.http.Http
 
-class ChartServerTest extends FlatSpec with Matchers with BeforeAndAfter{
+class SprayChartServerTest extends FlatSpec with Matchers with BeforeAndAfter{
 
   private val waitTime = 2000
   private var testNumber = 0
-  private var chartServer: ChartServer = _
+  private var chartServer: SprayChartServer = _
 
   before {
     Thread.sleep(waitTime)
-    chartServer = ChartServer.withoutLaunchingBrowser("server-" + testNumber)
+    chartServer = SprayChartServer.withoutLaunchingBrowser("server-" + testNumber)
     testNumber += 1
     chartServer.start()
     Thread.sleep(waitTime)
