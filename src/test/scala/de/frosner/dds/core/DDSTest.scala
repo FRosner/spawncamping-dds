@@ -1,6 +1,6 @@
 package de.frosner.dds.core
 
-import de.frosner.dds.chart.Chart
+import de.frosner.dds.chart.{Series, ChartTypeEnum, SeriesData, Chart}
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{BeforeAndAfter, Matchers, FlatSpec}
 
@@ -38,6 +38,27 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     DDS.stop()
     DDS.stop()
     (server.stop _).verify().once()
+  }
+
+  "Correct charts" should "be served by the line plot function" in {
+    DDS.start(server)
+    DDS.linePlot(List(1,2,3))
+    val expectedChart = Chart(SeriesData(Series("data1", List(1, 2, 3)), ChartTypeEnum.Line))
+    (server.serve _).verify(expectedChart)
+  }
+
+  it should "be served by the pie plot function" in {
+    DDS.start(server)
+    DDS.piePlot(List(1,2,3))
+    val expectedChart = Chart(SeriesData(Series("data1", List(1, 2, 3)), ChartTypeEnum.Pie))
+    (server.serve _).verify(expectedChart)
+  }
+
+  it should "be served by the bar plot function" in {
+    DDS.start(server)
+    DDS.barPlot(List(1,2,3))
+    val expectedChart = Chart(SeriesData(Series("data1", List(1, 2, 3)), ChartTypeEnum.Bar))
+    (server.serve _).verify(expectedChart)
   }
 
 }
