@@ -2,7 +2,7 @@ package de.frosner.dds.chart
 
 import spray.json.{JsString, JsNumber, JsArray}
 
-case class Series[T](label: String, values: Iterable[T])(implicit num: Numeric[T]) {
+case class Series[N](label: String, values: Iterable[N])(implicit num: Numeric[N]) {
 
   def toJson: JsArray = {
     val jsValues = values.map{

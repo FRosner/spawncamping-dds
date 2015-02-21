@@ -3,7 +3,7 @@ package de.frosner.dds.chart
 import de.frosner.dds.chart.ChartTypeEnum.ChartType
 import spray.json.{JsNumber, JsString, JsArray, JsObject}
 
-case class SeriesData[T](series: Iterable[Series[T]], types: ChartTypes) extends Data {
+case class SeriesData[N](series: Iterable[Series[N]], types: ChartTypes) extends Data {
 
   override def toJson: JsObject = {
     JsObject(
@@ -15,6 +15,6 @@ case class SeriesData[T](series: Iterable[Series[T]], types: ChartTypes) extends
 }
 
 object SeriesData {
-  def apply[T](series: Series[T], chartType: ChartType) = new SeriesData(List(series), ChartTypes(List(chartType)))
+  def apply[N](series: Series[N], chartType: ChartType) = new SeriesData(List(series), ChartTypes(List(chartType)))
 }
 
