@@ -51,15 +51,15 @@ object DDS {
     seriesPlot(series, ChartTypes((1 to series.size).map(x => chartType).toList))
   }
 
-  def linePlot[T](values: Seq[T], otherValues: Seq[T]*)(implicit num: Numeric[T]): Unit = {
+  def line[T](values: Seq[T], otherValues: Seq[T]*)(implicit num: Numeric[T]): Unit = {
     seriesPlot(values +: otherValues, ChartTypeEnum.Line)
   }
   
-  def piePlot[T](values: Seq[T], otherValues: Seq[T]*)(implicit num: Numeric[T]): Unit = {
+  def pie[T](values: Seq[T], otherValues: Seq[T]*)(implicit num: Numeric[T]): Unit = {
     seriesPlot(values +: otherValues, ChartTypeEnum.Pie)
   }
 
-  def barPlot[T](values: Seq[T], otherValues: Seq[T]*)(implicit num: Numeric[T]): Unit = {
+  def bar[T](values: Seq[T], otherValues: Seq[T]*)(implicit num: Numeric[T]): Unit = {
     seriesPlot(values +: otherValues, ChartTypeEnum.Bar)
   }
 

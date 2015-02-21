@@ -42,21 +42,21 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
 
   "Correct charts" should "be served by the line plot function" in {
     DDS.start(server)
-    DDS.linePlot(List(1,2,3))
+    DDS.line(List(1,2,3))
     val expectedChart = Chart(SeriesData(Series("data1", List(1, 2, 3)), ChartTypeEnum.Line))
     (server.serve _).verify(expectedChart)
   }
 
   it should "be served by the pie plot function" in {
     DDS.start(server)
-    DDS.piePlot(List(1,2,3))
+    DDS.pie(List(1,2,3))
     val expectedChart = Chart(SeriesData(Series("data1", List(1, 2, 3)), ChartTypeEnum.Pie))
     (server.serve _).verify(expectedChart)
   }
 
   it should "be served by the bar plot function" in {
     DDS.start(server)
-    DDS.barPlot(List(1,2,3))
+    DDS.bar(List(1,2,3))
     val expectedChart = Chart(SeriesData(Series("data1", List(1, 2, 3)), ChartTypeEnum.Bar))
     (server.serve _).verify(expectedChart)
   }
