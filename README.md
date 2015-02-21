@@ -1,11 +1,10 @@
-## Data Driven Spark (spawncamping-dds) [![Build Status](https://travis-ci.org/FRosner/spawncamping-dds.svg?branch=master)](https://travis-ci.org/FRosner/spawncamping-dds)
+## Data-Driven Spark (spawncamping-dds) [![Build Status](https://travis-ci.org/FRosner/spawncamping-dds.svg?branch=master)](https://travis-ci.org/FRosner/spawncamping-dds)
 ### Description
 
 This library provides a comprehensible and simple interface for quick data exploration based on 
-[Apache Spark](https://spark.apache.org/). The target audience is data scientists who miss functions
-like `summary()` and `plot()` from [R](http://www.r-project.org/) when working on the cluster. It does
-not offer a fully flexible plotting mechanism like [ggplot2](http://ggplot2.org/) but focuses on giving
-you quick insights in your data.
+[Apache Spark](https://spark.apache.org/) and [D3.js/SVG](http://d3js.org/). The target audience is
+data scientists who miss functions like `summary()` and `plot()` from [R](http://www.r-project.org/)
+when working on the cluster. It does not offer a fully flexible plotting mechanism like [ggplot2](http://ggplot2.org/) but focuses on giving you quick insights into your data.
 
 ### Usage
 
@@ -34,9 +33,9 @@ you quick insights in your data.
     histogram(grades)
     ```
     
-### Get Data Driven Spark
+### Get Data-Driven Spark
 
-You can either grab the [latest release artifact](https://github.com/FRosner/spawncamping-dds/releases) or build from source (`sbt assembly`). Data Driven Spark requires Scala 2.11.2.
+You can either grab the [latest release artifact](https://github.com/FRosner/spawncamping-dds/releases) or build from source (`sbt assembly`). Data-Driven Spark requires Scala 2.11.2.
 
 ### Contribution
 
