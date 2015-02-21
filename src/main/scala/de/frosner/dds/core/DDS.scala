@@ -5,7 +5,7 @@ import de.frosner.dds.chart._
 
 object DDS {
 
-  var chart: Option[Chart] = Option.empty
+  private var chart: Option[Chart] = Option.empty
   
   def start() = {
     ChartServer.start();
