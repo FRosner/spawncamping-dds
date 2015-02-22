@@ -2,8 +2,8 @@ package de.frosner.dds.core
 
 import de.frosner.dds.chart.ChartTypeEnum.ChartType
 import de.frosner.dds.chart._
-import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext._
+import org.apache.spark.rdd.RDD
 import org.apache.spark.util.StatCounter
 
 import scala.reflect.ClassTag
