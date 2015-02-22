@@ -58,29 +58,6 @@ object DDS {
     seriesPlot(series, ChartTypes.multiple(chartType, series.size))
   }
 
-  private def seriesPlotWithDefaultLabels[N](series: Iterable[Iterable[N]], chartTypes: ChartTypes)(implicit num: Numeric[N]): Unit = {
-    val chartSeries = series.zip(1 to series.size).map { case (values, idx) => {
-      Series("data" + idx, values)
-    }}
-    seriesPlot(chartSeries, chartTypes)
-  }
-
-  private def seriesPlotWithDefaultLabels[N](series: Iterable[Iterable[N]], chartType: ChartType)(implicit num: Numeric[N]): Unit = {
-    seriesPlotWithDefaultLabels(series, ChartTypes.multiple(chartType, series.size))
-  }
-
-  def line[N](values: Seq[N], otherValues: Seq[N]*)(implicit num: Numeric[N]): Unit = {
-    seriesPlotWithDefaultLabels(values +: otherValues, ChartTypeEnum.Line)
-  }
-
-  def bar[N](values: Seq[N], otherValues: Seq[N]*)(implicit num: Numeric[N]): Unit = {
-    seriesPlotWithDefaultLabels(values +: otherValues, ChartTypeEnum.Bar)
-  }
-
-  def pie[N](values: Seq[N], otherValues: Seq[N]*)(implicit num: Numeric[N]): Unit = {
-    seriesPlotWithDefaultLabels(values +: otherValues, ChartTypeEnum.Pie)
-  }
-
   private def pieFromReducedGroups[K, N](reducedGroup: RDD[(K, N)])(implicit num: Numeric[N]): Unit = {
     val groupSeries = reducedGroup.map{
       case (key, summedValues) => Series(key.toString, List(summedValues))

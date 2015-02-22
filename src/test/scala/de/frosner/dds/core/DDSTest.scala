@@ -57,27 +57,6 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     (stubbedServer.stop _).verify().once()
   }
 
-  "Correct charts from Seq[Numeric]" should "be served by the line plot function" in {
-    DDS.start(stubbedServer)
-    DDS.line(List(1,2,3))
-    val expectedChart = Chart(SeriesData(Series("data1", List(1, 2, 3)), ChartTypeEnum.Line))
-    (stubbedServer.serve _).verify(expectedChart)
-  }
-
-  it should "be served by the pie plot function" in {
-    DDS.start(stubbedServer)
-    DDS.pie(List(1,2,3))
-    val expectedChart = Chart(SeriesData(Series("data1", List(1, 2, 3)), ChartTypeEnum.Pie))
-    (stubbedServer.serve _).verify(expectedChart)
-  }
-
-  it should "be served by the bar plot function" in {
-    DDS.start(stubbedServer)
-    DDS.bar(List(1,2,3))
-    val expectedChart = Chart(SeriesData(Series("data1", List(1, 2, 3)), ChartTypeEnum.Bar))
-    (stubbedServer.serve _).verify(expectedChart)
-  }
-
   "Correct pie chart from RDD after groupBy" should "be served when values are already grouped" in {
     DDS.start(stubbedServer)
     val groupedRdd = sc.makeRDD(List(("a", 1), ("a", 2), ("b", 3), ("c", 5))).groupBy(_._1).
