@@ -62,4 +62,8 @@ object SprayChartServer {
 
   def withoutLaunchingBrowser(name: String) = new SprayChartServer(name, false)
 
+  def main(args: Array[String]) {
+    apply("test").start()
+  }
+
 }
