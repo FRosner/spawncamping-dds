@@ -11,7 +11,7 @@ when working on the cluster. It does not offer a fully flexible plotting mechani
 1. Add spawncamping-dds jar to Spark shell classpath
 
     ```sh
-    ./bin/spark-shell --driver-class-path spawncamping-dds-1.0.0-alpha.jar
+    ./bin/spark-shell --driver-class-path spawncamping-dds-x.y.z.jar
     ```
 2. Import core functions
 
