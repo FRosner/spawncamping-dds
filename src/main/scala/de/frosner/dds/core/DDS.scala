@@ -95,6 +95,10 @@ object DDS {
     summarizeGroups(toBeGroupedValues.groupByKey())
   }
 
+  def main(args: Array[String]): Unit = {
+    start()
+  }
+
 }
 
 
