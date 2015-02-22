@@ -1,6 +1,7 @@
 package de.frosner.dds.chart
 
 import de.frosner.dds.core.Servable
+import de.frosner.dds.util.StringResource
 import org.apache.spark.util.StatCounter
 import spray.json.{JsArray, JsNumber, JsObject, JsValue}
 
@@ -25,5 +26,7 @@ case class Stats(stats: Seq[StatCounter]) extends Servable {
 object Stats {
 
   def apply(stat: StatCounter): Stats = Stats(List(stat))
+
+  lazy val css = StringResource.read("/css/stats.css")
 
 }

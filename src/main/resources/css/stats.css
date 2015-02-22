@@ -1,0 +1,17 @@
+table { 
+  border-collapse: collapse; 
+}
+
+#statsTable {
+  margin: 0 auto;
+}
+
+#statsTable th {
+  background: #c9dff0;
+  padding: 10px;
+}
+
+#statsTable tbody tr td {
+  text-align: right;
+  padding: 15px 10px;
+}
