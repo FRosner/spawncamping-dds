@@ -3,10 +3,12 @@ $(document).ready(function(){
 });
 
 function checkForUpdate() {
+
     $.ajax({
         url: "http://localhost:8080/chart/update",
         success: function(response) {
             if (response != "{}") {
+                document.body.innerHTML = "";
                 var servable = JSON.parse(response);
                 if (servable.type == "chart") {
                     generateSingleChart(servable.content)
@@ -18,10 +20,20 @@ function checkForUpdate() {
             }
         }
     });
+    
 }
 
 function generateSingleChart(chart) {
+
+    function generateChartDiv(root, id) {
+        var div = document.createElement('div');
+        div.setAttribute("id", id);
+        root.appendChild(div);
+    }
+
+    generateChartDiv(document.body, "chart")
     var chart = c3.generate(chart);
+
 }
 
 function generateStatsTable(stats) {
