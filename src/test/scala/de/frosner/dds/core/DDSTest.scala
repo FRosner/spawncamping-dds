@@ -102,7 +102,7 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
       (StatCounter(1D, 2D).toString, "a"),
       (StatCounter(3D).toString, "b"),
       (StatCounter(5D).toString, "c")
-      )
+    )
   }
 
   it should "be served when values are not grouped, yet" in {
