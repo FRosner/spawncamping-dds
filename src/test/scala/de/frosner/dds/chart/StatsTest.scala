@@ -12,11 +12,11 @@ class StatsTest extends FlatSpec with Matchers {
     stats.contentAsJson shouldBe JsArray(JsObject(
       ("count", JsNumber(statCounter.count)),
       ("sum", JsNumber(statCounter.sum)),
-      ("min", JsNumber(statCounter.sum)),
-      ("max", JsNumber(statCounter.sum)),
-      ("mean", JsNumber(statCounter.sum)),
-      ("stdev", JsNumber(statCounter.sum)),
-      ("variance", JsNumber(statCounter.sum))
+      ("min", JsNumber(statCounter.min)),
+      ("max", JsNumber(statCounter.max)),
+      ("mean", JsNumber(statCounter.mean)),
+      ("stdev", JsNumber(statCounter.stdev)),
+      ("variance", JsNumber(statCounter.variance))
     ))
   }
 
@@ -28,20 +28,20 @@ class StatsTest extends FlatSpec with Matchers {
       JsObject(
         ("count", JsNumber(statCounter1.count)),
         ("sum", JsNumber(statCounter1.sum)),
-        ("min", JsNumber(statCounter1.sum)),
-        ("max", JsNumber(statCounter1.sum)),
-        ("mean", JsNumber(statCounter1.sum)),
-        ("stdev", JsNumber(statCounter1.sum)),
-        ("variance", JsNumber(statCounter1.sum))
+        ("min", JsNumber(statCounter1.min)),
+        ("max", JsNumber(statCounter1.max)),
+        ("mean", JsNumber(statCounter1.mean)),
+        ("stdev", JsNumber(statCounter1.stdev)),
+        ("variance", JsNumber(statCounter1.variance))
       ),
       JsObject(
         ("count", JsNumber(statCounter2.count)),
         ("sum", JsNumber(statCounter2.sum)),
-        ("min", JsNumber(statCounter2.sum)),
-        ("max", JsNumber(statCounter2.sum)),
-        ("mean", JsNumber(statCounter2.sum)),
-        ("stdev", JsNumber(statCounter2.sum)),
-        ("variance", JsNumber(statCounter2.sum))
+        ("min", JsNumber(statCounter2.min)),
+        ("max", JsNumber(statCounter2.max)),
+        ("mean", JsNumber(statCounter2.mean)),
+        ("stdev", JsNumber(statCounter2.stdev)),
+        ("variance", JsNumber(statCounter2.variance))
       )
     )
   }

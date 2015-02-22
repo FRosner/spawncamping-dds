@@ -12,11 +12,11 @@ case class Stats(stats: Seq[StatCounter]) extends Servable {
     JsObject(
       ("count", JsNumber(stat.count)),
       ("sum", JsNumber(stat.sum)),
-      ("min", JsNumber(stat.sum)),
-      ("max", JsNumber(stat.sum)),
-      ("mean", JsNumber(stat.sum)),
-      ("stdev", JsNumber(stat.sum)),
-      ("variance", JsNumber(stat.sum))
+      ("min", JsNumber(stat.min)),
+      ("max", JsNumber(stat.max)),
+      ("mean", JsNumber(stat.mean)),
+      ("stdev", JsNumber(stat.stdev)),
+      ("variance", JsNumber(stat.variance))
     )
   }).toVector)
 
