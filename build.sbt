@@ -2,6 +2,8 @@ organization  := "de.frosner"
 
 version       := "1.0.0-alpha"
 
+name          := "spawncamping-dds"
+
 scalaVersion  := "2.11.2"
 
 scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
@@ -29,5 +31,7 @@ libraryDependencies +=  "org.scalamock" %% "scalamock-scalatest-support" % "3.2.
 test in assembly := {}
 
 assemblyOption in assembly := (assemblyOption in assembly).value.copy(includeScala = false)
+
+assemblyJarName in assembly := name.value + "-" + version.value + ".jar"
 
 fork in Compile := true
