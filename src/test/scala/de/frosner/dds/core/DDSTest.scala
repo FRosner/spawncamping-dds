@@ -3,12 +3,21 @@ package de.frosner.dds.core
 import de.frosner.dds.chart._
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
+import org.apache.spark.util.StatCounter
 import org.scalamock.scalatest.MockFactory
 import org.scalatest._
 
 class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfterEach with BeforeAndAfterAll {
+  
+  class MockedServer extends ChartServer {
+    var lastServed: Option[Servable] = Option.empty
+    override def start(): Unit = {}
+    override def stop(): Unit = {}
+    override def serve(servable: Servable): Unit = lastServed = Option(servable)
+  }
 
-  private var server: ChartServer = _
+  private var stubbedServer: ChartServer = _
+  private var mockedServer: MockedServer = _
   private val sc: SparkContext = new SparkContext("local", this.getClass.toString)
 
   override def afterAll() = {
@@ -16,7 +25,8 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
   }
 
   override def beforeEach() {
-    server = stub[ChartServer]
+    stubbedServer = stub[ChartServer]
+    mockedServer = new MockedServer()
   }
 
   override def afterEach {
@@ -24,55 +34,55 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
   }
 
   "DDS" should "start the chart server when start() is executed" in {
-    DDS.start(server)
-    (server.start _).verify().once()
+    DDS.start(stubbedServer)
+    (stubbedServer.start _).verify().once()
   }
 
   it should "tear the server down when stop() is executed" in {
-    DDS.start(server)
+    DDS.start(stubbedServer)
     DDS.stop()
-    (server.stop _).verify().once()
+    (stubbedServer.stop _).verify().once()
   }
 
   it should "not start another server if one is started already" in {
-    DDS.start(server)
-    DDS.start(server)
-    (server.start _).verify().once()
+    DDS.start(stubbedServer)
+    DDS.start(stubbedServer)
+    (stubbedServer.start _).verify().once()
   }
 
   it should "do nothing when stopped the second time" in {
-    DDS.start(server)
+    DDS.start(stubbedServer)
     DDS.stop()
     DDS.stop()
-    (server.stop _).verify().once()
+    (stubbedServer.stop _).verify().once()
   }
 
   "Correct charts from Seq[Numeric]" should "be served by the line plot function" in {
-    DDS.start(server)
+    DDS.start(stubbedServer)
     DDS.line(List(1,2,3))
     val expectedChart = Chart(SeriesData(Series("data1", List(1, 2, 3)), ChartTypeEnum.Line))
-    (server.serve _).verify(expectedChart)
+    (stubbedServer.serve _).verify(expectedChart)
   }
 
   it should "be served by the pie plot function" in {
-    DDS.start(server)
+    DDS.start(stubbedServer)
     DDS.pie(List(1,2,3))
     val expectedChart = Chart(SeriesData(Series("data1", List(1, 2, 3)), ChartTypeEnum.Pie))
-    (server.serve _).verify(expectedChart)
+    (stubbedServer.serve _).verify(expectedChart)
   }
 
   it should "be served by the bar plot function" in {
-    DDS.start(server)
+    DDS.start(stubbedServer)
     DDS.bar(List(1,2,3))
     val expectedChart = Chart(SeriesData(Series("data1", List(1, 2, 3)), ChartTypeEnum.Bar))
-    (server.serve _).verify(expectedChart)
+    (stubbedServer.serve _).verify(expectedChart)
   }
 
   "Correct pie chart from RDD after groupBy" should "be served when values are already grouped" in {
-    DDS.start(server)
+    DDS.start(stubbedServer)
     val groupedRdd = sc.makeRDD(List(("a", 1), ("a", 2), ("b", 3), ("c", 5))).groupBy(_._1).
       mapValues(values => values.map{ case (key, value) => value} )
-    DDS.pie(groupedRdd)
+    DDS.pieGroups(groupedRdd)
 
     val expectedChartTypes = ChartTypes.multiple(ChartTypeEnum.Pie, 3)
     val expectedChartSeries = List(
@@ -81,13 +91,13 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
       Series("c", List(5))
     )
     val expectedChart = Chart(SeriesData(expectedChartSeries, expectedChartTypes))
-    (server.serve _).verify(expectedChart)
+    (stubbedServer.serve _).verify(expectedChart)
   }
 
   it should "be served when values are not grouped, yet" in {
-    DDS.start(server)
-    val groupedRdd = sc.makeRDD(List(("a", 1), ("a", 2), ("b", 3), ("c", 5)))
-    DDS.pie(groupedRdd)
+    DDS.start(stubbedServer)
+    val toBeGroupedRdd = sc.makeRDD(List(("a", 1), ("a", 2), ("b", 3), ("c", 5)))
+    DDS.groupAndPie(toBeGroupedRdd)
 
     val expectedChartTypes = ChartTypes.multiple(ChartTypeEnum.Pie, 3)
     val expectedChartSeries = List(
@@ -96,7 +106,37 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
       Series("c", List(5))
     )
     val expectedChart = Chart(SeriesData(expectedChartSeries, expectedChartTypes))
-    (server.serve _).verify(expectedChart)
+    (stubbedServer.serve _).verify(expectedChart)
+  }
+
+  /**
+   * org.apache.spark.util.StatCounter does not have a properly defined equals method -> String comparison
+   */
+  "Correct summary table from RDD after groupBy" should "be served when values are already grouped" in {
+    DDS.start(mockedServer)
+    val groupedRdd = sc.makeRDD(List(("a", 1), ("a", 2), ("b", 3), ("c", 5))).groupBy(_._1).
+      mapValues(values => values.map{ case (key, value) => value} )
+    DDS.summarizeGroups(groupedRdd)
+
+    val actualStats = mockedServer.lastServed.get.asInstanceOf[Stats]
+    actualStats.stats.map(_.toString) should contain only (
+      StatCounter(1D, 2D).toString,
+      StatCounter(3D).toString,
+      StatCounter(5D).toString
+    )
+  }
+
+  it should "be served when values are not grouped, yet" in {
+    DDS.start(mockedServer)
+    val toBeGroupedRdd = sc.makeRDD(List(("a", 1), ("a", 2), ("b", 3), ("c", 5)))
+    DDS.groupAndSummarize(toBeGroupedRdd)
+
+    val actualStats = mockedServer.lastServed.get.asInstanceOf[Stats]
+    actualStats.stats.map(_.toString) should contain only (
+      StatCounter(1D, 2D).toString,
+      StatCounter(3D).toString,
+      StatCounter(5D).toString
+    )
   }
 
 }

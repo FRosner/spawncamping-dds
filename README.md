@@ -29,7 +29,7 @@ when working on the cluster. It does not offer a fully flexible plotting mechani
 
     ```scala
     val grades = sc.parallelize(List(1,2,1,1,2,4,5))
-    summary(grades)
+    summarize(grades)
     ```
     
 5. Stop the server once you are done

@@ -4,10 +4,16 @@ import de.frosner.dds.chart.ChartTypeEnum.ChartType
 import de.frosner.dds.chart._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext._
+import org.apache.spark.util.StatCounter
 
 import scala.reflect.ClassTag
 
-
+/**
+ * Hacks applied here:
+ *
+ * - ClassTags are needed for conversion to PairRDD
+ *   http://mail-archives.apache.org/mod_mbox/incubator-spark-user/201404.mbox/%3CCANGvG8o-EWeETtYb3VGpmSR9ZvJui8vPO-aLsKj7xTMYQgsPAg@mail.gmail.com%3E
+ */
 object DDS {
 
   private var chart: Option[Servable] = Option.empty
@@ -67,6 +73,10 @@ object DDS {
     seriesPlotWithDefaultLabels(values +: otherValues, ChartTypeEnum.Line)
   }
 
+  def bar[N](values: Seq[N], otherValues: Seq[N]*)(implicit num: Numeric[N]): Unit = {
+    seriesPlotWithDefaultLabels(values +: otherValues, ChartTypeEnum.Bar)
+  }
+
   def pie[N](values: Seq[N], otherValues: Seq[N]*)(implicit num: Numeric[N]): Unit = {
     seriesPlotWithDefaultLabels(values +: otherValues, ChartTypeEnum.Pie)
   }
@@ -78,22 +88,35 @@ object DDS {
     seriesPlot(groupSeries, ChartTypeEnum.Pie)
   }
 
-  def pie[K, N](groupValues: RDD[(K, Iterable[N])])(implicit num: Numeric[N]): Unit = {
+  def pieGroups[K, N](groupValues: RDD[(K, Iterable[N])])(implicit num: Numeric[N]): Unit = {
     pieFromReducedGroups(groupValues.map{ case (key, values) => (key, values.sum) })
   }
 
-  // ClassTags are needed for conversion to PairRDD
-  // See http://mail-archives.apache.org/mod_mbox/incubator-spark-user/201404.mbox/%3CCANGvG8o-EWeETtYb3VGpmSR9ZvJui8vPO-aLsKj7xTMYQgsPAg@mail.gmail.com%3E
-  def pie[K: ClassTag, N: ClassTag](toBeGroupedValues: RDD[(K, N)])(implicit num: Numeric[N]): Unit = {
+  def groupAndPie[K: ClassTag, N: ClassTag](toBeGroupedValues: RDD[(K, N)])(implicit num: Numeric[N]): Unit = {
     pieFromReducedGroups(toBeGroupedValues.reduceByKey(num.plus(_, _)))
   }
 
-  def bar[N](values: Seq[N], otherValues: Seq[N]*)(implicit num: Numeric[N]): Unit = {
-    seriesPlotWithDefaultLabels(values +: otherValues, ChartTypeEnum.Bar)
+  private def summarize(stats: Stats) = {
+    chartServer.map(_.serve(stats))
   }
 
-  def summary[N](values: RDD[N])(implicit num: Numeric[N]): Unit = {
-    chartServer.map(_.serve(Stats(values.stats())))
+  def summarize[N](values: RDD[N])(implicit num: Numeric[N]): Unit = {
+    summarize(Stats(values.stats()))
+  }
+  
+  def summarizeGroups[K, N](groupValues: RDD[(K, Iterable[N])])(implicit num: Numeric[N]): Unit = {
+    val statCounters = groupValues.map{ case (key, values) =>
+      (key, StatCounter(values.map(num.toDouble(_))))
+    }.map{ case (key, stat) =>
+      stat
+    }.collect
+    summarize(Stats(statCounters))
+  }
+
+  def groupAndSummarize[K: ClassTag, N: ClassTag](toBeGroupedValues: RDD[(K, N)])(implicit num: Numeric[N]): Unit = {
+    summarizeGroups(toBeGroupedValues.groupByKey())
   }
 
 }
+
+
