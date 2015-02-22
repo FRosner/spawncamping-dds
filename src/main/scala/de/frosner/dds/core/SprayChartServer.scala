@@ -28,7 +28,7 @@ class SprayChartServer(val name: String, val launchBrowser: Boolean) extends Sim
       path("lib" / "d3.js"){     get{ complete{ D3.js } } } ~
       path("lib" / "c3.js"){     get{ complete{ C3.js } } } ~
       path("css" / "c3.css"){    get{ complete{ C3.css } } } ~
-      path("css" / "stats.css"){    get{ complete{ Stats.css } } } ~
+      path("css" / "stats.css"){ get{ complete{ Stats.css } } } ~
       path("lib" / "jquery.js"){ get{ complete{ JQuery.js } } } ~
       path("app" / "main.js"){   get{ complete{ Main.js } } } ~
       path("chart" / "update"){  get{ complete{
