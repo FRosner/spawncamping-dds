@@ -2,7 +2,7 @@ package de.frosner.dds.chart
 
 import org.apache.spark.util.StatCounter
 import org.scalatest.{Matchers, FlatSpec}
-import spray.json.{JsNumber, JsObject, JsArray}
+import spray.json.{JsString, JsNumber, JsObject, JsArray}
 
 class StatsTest extends FlatSpec with Matchers {
 
@@ -10,6 +10,7 @@ class StatsTest extends FlatSpec with Matchers {
     val statCounter = StatCounter(1D, 2D, 3D)
     val stats = Stats(statCounter)
     stats.contentAsJson shouldBe JsArray(JsObject(
+      ("label", JsString("data")),
       ("count", JsNumber(statCounter.count)),
       ("sum", JsNumber(statCounter.sum)),
       ("min", JsNumber(statCounter.min)),
@@ -23,9 +24,10 @@ class StatsTest extends FlatSpec with Matchers {
   it should "have the correct JSON format when constructed from multiple stat counters" in {
     val statCounter1 = StatCounter(1D, 2D, 3D)
     val statCounter2 = StatCounter(0D, 5D)
-    val stats = Stats(List(statCounter1, statCounter2))
+    val stats = Stats(List("label1", "label2"), List(statCounter1, statCounter2))
     stats.contentAsJson shouldBe JsArray(
       JsObject(
+        ("label", JsString("label1")),
         ("count", JsNumber(statCounter1.count)),
         ("sum", JsNumber(statCounter1.sum)),
         ("min", JsNumber(statCounter1.min)),
@@ -35,6 +37,7 @@ class StatsTest extends FlatSpec with Matchers {
         ("variance", JsNumber(statCounter1.variance))
       ),
       JsObject(
+        ("label", JsString("label2")),
         ("count", JsNumber(statCounter2.count)),
         ("sum", JsNumber(statCounter2.sum)),
         ("min", JsNumber(statCounter2.min)),

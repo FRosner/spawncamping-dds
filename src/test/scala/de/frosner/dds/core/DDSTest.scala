@@ -98,11 +98,11 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     DDS.summarizeGroups(groupedRdd)
 
     val actualStats = mockedServer.lastServed.get.asInstanceOf[Stats]
-    actualStats.stats.map(_.toString) should contain only (
-      StatCounter(1D, 2D).toString,
-      StatCounter(3D).toString,
-      StatCounter(5D).toString
-    )
+    actualStats.stats.map(_.toString).zip(actualStats.labels) should contain only (
+      (StatCounter(1D, 2D).toString, "a"),
+      (StatCounter(3D).toString, "b"),
+      (StatCounter(5D).toString, "c")
+      )
   }
 
   it should "be served when values are not grouped, yet" in {
@@ -111,10 +111,10 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     DDS.groupAndSummarize(toBeGroupedRdd)
 
     val actualStats = mockedServer.lastServed.get.asInstanceOf[Stats]
-    actualStats.stats.map(_.toString) should contain only (
-      StatCounter(1D, 2D).toString,
-      StatCounter(3D).toString,
-      StatCounter(5D).toString
+    actualStats.stats.map(_.toString).zip(actualStats.labels) should contain only (
+      (StatCounter(1D, 2D).toString, "a"),
+      (StatCounter(3D).toString, "b"),
+      (StatCounter(5D).toString, "c")
     )
   }
 

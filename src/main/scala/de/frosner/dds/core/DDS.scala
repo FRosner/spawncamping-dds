@@ -85,9 +85,10 @@ object DDS {
     val statCounters = groupValues.map{ case (key, values) =>
       (key, StatCounter(values.map(num.toDouble(_))))
     }.map{ case (key, stat) =>
-      stat
+      (key.toString, stat)
     }.collect
-    summarize(Stats(statCounters))
+    val (labels, stats) = statCounters.unzip
+    summarize(Stats(labels, stats))
   }
 
   def groupAndSummarize[K: ClassTag, N: ClassTag](toBeGroupedValues: RDD[(K, N)])(implicit num: Numeric[N]): Unit = {
