@@ -30,4 +30,4 @@ test in assembly := {}
 
 assemblyOption in assembly := (assemblyOption in assembly).value.copy(includeScala = false)
 
-fork := true
+fork in Compile := true
