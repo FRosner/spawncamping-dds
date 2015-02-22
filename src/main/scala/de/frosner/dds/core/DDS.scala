@@ -31,7 +31,7 @@ object DDS {
     }
   }
 
-  @HelpProvided(
+  @Help(
     shortDescription = "Starts the DDS Web UI",
     longDescription = "Starts the DDS Web UI bound to the default interface and port."
   )
@@ -55,12 +55,12 @@ object DDS {
   def help() = {
     val methods = DDS.getClass.getMethods
     val methodsWithHelp = methods.filter(method => method.getAnnotations.exists(
-      annotation => annotation.isInstanceOf[HelpProvided]
+      annotation => annotation.isInstanceOf[Help]
     ))
     val methodAndShortDescription = methodsWithHelp.map(method => {
       val helpAnnotation = method.getAnnotations.find(annotation =>
-        annotation.isInstanceOf[HelpProvided]
-      ).get.asInstanceOf[HelpProvided]
+        annotation.isInstanceOf[Help]
+      ).get.asInstanceOf[Help]
       (method.getName, helpAnnotation.shortDescription())
     })
     methodAndShortDescription.foreach{
