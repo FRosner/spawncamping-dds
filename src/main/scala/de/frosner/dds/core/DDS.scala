@@ -31,6 +31,10 @@ object DDS {
     }
   }
 
+  @HelpProvided(
+    shortDescription = "Starts the DDS Web UI",
+    longDescription = "Starts the DDS Web UI bound to the default interface and port."
+  )
   def start(): Unit = {
     start(SprayChartServer("dds-" + serverNumber))
   }
@@ -45,6 +49,22 @@ object DDS {
     } else {
       chartServer.map(_.stop())
       resetServer()
+    }
+  }
+
+  def help() = {
+    val methods = DDS.getClass.getMethods
+    val methodsWithHelp = methods.filter(method => method.getAnnotations.exists(
+      annotation => annotation.isInstanceOf[HelpProvided]
+    ))
+    val methodAndShortDescription = methodsWithHelp.map(method => {
+      val helpAnnotation = method.getAnnotations.find(annotation =>
+        annotation.isInstanceOf[HelpProvided]
+      ).get.asInstanceOf[HelpProvided]
+      (method.getName, helpAnnotation.shortDescription())
+    })
+    methodAndShortDescription.foreach{
+      case (name, description) => println(name + ": " + description)
     }
   }
 
