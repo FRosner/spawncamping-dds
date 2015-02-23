@@ -16,6 +16,8 @@ import scala.reflect.ClassTag
  */
 object DDS {
 
+  private val helper = Helper(this.getClass)
+
   private var chart: Option[Servable] = Option.empty
 
   private var chartServer: Option[ChartServer] = Option.empty
@@ -53,19 +55,7 @@ object DDS {
   }
 
   def help() = {
-    val methods = DDS.getClass.getMethods
-    val methodsWithHelp = methods.filter(method => method.getAnnotations.exists(
-      annotation => annotation.isInstanceOf[Help]
-    ))
-    val methodAndShortDescription = methodsWithHelp.map(method => {
-      val helpAnnotation = method.getAnnotations.find(annotation =>
-        annotation.isInstanceOf[Help]
-      ).get.asInstanceOf[Help]
-      (method.getName, helpAnnotation.shortDescription())
-    })
-    methodAndShortDescription.foreach{
-      case (name, description) => println(name + ": " + description)
-    }
+    helper.printMethods(System.out)
   }
 
   private def seriesPlot[N](series: Iterable[Series[N]], chartTypes: ChartTypes)(implicit num: Numeric[N]): Unit = {
