@@ -35,7 +35,7 @@ object DDS {
 
   @Help(
     shortDescription = "Starts the DDS Web UI",
-    longDescription = "Starts the DDS Web UI bound to the default interface and port."
+    longDescription = "Starts the DDS Web UI bound to the default interface and port. You can stop it by calling stop()."
   )
   def start(): Unit = {
     start(SprayChartServer("dds-" + serverNumber))
@@ -45,6 +45,10 @@ object DDS {
     chartServer = Option.empty
   }
 
+  @Help(
+    shortDescription = "Stops the DDS Web UI",
+    longDescription = "Stops the DDS Web UI. You can restart it again by calling start()."
+  )
   def stop() = {
     if (!chartServer.isDefined) {
       println("No server there to stop! Type 'start()' to start one.")
@@ -53,7 +57,10 @@ object DDS {
       resetServer()
     }
   }
-
+  @Help(
+    shortDescription = "Shows available commands",
+    longDescription = "Shows all commands available in DDS."
+  )
   def help() = {
     helper.printMethods(System.out)
   }
