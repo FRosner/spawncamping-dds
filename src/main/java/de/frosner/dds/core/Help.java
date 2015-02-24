@@ -6,6 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 @Retention( RetentionPolicy.RUNTIME )
 public @interface Help
 {
-    String   shortDescription();
-    String   longDescription();
+    String shortDescription();
+    String longDescription();
+    String parameters() default "";
 }

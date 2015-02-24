@@ -86,6 +86,11 @@ object DDS {
     pieFromReducedGroups(groupValues.map{ case (key, values) => (key, values.sum) })
   }
 
+  @Help(
+    shortDescription = "Plots a pie chart of the summed values per group",
+    longDescription = "Groups the given pair RDD, sums the values in each group and compares the group using a pie chart.",
+    parameters = "toBeGroupedValues: RDD[(Key, NumericValue)]"
+  )
   def groupAndPie[K: ClassTag, N: ClassTag](toBeGroupedValues: RDD[(K, N)])(implicit num: Numeric[N]): Unit = {
     pieFromReducedGroups(toBeGroupedValues.reduceByKey(num.plus(_, _)))
   }
