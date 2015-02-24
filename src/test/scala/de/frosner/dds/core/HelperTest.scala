@@ -30,8 +30,7 @@ class HelperTest extends FlatSpec with Matchers {
     val out = new PrintStream(result)
     val helper = Helper(new TestClass().getClass)
     helper.printMethods(out)
-    result.toString shouldBe "help(): short help\n" +
-      "helpWithParameters(i: Int): sph\n"
+    result.toString.split("\n") should contain only ("help(): short help", "helpWithParameters(i: Int): sph")
   }
 
 }
