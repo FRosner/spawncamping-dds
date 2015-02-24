@@ -131,7 +131,7 @@ object DDS {
   }
 
   @Help(
-    shortDescription = "Shows some basic summary statistics of the given groups.",
+    shortDescription = "Shows some basic summary statistics of the given groups",
     longDescription = "Shows some basic summary statistics of the given groups. " +
       "Statistics are: count, sum, min, max, mean, stdev, variance.",
     parameters = "toBeGroupedValues: RDD[(Key, NumericValue)]"
