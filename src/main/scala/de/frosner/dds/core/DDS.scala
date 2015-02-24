@@ -2,8 +2,8 @@ package de.frosner.dds.core
 
 import de.frosner.dds.chart.ChartTypeEnum.ChartType
 import de.frosner.dds.chart._
-import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext._
+import org.apache.spark.rdd.RDD
 import org.apache.spark.util.StatCounter
 
 import scala.reflect.ClassTag
@@ -15,6 +15,8 @@ import scala.reflect.ClassTag
  *   http://mail-archives.apache.org/mod_mbox/incubator-spark-user/201404.mbox/%3CCANGvG8o-EWeETtYb3VGpmSR9ZvJui8vPO-aLsKj7xTMYQgsPAg@mail.gmail.com%3E
  */
 object DDS {
+
+  private val helper = Helper(this.getClass)
 
   private var chart: Option[Servable] = Option.empty
 
@@ -31,6 +33,10 @@ object DDS {
     }
   }
 
+  @Help(
+    shortDescription = "Starts the DDS Web UI",
+    longDescription = "Starts the DDS Web UI bound to the default interface and port. You can stop it by calling stop()."
+  )
   def start(): Unit = {
     start(SprayChartServer("dds-" + serverNumber))
   }
@@ -39,6 +45,10 @@ object DDS {
     chartServer = Option.empty
   }
 
+  @Help(
+    shortDescription = "Stops the DDS Web UI",
+    longDescription = "Stops the DDS Web UI. You can restart it again by calling start()."
+  )
   def stop() = {
     if (!chartServer.isDefined) {
       println("No server there to stop! Type 'start()' to start one.")
@@ -46,6 +56,13 @@ object DDS {
       chartServer.map(_.stop())
       resetServer()
     }
+  }
+  @Help(
+    shortDescription = "Shows available commands",
+    longDescription = "Shows all commands available in DDS."
+  )
+  def help() = {
+    helper.printMethods(System.out)
   }
 
   private def seriesPlot[N](series: Iterable[Series[N]], chartTypes: ChartTypes)(implicit num: Numeric[N]): Unit = {
@@ -65,10 +82,20 @@ object DDS {
     seriesPlot(groupSeries, ChartTypeEnum.Pie)
   }
 
+  @Help(
+    shortDescription = "Plots a pie chart of the summed values per group",
+    longDescription = "Given the already grouped RDD, sums the values in each group and compares the group using a pie chart.",
+    parameters = "groupedValues: RDD[(Key, Iterable[NumericValue])]"
+  )
   def pieGroups[K, N](groupValues: RDD[(K, Iterable[N])])(implicit num: Numeric[N]): Unit = {
     pieFromReducedGroups(groupValues.map{ case (key, values) => (key, values.sum) })
   }
 
+  @Help(
+    shortDescription = "Plots a pie chart of the summed values per group",
+    longDescription = "Groups the given pair RDD, sums the values in each group and compares the group using a pie chart.",
+    parameters = "toBeGroupedValues: RDD[(Key, NumericValue)]"
+  )
   def groupAndPie[K: ClassTag, N: ClassTag](toBeGroupedValues: RDD[(K, N)])(implicit num: Numeric[N]): Unit = {
     pieFromReducedGroups(toBeGroupedValues.reduceByKey(num.plus(_, _)))
   }
@@ -77,10 +104,22 @@ object DDS {
     chartServer.map(_.serve(stats))
   }
 
+  @Help(
+    shortDescription = "Shows some basic summary statistics of the given dataset",
+    longDescription = "Shows some basic summary statistics of the given dataset. " +
+      "Statistics are: count, sum, min, max, mean, stdev, variance.",
+    parameters = "values: RDD[NumericValue]"
+  )
   def summarize[N](values: RDD[N])(implicit num: Numeric[N]): Unit = {
     summarize(Stats(values.stats()))
   }
-  
+
+  @Help(
+    shortDescription = "Shows some basic summary statistics of the given groups",
+    longDescription = "Shows some basic summary statistics of the given groups. " +
+      "Statistics are: count, sum, min, max, mean, stdev, variance.",
+    parameters = "groupedValues: RDD[(Key, Iterable[NumericValue])]"
+  )
   def summarizeGroups[K, N](groupValues: RDD[(K, Iterable[N])])(implicit num: Numeric[N]): Unit = {
     val statCounters = groupValues.map{ case (key, values) =>
       (key, StatCounter(values.map(num.toDouble(_))))
@@ -91,8 +130,18 @@ object DDS {
     summarize(Stats(labels, stats))
   }
 
+  @Help(
+    shortDescription = "Shows some basic summary statistics of the given groups.",
+    longDescription = "Shows some basic summary statistics of the given groups. " +
+      "Statistics are: count, sum, min, max, mean, stdev, variance.",
+    parameters = "toBeGroupedValues: RDD[(Key, NumericValue)]"
+  )
   def groupAndSummarize[K: ClassTag, N: ClassTag](toBeGroupedValues: RDD[(K, N)])(implicit num: Numeric[N]): Unit = {
     summarizeGroups(toBeGroupedValues.groupByKey())
+  }
+
+  def main(args: Array[String]): Unit = {
+    start()
   }
 
 }
