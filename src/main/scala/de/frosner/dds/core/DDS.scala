@@ -82,6 +82,11 @@ object DDS {
     seriesPlot(groupSeries, ChartTypeEnum.Pie)
   }
 
+  @Help(
+    shortDescription = "Plots a pie chart of the summed values per group",
+    longDescription = "Given the already grouped RDD, sums the values in each group and compares the group using a pie chart.",
+    parameters = "groupedValues: RDD[(Key, Iterable[NumericValue])]"
+  )
   def pieGroups[K, N](groupValues: RDD[(K, Iterable[N])])(implicit num: Numeric[N]): Unit = {
     pieFromReducedGroups(groupValues.map{ case (key, values) => (key, values.sum) })
   }
@@ -99,10 +104,22 @@ object DDS {
     chartServer.map(_.serve(stats))
   }
 
+  @Help(
+    shortDescription = "Shows some basic summary statistics of the given dataset",
+    longDescription = "Shows some basic summary statistics of the given dataset. " +
+      "Statistics are: count, sum, min, max, mean, stdev, variance.",
+    parameters = "values: RDD[NumericValue]"
+  )
   def summarize[N](values: RDD[N])(implicit num: Numeric[N]): Unit = {
     summarize(Stats(values.stats()))
   }
-  
+
+  @Help(
+    shortDescription = "Shows some basic summary statistics of the given groups",
+    longDescription = "Shows some basic summary statistics of the given groups. " +
+      "Statistics are: count, sum, min, max, mean, stdev, variance.",
+    parameters = "groupedValues: RDD[(Key, Iterable[NumericValue])]"
+  )
   def summarizeGroups[K, N](groupValues: RDD[(K, Iterable[N])])(implicit num: Numeric[N]): Unit = {
     val statCounters = groupValues.map{ case (key, values) =>
       (key, StatCounter(values.map(num.toDouble(_))))
@@ -113,6 +130,12 @@ object DDS {
     summarize(Stats(labels, stats))
   }
 
+  @Help(
+    shortDescription = "Shows some basic summary statistics of the given groups.",
+    longDescription = "Shows some basic summary statistics of the given groups. " +
+      "Statistics are: count, sum, min, max, mean, stdev, variance.",
+    parameters = "toBeGroupedValues: RDD[(Key, NumericValue)]"
+  )
   def groupAndSummarize[K: ClassTag, N: ClassTag](toBeGroupedValues: RDD[(K, N)])(implicit num: Numeric[N]): Unit = {
     summarizeGroups(toBeGroupedValues.groupByKey())
   }
