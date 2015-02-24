@@ -10,7 +10,11 @@ import de.frosner.dds.js.{Main, JQuery, C3, D3}
 import spray.routing.SimpleRoutingApp
 import scala.concurrent.duration._
 
-class SprayChartServer(val name: String, val launchBrowser: Boolean) extends SimpleRoutingApp with ChartServer {
+case class SprayChartServer(name: String,
+                            launchBrowser: Boolean,
+                            interface: String = SprayChartServer.DEFAULT_INTERFACE,
+                            port: Int = SprayChartServer.DEFAULT_PORT)
+  extends SimpleRoutingApp with ChartServer {
 
   private var servable: Option[Servable] = Option.empty
 
@@ -20,8 +24,8 @@ class SprayChartServer(val name: String, val launchBrowser: Boolean) extends Sim
   
   def start() = {
     import SprayChartServer._
-    println(s"""Starting server on $DEFAULT_INTERFACE:$DEFAULT_PORT""")
-    val server = startServer(DEFAULT_INTERFACE, DEFAULT_PORT, actorName) {
+    println(s"""Starting server on $interface:$port""")
+    val server = startServer(interface, port, actorName) {
       path(""){                  get{ complete{ Index.html } } } ~
       path("lib" / "d3.js"){     get{ complete{ D3.js } } } ~
       path("lib" / "c3.js"){     get{ complete{ C3.js } } } ~
@@ -39,7 +43,7 @@ class SprayChartServer(val name: String, val launchBrowser: Boolean) extends Sim
     Thread.sleep(1000)
     if (launchBrowser && Desktop.isDesktopSupported()) {
       println("Opening browser")
-      Desktop.getDesktop().browse(new URI( s"""http://$DEFAULT_INTERFACE:$DEFAULT_PORT/"""))
+      Desktop.getDesktop().browse(new URI( s"""http://$interface:$port/"""))
     }
   }
 
@@ -60,8 +64,8 @@ object SprayChartServer {
   val DEFAULT_INTERFACE = "localhost"
   val DEFAULT_PORT = 8080
 
-  def apply(name: String) = new SprayChartServer(name, true)
+  def apply(name: String): SprayChartServer = SprayChartServer(name, true)
 
-  def withoutLaunchingBrowser(name: String) = new SprayChartServer(name, false)
+  def withoutLaunchingBrowser(name: String) = SprayChartServer(name, false)
 
 }

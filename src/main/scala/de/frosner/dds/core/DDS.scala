@@ -41,6 +41,15 @@ object DDS {
     start(SprayChartServer("dds-" + serverNumber))
   }
 
+  @Help(
+    shortDescription = "Starts the DDS Web UI bound to the given interface and port",
+    longDescription = "Starts the DDS Web UI bound to the given interface and port. You can stop it by calling stop().",
+    parameters = "interface: String, port: Int"
+  )
+  def start(interface: String, port: Int): Unit = {
+    start(SprayChartServer("dds-" + serverNumber, interface = interface, port = port, launchBrowser = true))
+  }
+
   private[core] def resetServer() = {
     chartServer = Option.empty
   }
