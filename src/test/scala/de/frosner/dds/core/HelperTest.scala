@@ -1,8 +1,8 @@
 package de.frosner.dds.core
 
-import java.io.{PrintStream, ByteArrayOutputStream, PrintWriter}
+import java.io.{ByteArrayOutputStream, PrintStream}
 
-import org.scalatest.{Matchers, FlatSpec}
+import org.scalatest.{FlatSpec, Matchers}
 
 class HelperTest extends FlatSpec with Matchers {
   
