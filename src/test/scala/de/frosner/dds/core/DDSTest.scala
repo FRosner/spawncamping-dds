@@ -61,7 +61,7 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     DDS.start(stubbedServer)
     val groupedRdd = sc.makeRDD(List(("a", 1), ("a", 2), ("b", 3), ("c", 5))).groupBy(_._1).
       mapValues(values => values.map{ case (key, value) => value} )
-    DDS.pieGroups(groupedRdd)
+    DDS.pieGroups(groupedRdd)(_ + _)
 
     val expectedChartTypes = ChartTypes.multiple(ChartTypeEnum.Pie, 3)
     val expectedChartSeries = List(
@@ -76,7 +76,7 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
   it should "be served when values are not grouped, yet" in {
     DDS.start(stubbedServer)
     val toBeGroupedRdd = sc.makeRDD(List(("a", 1), ("a", 2), ("b", 3), ("c", 5)))
-    DDS.groupAndPie(toBeGroupedRdd)
+    DDS.groupAndPie(toBeGroupedRdd)(_ + _)
 
     val expectedChartTypes = ChartTypes.multiple(ChartTypeEnum.Pie, 3)
     val expectedChartSeries = List(

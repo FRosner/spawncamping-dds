@@ -96,8 +96,10 @@ object DDS {
     longDescription = "Given the already grouped RDD, sums the values in each group and compares the group using a pie chart.",
     parameters = "groupedValues: RDD[(Key, Iterable[NumericValue])]"
   )
-  def pieGroups[K, N](groupValues: RDD[(K, Iterable[N])])(implicit num: Numeric[N]): Unit = {
-    pieFromReducedGroups(groupValues.map{ case (key, values) => (key, values.sum) })
+  def pieGroups[K, N](groupValues: RDD[(K, Iterable[N])])
+                     (reduceFunction: (N, N) => N)
+                     (implicit num: Numeric[N]): Unit = {
+    pieFromReducedGroups(groupValues.map{ case (key, values) => (key, values.reduce(reduceFunction)) })
   }
 
   @Help(
@@ -105,8 +107,10 @@ object DDS {
     longDescription = "Groups the given pair RDD, sums the values in each group and compares the group using a pie chart.",
     parameters = "toBeGroupedValues: RDD[(Key, NumericValue)]"
   )
-  def groupAndPie[K: ClassTag, N: ClassTag](toBeGroupedValues: RDD[(K, N)])(implicit num: Numeric[N]): Unit = {
-    pieFromReducedGroups(toBeGroupedValues.reduceByKey(num.plus(_, _)))
+  def groupAndPie[K: ClassTag, N: ClassTag](toBeGroupedValues: RDD[(K, N)])
+                                           (reduceFunction: (N, N) => N)
+                                           (implicit num: Numeric[N]): Unit = {
+    pieFromReducedGroups(toBeGroupedValues.reduceByKey(reduceFunction))
   }
 
   private def summarize(stats: Stats) = {
