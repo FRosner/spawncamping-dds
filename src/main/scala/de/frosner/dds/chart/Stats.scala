@@ -12,7 +12,7 @@ case class Stats(labels: Seq[String], stats: Seq[StatCounter]) extends Servable 
   def contentAsJson: JsArray = {
     val statsAndLabels = labels.zip(stats)
     JsArray(statsAndLabels.map{ case (label, stat) => {
-      JsObject(
+      JsObject(OrderedMap[String, JsValue](List(
         ("label", JsString(label)),
         ("count", JsNumber(stat.count)),
         ("sum", JsNumber(stat.sum)),
@@ -21,7 +21,7 @@ case class Stats(labels: Seq[String], stats: Seq[StatCounter]) extends Servable 
         ("mean", JsNumber(stat.mean)),
         ("stdev", JsNumber(stat.stdev)),
         ("variance", JsNumber(stat.variance))
-      )
+      )))
     }}.toVector)
   }
 
