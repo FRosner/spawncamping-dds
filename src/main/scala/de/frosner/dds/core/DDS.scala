@@ -85,7 +85,27 @@ object DDS {
   }
 
   @Help(
-    shortDescription = "Plots a pie chart with the given value per group.",
+    shortDescription = "Plots a line chart",
+    longDescription = "Plots a line chart visualizing the given value sequence.",
+    parameters = "values: Seq[NumericValue]"
+  )
+  def line[N](values: Seq[N])(implicit num: Numeric[N]) = {
+    lines(List("data"), List(values))
+  }
+
+  @Help(
+    shortDescription = "Plots a line chart with multiple lines",
+    longDescription = "Plots a line chart with multiple lines. Each line corresponds to one of the value sequences " +
+      "and is labeled according to the labels specified.",
+    parameters = "labels: Seq[String], values: Seq[Seq[NumericValue]]"
+  )
+  def lines[N](labels: Seq[String], values: Seq[Seq[N]])(implicit num: Numeric[N]) = {
+    val series = labels.zip(values).map{ case (label, values) => Series(label, values) }
+    seriesPlot(series, ChartTypeEnum.Line)
+  }
+
+  @Help(
+    shortDescription = "Plots a pie chart with the given value per group",
     longDescription = "Plots a pie chart with the given value per group. The input must contain each key only once.",
     parameters = "keyValuePairs: Iterable[(Key, NumericValue)]"
   )
