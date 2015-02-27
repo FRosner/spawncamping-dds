@@ -84,11 +84,13 @@ object DDS {
     seriesPlot(series, ChartTypes.multiple(chartType, series.size))
   }
 
-  private def pieFromReducedGroups[K, N](reducedGroup: RDD[(K, N)])(implicit num: Numeric[N]): Unit = {
-    val groupSeries = reducedGroup.map{
-      case (key, summedValues) => Series(key.toString, List(summedValues))
-    }.collect
-    seriesPlot(groupSeries, ChartTypeEnum.Pie)
+  @Help(
+    shortDescription = "Plots a pie chart with the given value per group.",
+    longDescription = "Plots a pie chart with the given value per group. The input must contain each key only once.",
+    parameters = "keyValuePairs: Iterable[(Key, NumericValue)]"
+  )
+  def pie[K, V](keyValuePairs: Iterable[(K, V)])(implicit num: Numeric[V]) = {
+    seriesPlot(keyValuePairs.map{ case (key, value) => Series(key.toString, List(value))}, ChartTypeEnum.Pie)
   }
 
   @Help(
@@ -100,7 +102,7 @@ object DDS {
   def pieGroups[K, N](groupValues: RDD[(K, Iterable[N])])
                      (reduceFunction: (N, N) => N)
                      (implicit num: Numeric[N]): Unit = {
-    pieFromReducedGroups(groupValues.map{ case (key, values) => (key, values.reduce(reduceFunction)) })
+    pie(groupValues.map{ case (key, values) => (key, values.reduce(reduceFunction)) }.collect)
   }
 
   @Help(
@@ -112,7 +114,7 @@ object DDS {
   def groupAndPie[K: ClassTag, N: ClassTag](toBeGroupedValues: RDD[(K, N)])
                                            (reduceFunction: (N, N) => N)
                                            (implicit num: Numeric[N]): Unit = {
-    pieFromReducedGroups(toBeGroupedValues.reduceByKey(reduceFunction))
+    pie(toBeGroupedValues.reduceByKey(reduceFunction).collect)
   }
 
   private def summarize(stats: Stats) = {
