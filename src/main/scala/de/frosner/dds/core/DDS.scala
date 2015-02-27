@@ -66,6 +66,7 @@ object DDS {
       resetServer()
     }
   }
+
   @Help(
     shortDescription = "Shows available commands",
     longDescription = "Shows all commands available in DDS."
