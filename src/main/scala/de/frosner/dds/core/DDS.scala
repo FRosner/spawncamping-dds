@@ -92,8 +92,8 @@ object DDS {
   }
 
   @Help(
-    shortDescription = "Plots a pie chart of the summed values per group",
-    longDescription = "Given the already grouped RDD, sums the values in each group and compares the group using a pie chart.",
+    shortDescription = "Plots a pie chart of the reduced values per group",
+    longDescription = "Given the already grouped RDD, reduces the values in each group and compares the group using a pie chart.",
     parameters = "groupedValues: RDD[(Key, Iterable[NumericValue])]",
     parameters2 = "reduceFunction: (NumericValue, NumericValue => NumericValue)"
   )
@@ -104,8 +104,8 @@ object DDS {
   }
 
   @Help(
-    shortDescription = "Plots a pie chart of the summed values per group",
-    longDescription = "Groups the given pair RDD, sums the values in each group and compares the group using a pie chart.",
+    shortDescription = "Plots a pie chart of the reduced values per group",
+    longDescription = "Groups the given pair RDD, reduces the values in each group and compares the group using a pie chart.",
     parameters = "toBeGroupedValues: RDD[(Key, NumericValue)]",
     parameters2 = "reduceFunction: (NumericValue, NumericValue => NumericValue)"
   )
