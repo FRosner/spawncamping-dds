@@ -161,11 +161,15 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
       mapValues(values => values.map{ case (key, value) => value} )
     DDS.summarizeGroups(groupedRdd)
 
-    val actualStats = mockedServer.lastServed.get.asInstanceOf[Stats]
-    actualStats.stats.map(_.toString).zip(actualStats.labels) should contain only (
-      (StatCounter(1D, 2D).toString, "a"),
-      (StatCounter(3D).toString, "b"),
-      (StatCounter(5D).toString, "c")
+    val aCounter = StatCounter(1D, 2D)
+    val bCounter = StatCounter(3D)
+    val cCounter = StatCounter(5D)
+    val resultTable = mockedServer.lastServed.get.asInstanceOf[Table]
+    resultTable.head.toList shouldBe List("label", "count", "sum", "min", "max", "mean", "stdev", "variance")
+    resultTable.rows.toList shouldBe List(
+      List("a", aCounter.count, aCounter.sum, aCounter.min, aCounter.max, aCounter.mean, aCounter.stdev, aCounter.variance),
+      List("b", bCounter.count, bCounter.sum, bCounter.min, bCounter.max, bCounter.mean, bCounter.stdev, bCounter.variance),
+      List("c", cCounter.count, cCounter.sum, cCounter.min, cCounter.max, cCounter.mean, cCounter.stdev, cCounter.variance)
     )
   }
 
@@ -174,11 +178,15 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     val toBeGroupedRdd = sc.makeRDD(List(("a", 1), ("a", 2), ("b", 3), ("c", 5)))
     DDS.groupAndSummarize(toBeGroupedRdd)
 
-    val actualStats = mockedServer.lastServed.get.asInstanceOf[Stats]
-    actualStats.stats.map(_.toString).zip(actualStats.labels) should contain only (
-      (StatCounter(1D, 2D).toString, "a"),
-      (StatCounter(3D).toString, "b"),
-      (StatCounter(5D).toString, "c")
+    val aCounter = StatCounter(1D, 2D)
+    val bCounter = StatCounter(3D)
+    val cCounter = StatCounter(5D)
+    val resultTable = mockedServer.lastServed.get.asInstanceOf[Table]
+    resultTable.head.toList shouldBe List("label", "count", "sum", "min", "max", "mean", "stdev", "variance")
+    resultTable.rows.toList shouldBe List(
+      List("a", aCounter.count, aCounter.sum, aCounter.min, aCounter.max, aCounter.mean, aCounter.stdev, aCounter.variance),
+      List("b", bCounter.count, bCounter.sum, bCounter.min, bCounter.max, bCounter.mean, bCounter.stdev, bCounter.variance),
+      List("c", cCounter.count, cCounter.sum, cCounter.min, cCounter.max, cCounter.mean, cCounter.stdev, cCounter.variance)
     )
   }
 

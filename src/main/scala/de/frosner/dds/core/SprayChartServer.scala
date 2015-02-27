@@ -4,10 +4,11 @@ import java.awt.Desktop
 import java.net.URI
 
 import akka.actor.ActorSystem
-import de.frosner.dds.chart.{Stats, Chart}
+import de.frosner.dds.chart.Table
 import de.frosner.dds.html.Index
-import de.frosner.dds.js.{Main, JQuery, C3, D3}
+import de.frosner.dds.js.{C3, D3, JQuery, Main}
 import spray.routing.SimpleRoutingApp
+
 import scala.concurrent.duration._
 
 case class SprayChartServer(name: String,
@@ -23,14 +24,13 @@ case class SprayChartServer(name: String,
   private val actorName = "chart-server-" + name + "-actor"
   
   def start() = {
-    import SprayChartServer._
     println(s"""Starting server on $interface:$port""")
     val server = startServer(interface, port, actorName) {
       path(""){                  get{ complete{ Index.html } } } ~
       path("lib" / "d3.js"){     get{ complete{ D3.js } } } ~
       path("lib" / "c3.js"){     get{ complete{ C3.js } } } ~
       path("css" / "c3.css"){    get{ complete{ C3.css } } } ~
-      path("css" / "stats.css"){ get{ complete{ Stats.css } } } ~
+      path("css" / "table.css"){ get{ complete{ Table.css } } } ~
       path("lib" / "jquery.js"){ get{ complete{ JQuery.js } } } ~
       path("app" / "main.js"){   get{ complete{ Main.js } } } ~
       path("chart" / "update"){  get{ complete{

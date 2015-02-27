@@ -158,7 +158,7 @@ object DDS {
     pie(toBeGroupedValues.reduceByKey(reduceFunction).collect)
   }
 
-  private def summarize(stats: Stats) = {
+  private def summarize(stats: Table) = {
     chartServer.map(_.serve(stats))
   }
 
@@ -169,7 +169,7 @@ object DDS {
     parameters = "values: RDD[NumericValue]"
   )
   def summarize[N](values: RDD[N])(implicit num: Numeric[N]): Unit = {
-    summarize(Stats(values.stats()))
+    summarize(Table.fromStatCounter(values.stats()))
   }
 
   @Help(
@@ -185,7 +185,7 @@ object DDS {
       (key.toString, stat)
     }.collect
     val (labels, stats) = statCounters.unzip
-    summarize(Stats(labels, stats))
+    summarize(Table.fromStatCounters(labels, stats))
   }
 
   @Help(

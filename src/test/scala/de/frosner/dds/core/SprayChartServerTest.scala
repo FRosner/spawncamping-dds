@@ -1,6 +1,6 @@
 package de.frosner.dds.core
 
-import de.frosner.dds.chart.{Chart, DummyData, Stats}
+import de.frosner.dds.chart.{Chart, DummyData, Table}
 import org.apache.spark.util.StatCounter
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import de.frosner.dds.core.SprayChartServer._
@@ -55,10 +55,10 @@ class SprayChartServerTest extends FlatSpec with Matchers with BeforeAndAfter{
     Http(s"http://$DEFAULT_INTERFACE:$DEFAULT_PORT/chart/update").asString.body shouldBe chart.toJsonString
   }
 
-  it should "respond with a stats object if stats are served" in {
-    val stats = Stats(StatCounter(0D, 1D, 2D))
-    chartServer.serve(stats)
-    Http(s"http://$DEFAULT_INTERFACE:$DEFAULT_PORT/chart/update").asString.body shouldBe stats.toJsonString
+  it should "respond with a table object if stats are served" in {
+    val table = Table.fromStatCounter(StatCounter(0D, 1D, 2D))
+    chartServer.serve(table)
+    Http(s"http://$DEFAULT_INTERFACE:$DEFAULT_PORT/chart/update").asString.body shouldBe table.toJsonString
   }
 
   it should "respond with an empty object after serving a servable once" in {
