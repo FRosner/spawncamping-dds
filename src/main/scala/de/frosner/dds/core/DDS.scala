@@ -106,6 +106,26 @@ object DDS {
   }
 
   @Help(
+    shortDescription = "Plots a bar chart",
+    longDescription = "Plots a bar chart visualizing the given value sequence.",
+    parameters = "values: Seq[NumericValue]"
+  )
+  def bar[N](values: Seq[N])(implicit num: Numeric[N]) = {
+    bars(List("data"), List(values))
+  }
+
+  @Help(
+    shortDescription = "Plots a bar chart with multiple bar colors",
+    longDescription = "Plots a bar chart with multiple bar colors. Each color corresponds to one of the value sequences " +
+      "and is labeled according to the labels specified.",
+    parameters = "labels: Seq[String], values: Seq[Seq[NumericValue]]"
+  )
+  def bars[N](labels: Seq[String], values: Seq[Seq[N]])(implicit num: Numeric[N]) = {
+    val series = labels.zip(values).map{ case (label, values) => Series(label, values) }
+    seriesPlot(series, ChartTypeEnum.Bar)
+  }
+
+  @Help(
     shortDescription = "Plots a pie chart with the given value per group",
     longDescription = "Plots a pie chart with the given value per group. The input must contain each key only once.",
     parameters = "keyValuePairs: Iterable[(Key, NumericValue)]"
