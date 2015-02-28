@@ -6,6 +6,7 @@ import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.util.StatCounter
 
+import scala.reflect.runtime.universe._
 import scala.reflect.ClassTag
 
 /**
@@ -169,6 +170,28 @@ object DDS {
   )
   def table(head: Seq[String], rows: Seq[Seq[Any]]): Unit = {
     table(Table(head, rows))
+  }
+
+  @Help(
+    shortDescription = "Shows the first rows of an RDD",
+    longDescription = "Shows the first rows of an RDD. The second argument is optional and determines the sample size.",
+    parameters = "rdd: RDD[T], (optional) sampleSize: Int"
+  )
+  def show[V](rdd: RDD[V], sampleSize: Int = 20)(implicit tag: TypeTag[V]): Unit = {
+    val vType = tag.tpe
+    val sample = rdd.take(sampleSize)
+    if (sample.length == 0) {
+      println("RDD is empty!")
+    } else {
+      val result = if (vType <:< typeOf[Product]) {
+        val header = (1 to sample(0).asInstanceOf[Product].productArity).map("column" + _)
+        val rows = sample.map(product => product.asInstanceOf[Product].productIterator.toSeq).toSeq
+        Table(header, rows)
+      } else {
+        Table(List("column1"), sample.map(c => List(c)).toList)
+      }
+      table(result)
+    }
   }
 
   @Help(

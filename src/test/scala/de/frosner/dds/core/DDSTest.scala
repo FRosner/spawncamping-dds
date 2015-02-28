@@ -197,8 +197,53 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     )
   }
 
+  "A correct table" should "be printed from generic RDD of single values" in {
+    DDS.start(mockedServer)
+    val rdd = sc.makeRDD(List(1))
+    DDS.show(rdd)
+
+    val resultTable = mockedServer.lastServed.get.asInstanceOf[Table]
+    resultTable.head.toList shouldBe List("column1")
+    resultTable.rows.toList shouldBe List(List(1))
+  }
+
+  it should "be printed from generic RDD of tuples" in {
+    DDS.start(mockedServer)
+    val rdd = sc.makeRDD(List(("a", 1), ("b", 2)))
+    DDS.show(rdd)
+
+    val resultTable = mockedServer.lastServed.get.asInstanceOf[Table]
+    resultTable.head.toList shouldBe List("column1", "column2")
+    resultTable.rows.toList shouldBe List(List("a", 1), List("b", 2))
+  }
+
+  it should "be printed from generic RDD of case classes" in {
+    DDS.start(mockedServer)
+    val rdd = sc.makeRDD(List(DummyCaseClass("a", 1), DummyCaseClass("b", 2)))
+    DDS.show(rdd)
+
+    val resultTable = mockedServer.lastServed.get.asInstanceOf[Table]
+    resultTable.head.toList shouldBe List("column1", "column2")
+    resultTable.rows.toList shouldBe List(List("a", 1), List("b", 2))
+  }
+
+  "A table" should "print only as many rows as specified" in {
+    DDS.start(mockedServer)
+    val rdd = sc.makeRDD(List(1,2,3,4,5))
+    DDS.show(rdd, 3)
+
+    val resultTable = mockedServer.lastServed.get.asInstanceOf[Table]
+    resultTable.head.toList shouldBe List("column1")
+    resultTable.rows.toList shouldBe List(List(1), List(2), List(3))
+  }
+
   "Help" should "work" in {
     DDS.help()
   }
 
 }
+
+/**
+ * Needs to be defined top level in order to have a [[scala.reflect.runtime.universe.TypeTag]].
+ */
+private [core] case class DummyCaseClass(arg1: String, arg2: Int)
