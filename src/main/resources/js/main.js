@@ -5,7 +5,7 @@ $(document).ready(function(){
 function checkForUpdate() {
 
     $.ajax({
-        url: "http://localhost:8080/chart/update",
+        url: "/chart/update",
         success: function(response) {
             if (response != "{}") {
                 document.body.innerHTML = "";
