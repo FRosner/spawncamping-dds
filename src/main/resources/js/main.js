@@ -12,8 +12,8 @@ function checkForUpdate() {
                 var servable = JSON.parse(response);
                 if (servable.type == "chart") {
                     generateSingleChart(servable.content)
-                } else if (servable.type == "stats") {
-                    generateStatsTable(servable.content)
+                } else if (servable.type == "table") {
+                    generateTable(servable.content)
                 } else {
                     console.log("Unrecognized response: " + response);
                 }
@@ -36,7 +36,7 @@ function generateSingleChart(chart) {
 
 }
 
-function generateStatsTable(stats) {
+function generateTable(stats) {
 
     function generateTableSkeleton(root, id) {
         var table = document.createElement('table');
@@ -48,7 +48,7 @@ function generateStatsTable(stats) {
         root.appendChild(table);
     }
 
-    generateTableSkeleton(document.body, "statsTable")
+    generateTableSkeleton(document.body, "table")
 
     var tableHead = d3.select("thead").selectAll("th")
         .data(d3.keys(stats[0]))

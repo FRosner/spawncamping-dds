@@ -6,6 +6,7 @@ import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.util.StatCounter
 
+import scala.reflect.runtime.universe._
 import scala.reflect.ClassTag
 
 /**
@@ -66,6 +67,7 @@ object DDS {
       resetServer()
     }
   }
+
   @Help(
     shortDescription = "Shows available commands",
     longDescription = "Shows all commands available in DDS."
@@ -84,11 +86,53 @@ object DDS {
     seriesPlot(series, ChartTypes.multiple(chartType, series.size))
   }
 
-  private def pieFromReducedGroups[K, N](reducedGroup: RDD[(K, N)])(implicit num: Numeric[N]): Unit = {
-    val groupSeries = reducedGroup.map{
-      case (key, summedValues) => Series(key.toString, List(summedValues))
-    }.collect
-    seriesPlot(groupSeries, ChartTypeEnum.Pie)
+  @Help(
+    shortDescription = "Plots a line chart",
+    longDescription = "Plots a line chart visualizing the given value sequence.",
+    parameters = "values: Seq[NumericValue]"
+  )
+  def line[N](values: Seq[N])(implicit num: Numeric[N]) = {
+    lines(List("data"), List(values))
+  }
+
+  @Help(
+    shortDescription = "Plots a line chart with multiple lines",
+    longDescription = "Plots a line chart with multiple lines. Each line corresponds to one of the value sequences " +
+      "and is labeled according to the labels specified.",
+    parameters = "labels: Seq[String], values: Seq[Seq[NumericValue]]"
+  )
+  def lines[N](labels: Seq[String], values: Seq[Seq[N]])(implicit num: Numeric[N]) = {
+    val series = labels.zip(values).map{ case (label, values) => Series(label, values) }
+    seriesPlot(series, ChartTypeEnum.Line)
+  }
+
+  @Help(
+    shortDescription = "Plots a bar chart",
+    longDescription = "Plots a bar chart visualizing the given value sequence.",
+    parameters = "values: Seq[NumericValue]"
+  )
+  def bar[N](values: Seq[N])(implicit num: Numeric[N]) = {
+    bars(List("data"), List(values))
+  }
+
+  @Help(
+    shortDescription = "Plots a bar chart with multiple bar colors",
+    longDescription = "Plots a bar chart with multiple bar colors. Each color corresponds to one of the value sequences " +
+      "and is labeled according to the labels specified.",
+    parameters = "labels: Seq[String], values: Seq[Seq[NumericValue]]"
+  )
+  def bars[N](labels: Seq[String], values: Seq[Seq[N]])(implicit num: Numeric[N]) = {
+    val series = labels.zip(values).map{ case (label, values) => Series(label, values) }
+    seriesPlot(series, ChartTypeEnum.Bar)
+  }
+
+  @Help(
+    shortDescription = "Plots a pie chart with the given value per group",
+    longDescription = "Plots a pie chart with the given value per group. The input must contain each key only once.",
+    parameters = "keyValuePairs: Iterable[(Key, NumericValue)]"
+  )
+  def pie[K, V](keyValuePairs: Iterable[(K, V)])(implicit num: Numeric[V]) = {
+    seriesPlot(keyValuePairs.map{ case (key, value) => Series(key.toString, List(value))}, ChartTypeEnum.Pie)
   }
 
   @Help(
@@ -100,7 +144,7 @@ object DDS {
   def pieGroups[K, N](groupValues: RDD[(K, Iterable[N])])
                      (reduceFunction: (N, N) => N)
                      (implicit num: Numeric[N]): Unit = {
-    pieFromReducedGroups(groupValues.map{ case (key, values) => (key, values.reduce(reduceFunction)) })
+    pie(groupValues.map{ case (key, values) => (key, values.reduce(reduceFunction)) }.collect)
   }
 
   @Help(
@@ -112,11 +156,42 @@ object DDS {
   def groupAndPie[K: ClassTag, N: ClassTag](toBeGroupedValues: RDD[(K, N)])
                                            (reduceFunction: (N, N) => N)
                                            (implicit num: Numeric[N]): Unit = {
-    pieFromReducedGroups(toBeGroupedValues.reduceByKey(reduceFunction))
+    pie(toBeGroupedValues.reduceByKey(reduceFunction).collect)
+  }
+  
+  private def table(table: Table): Unit = {
+    chartServer.map(_.serve(table))
   }
 
-  private def summarize(stats: Stats) = {
-    chartServer.map(_.serve(stats))
+  @Help(
+    shortDescription = "Displays a table",
+    longDescription = "Displays the given rows as a table using the specified head.",
+    parameters = "head: Seq[String], rows: Seq[Seq[Any]]"
+  )
+  def table(head: Seq[String], rows: Seq[Seq[Any]]): Unit = {
+    table(Table(head, rows))
+  }
+
+  @Help(
+    shortDescription = "Shows the first rows of an RDD",
+    longDescription = "Shows the first rows of an RDD. The second argument is optional and determines the sample size.",
+    parameters = "rdd: RDD[T], (optional) sampleSize: Int"
+  )
+  def show[V](rdd: RDD[V], sampleSize: Int = 20)(implicit tag: TypeTag[V]): Unit = {
+    val vType = tag.tpe
+    val sample = rdd.take(sampleSize)
+    if (sample.length == 0) {
+      println("RDD is empty!")
+    } else {
+      val result = if (vType <:< typeOf[Product]) {
+        val header = (1 to sample(0).asInstanceOf[Product].productArity).map("column" + _)
+        val rows = sample.map(product => product.asInstanceOf[Product].productIterator.toSeq).toSeq
+        Table(header, rows)
+      } else {
+        Table(List("column1"), sample.map(c => List(c)).toList)
+      }
+      table(result)
+    }
   }
 
   @Help(
@@ -126,7 +201,7 @@ object DDS {
     parameters = "values: RDD[NumericValue]"
   )
   def summarize[N](values: RDD[N])(implicit num: Numeric[N]): Unit = {
-    summarize(Stats(values.stats()))
+    table(Table.fromStatCounter(values.stats()))
   }
 
   @Help(
@@ -142,7 +217,7 @@ object DDS {
       (key.toString, stat)
     }.collect
     val (labels, stats) = statCounters.unzip
-    summarize(Stats(labels, stats))
+    table(Table.fromStatCounters(labels, stats))
   }
 
   @Help(
