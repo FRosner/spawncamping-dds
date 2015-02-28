@@ -52,14 +52,14 @@ function generateStatsTable(stats) {
 
     var tableHead = d3.select("thead").selectAll("th")
         .data(d3.keys(stats[0]))
-        .enter().append("th").text(function(key){ console.log("key: " + key); return key });
+        .enter().append("th").text(function(key){ return key });
     var tr = d3.select("tbody").selectAll("tr")
         .data(stats).enter().append("tr");
 
     var td = tr.selectAll("td")
-      .data(function(rows){ console.log("rows: " + JSON.stringify(rows)); return d3.values(rows) })
+      .data(function(rows){ return d3.values(rows) })
       .enter().append("td")
-      .text(function(value){ console.log("value: " + value); return value });
+      .text(function(value){ return value });
 
 }
 
