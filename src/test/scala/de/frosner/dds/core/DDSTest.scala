@@ -121,6 +121,13 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     (stubbedServer.serve _).verify(expectedChart)
   }
 
+  it should "serve a correct table" in {
+    DDS.start(stubbedServer)
+    DDS.table(List("c1", "c2"), List(List(5, "a"), List(3, "b")))
+
+    (stubbedServer.serve _).verify(Table(List("c1", "c2"), List(List(5, "a"), List(3, "b"))))
+  }
+
   "Correct pie chart from RDD after groupBy" should "be served when values are already grouped" in {
     DDS.start(stubbedServer)
     val groupedRdd = sc.makeRDD(List(("a", 1), ("a", 2), ("b", 3), ("c", 5))).groupBy(_._1).

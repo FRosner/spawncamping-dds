@@ -157,9 +157,18 @@ object DDS {
                                            (implicit num: Numeric[N]): Unit = {
     pie(toBeGroupedValues.reduceByKey(reduceFunction).collect)
   }
+  
+  private def table(table: Table): Unit = {
+    chartServer.map(_.serve(table))
+  }
 
-  private def summarize(stats: Table) = {
-    chartServer.map(_.serve(stats))
+  @Help(
+    shortDescription = "Displays a table",
+    longDescription = "Displays the given rows as a table using the specified head.",
+    parameters = "head: Seq[String], rows: Seq[Seq[Any]]"
+  )
+  def table(head: Seq[String], rows: Seq[Seq[Any]]): Unit = {
+    table(Table(head, rows))
   }
 
   @Help(
@@ -169,7 +178,7 @@ object DDS {
     parameters = "values: RDD[NumericValue]"
   )
   def summarize[N](values: RDD[N])(implicit num: Numeric[N]): Unit = {
-    summarize(Table.fromStatCounter(values.stats()))
+    table(Table.fromStatCounter(values.stats()))
   }
 
   @Help(
@@ -185,7 +194,7 @@ object DDS {
       (key.toString, stat)
     }.collect
     val (labels, stats) = statCounters.unzip
-    summarize(Table.fromStatCounters(labels, stats))
+    table(Table.fromStatCounters(labels, stats))
   }
 
   @Help(
