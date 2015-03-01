@@ -6,6 +6,8 @@ name          := "spawncamping-dds"
 
 scalaVersion  := "2.11.2"
 
+crossScalaVersions := Seq("2.10.4", scalaVersion.value)
+
 scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
 
 libraryDependencies ++= {
@@ -20,7 +22,7 @@ libraryDependencies ++= {
   )
 }
 
-libraryDependencies += "org.scalatest" % "scalatest_2.11" % "2.2.4" % "test"
+libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.4" % "test"
 
 libraryDependencies += "org.apache.spark" %% "spark-core" % "1.2.0" % "provided"
 
@@ -32,6 +34,6 @@ test in assembly := {}
 
 assemblyOption in assembly := (assemblyOption in assembly).value.copy(includeScala = false)
 
-assemblyJarName in assembly := name.value + "-" + version.value + ".jar"
+assemblyJarName in assembly := name.value + "-" + version.value + "_" + scalaVersion.value + ".jar"
 
 fork in Compile := true
