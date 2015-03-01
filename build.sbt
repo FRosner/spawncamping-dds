@@ -1,6 +1,6 @@
 organization  := "de.frosner"
 
-version       := "1.0.0-beta-SNAPSHOT"
+version       := "1.0.0-beta"
 
 name          := "spawncamping-dds"
 
