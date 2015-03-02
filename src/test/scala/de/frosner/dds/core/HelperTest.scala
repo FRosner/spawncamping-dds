@@ -21,7 +21,7 @@ class HelperTest extends FlatSpec with Matchers {
       shortDescription = "short help",
       longDescription = "long help"
     )
-    def help2 = ???
+    def xhelp = ???
 
     @Help(
       category = "bbb",
@@ -68,7 +68,7 @@ class HelperTest extends FlatSpec with Matchers {
         "=",
         "",
         "help(): short help",
-        "help2(): short help"
+        "xhelp(): short help"
       )
   }
 
