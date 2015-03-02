@@ -18,12 +18,14 @@ case class Helper[T](classWithHelp: Class[T]) {
       ).get.asInstanceOf[Help]
       (method.getName, helpAnnotation)
     })
-    methodsAndHelp.groupBy{ case (name, help) => help.category() }
+    methodsAndHelp.groupBy {
+      case (name, help) => help.category()
+    }.toList.sortBy {
+      case (category, methods) => category.toLowerCase
+    }
   }
 
-  def printMethods(out: PrintStream) = methods.toList.sortBy{
-    case (category, methods) => category.toLowerCase
-  }.foreach {
+  def printMethods(out: PrintStream) = methods.foreach {
     case (category, methods) => {
       out.println(s"\033[1m${category}\033[0m")
       methods.sortBy{ case (name, help) => name }.foreach {

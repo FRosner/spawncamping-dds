@@ -36,15 +36,15 @@ class HelperTest extends FlatSpec with Matchers {
   "A helper" should "offer only help for methods with the correct annotation" in {
     val testClass = new TestClass()
     val helper = Helper(testClass.getClass)
-    helper.methods.keySet shouldBe Set("a", "bbb")
+    helper.methods.toMap.keySet shouldBe Set("a", "bbb")
 
-    val (aMethodName, aMethodHelp) = helper.methods("a")(0)
+    val (aMethodName, aMethodHelp) = helper.methods(0)._2(0)
     aMethodName shouldBe "help"
     aMethodHelp.category shouldBe "a"
     aMethodHelp.shortDescription shouldBe "short help"
     aMethodHelp.longDescription shouldBe "long help"
 
-    val (bMethodName, bMethodHelp) = helper.methods("bbb")(0)
+    val (bMethodName, bMethodHelp) = helper.methods(1)._2(0)
     bMethodName shouldBe "helpWithParameters"
     bMethodHelp.category shouldBe "bbb"
     bMethodHelp.shortDescription shouldBe "sph"
