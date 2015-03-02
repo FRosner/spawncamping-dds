@@ -62,13 +62,13 @@ class HelperTest extends FlatSpec with Matchers {
         "A",
         "=",
         "",
-        "help(): short help",
-        "xhelp(): short help",
+        "- help(): short help",
+        "- xhelp(): short help",
         "",
         "BBB",
         "===",
         "",
-        "helpWithParameters(i: Int)(s: String): sph"
+        "- helpWithParameters(i: Int)(s: String): sph"
       )
   }
 

@@ -30,7 +30,7 @@ case class Helper[T](classWithHelp: Class[T]) {
       out.println()
       methods.sortBy{ case (name, help) => name }.foreach {
         case (name, help) =>
-          out.println(s"$name(${help.parameters})" +
+          out.println(s"- $name(${help.parameters})" +
             (if (help.parameters2() != "") { "(" + help.parameters2() + ")" } else "") +
             (if (help.parameters3() != "") { "(" + help.parameters3() + ")" } else "") +
             (if (help.parameters4() != "") { "(" + help.parameters4() + ")" } else "") +
