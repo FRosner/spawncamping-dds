@@ -25,9 +25,7 @@ case class Helper[T](classWithHelp: Class[T]) {
     case (category, methods) => category.toLowerCase
   }.foreach {
     case (category, methods) => {
-      out.println(category.toUpperCase)
-      out.println(List.fill(category.size)("=").mkString)
-      out.println()
+      out.println(s"\033[1m${category}\033[0m")
       methods.sortBy{ case (name, help) => name }.foreach {
         case (name, help) =>
           out.println(s"- $name(${help.parameters})" +
