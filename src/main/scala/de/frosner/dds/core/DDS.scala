@@ -35,6 +35,7 @@ object DDS {
   }
 
   @Help(
+    category = "web-ui",
     shortDescription = "Starts the DDS Web UI",
     longDescription = "Starts the DDS Web UI bound to the default interface and port. You can stop it by calling stop()."
   )
@@ -43,6 +44,7 @@ object DDS {
   }
 
   @Help(
+    category = "web-ui",
     shortDescription = "Starts the DDS Web UI bound to the given interface and port",
     longDescription = "Starts the DDS Web UI bound to the given interface and port. You can stop it by calling stop().",
     parameters = "interface: String, port: Int"
@@ -56,6 +58,7 @@ object DDS {
   }
 
   @Help(
+    category = "web-ui",
     shortDescription = "Stops the DDS Web UI",
     longDescription = "Stops the DDS Web UI. You can restart it again by calling start()."
   )
@@ -69,6 +72,7 @@ object DDS {
   }
 
   @Help(
+    category = "help",
     shortDescription = "Shows available commands",
     longDescription = "Shows all commands available in DDS."
   )
@@ -87,6 +91,7 @@ object DDS {
   }
 
   @Help(
+    category = "generic plots",
     shortDescription = "Plots a line chart",
     longDescription = "Plots a line chart visualizing the given value sequence.",
     parameters = "values: Seq[NumericValue]"
@@ -96,6 +101,7 @@ object DDS {
   }
 
   @Help(
+    category = "generic plots",
     shortDescription = "Plots a line chart with multiple lines",
     longDescription = "Plots a line chart with multiple lines. Each line corresponds to one of the value sequences " +
       "and is labeled according to the labels specified.",
@@ -107,6 +113,7 @@ object DDS {
   }
 
   @Help(
+    category = "generic plots",
     shortDescription = "Plots a bar chart",
     longDescription = "Plots a bar chart visualizing the given value sequence.",
     parameters = "values: Seq[NumericValue]"
@@ -116,6 +123,7 @@ object DDS {
   }
 
   @Help(
+    category = "generic plots",
     shortDescription = "Plots a bar chart with multiple bar colors",
     longDescription = "Plots a bar chart with multiple bar colors. Each color corresponds to one of the value sequences " +
       "and is labeled according to the labels specified.",
@@ -127,6 +135,7 @@ object DDS {
   }
 
   @Help(
+    category = "generic plots",
     shortDescription = "Plots a pie chart with the given value per group",
     longDescription = "Plots a pie chart with the given value per group. The input must contain each key only once.",
     parameters = "keyValuePairs: Iterable[(Key, NumericValue)]"
@@ -136,6 +145,7 @@ object DDS {
   }
 
   @Help(
+    category = "RDD analysis",
     shortDescription = "Plots a pie chart of the reduced values per group",
     longDescription = "Given the already grouped RDD, reduces the values in each group and compares the group using a pie chart.",
     parameters = "groupedValues: RDD[(Key, Iterable[NumericValue])]",
@@ -148,6 +158,7 @@ object DDS {
   }
 
   @Help(
+    category = "RDD analysis",
     shortDescription = "Plots a pie chart of the reduced values per group",
     longDescription = "Groups the given pair RDD, reduces the values in each group and compares the group using a pie chart.",
     parameters = "toBeGroupedValues: RDD[(Key, NumericValue)]",
@@ -164,6 +175,7 @@ object DDS {
   }
 
   @Help(
+    category = "generic plots",
     shortDescription = "Displays a table",
     longDescription = "Displays the given rows as a table using the specified head.",
     parameters = "head: Seq[String], rows: Seq[Seq[Any]]"
@@ -173,6 +185,7 @@ object DDS {
   }
 
   @Help(
+    category = "RDD analysis",
     shortDescription = "Shows the first rows of an RDD",
     longDescription = "Shows the first rows of an RDD. The second argument is optional and determines the sample size.",
     parameters = "rdd: RDD[T], (optional) sampleSize: Int"
@@ -195,6 +208,7 @@ object DDS {
   }
 
   @Help(
+    category = "RDD analysis",
     shortDescription = "Shows some basic summary statistics of the given dataset",
     longDescription = "Shows some basic summary statistics of the given dataset. " +
       "Statistics are: count, sum, min, max, mean, stdev, variance.",
@@ -205,6 +219,7 @@ object DDS {
   }
 
   @Help(
+    category = "RDD analysis",
     shortDescription = "Shows some basic summary statistics of the given groups",
     longDescription = "Shows some basic summary statistics of the given groups. " +
       "Statistics are: count, sum, min, max, mean, stdev, variance.",
@@ -221,6 +236,7 @@ object DDS {
   }
 
   @Help(
+    category = "RDD analysis",
     shortDescription = "Shows some basic summary statistics of the given groups",
     longDescription = "Shows some basic summary statistics of the given groups. " +
       "Statistics are: count, sum, min, max, mean, stdev, variance.",
