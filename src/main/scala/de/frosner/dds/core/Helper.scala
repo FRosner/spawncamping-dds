@@ -22,13 +22,17 @@ case class Helper[T](classWithHelp: Class[T]) {
       case (name, help) => help.category()
     }.toList.sortBy {
       case (category, methods) => category.toLowerCase
+    }.map {
+      case (category, methods) => (category, methods.sortBy {
+        case (name, help) => name
+      })
     }
   }
 
   def printMethods(out: PrintStream) = methods.foreach {
     case (category, methods) => {
       out.println(s"\033[1m${category}\033[0m")
-      methods.sortBy{ case (name, help) => name }.foreach {
+      methods.foreach {
         case (name, help) =>
           out.println(s"- $name(${help.parameters})" +
             (if (help.parameters2() != "") { "(" + help.parameters2() + ")" } else "") +
