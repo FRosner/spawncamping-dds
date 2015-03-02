@@ -59,16 +59,16 @@ class HelperTest extends FlatSpec with Matchers {
     val helper = Helper(new TestClass().getClass)
     helper.printMethods(out)
     result.toString.split("\n") shouldBe Array(
-        "BBB",
-        "===",
-        "",
-        "helpWithParameters(i: Int)(s: String): sph",
-        "",
         "A",
         "=",
         "",
         "help(): short help",
-        "xhelp(): short help"
+        "xhelp(): short help",
+        "",
+        "BBB",
+        "===",
+        "",
+        "helpWithParameters(i: Int)(s: String): sph"
       )
   }
 

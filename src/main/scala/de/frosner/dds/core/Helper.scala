@@ -21,7 +21,9 @@ case class Helper[T](classWithHelp: Class[T]) {
     methodsAndHelp.groupBy{ case (name, help) => help.category() }
   }
 
-  def printMethods(out: PrintStream) = methods.foreach {
+  def printMethods(out: PrintStream) = methods.toList.sortBy{
+    case (category, methods) => category.toLowerCase
+  }.foreach {
     case (category, methods) => {
       out.println(category.toUpperCase)
       out.println(List.fill(category.size)("=").mkString)
