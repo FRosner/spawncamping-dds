@@ -207,7 +207,10 @@ object DDS {
       println("RDD is empty!")
     } else {
       val result = if (vType <:< typeOf[Product]) {
-        val header = (1 to sample(0).asInstanceOf[Product].productArity).map("column" + _)
+        def getMembers[T: TypeTag] = typeOf[T].members.sorted.collect {
+          case m: MethodSymbol if m.isCaseAccessor => m
+        }.toList
+        val header = getMembers[V].map(_.name.toString.replace("_", ""))
         val rows = sample.map(product => product.asInstanceOf[Product].productIterator.toSeq).toSeq
         Table(header, rows)
       } else {

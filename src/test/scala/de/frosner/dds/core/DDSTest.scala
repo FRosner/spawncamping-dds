@@ -213,7 +213,7 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     DDS.show(rdd)
 
     val resultTable = mockedServer.lastServed.get.asInstanceOf[Table]
-    resultTable.head.toList shouldBe List("column1", "column2")
+    resultTable.head.toList shouldBe List("1", "2")
     resultTable.rows.toList shouldBe List(List("a", 1), List("b", 2))
   }
 
@@ -223,7 +223,7 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     DDS.show(rdd)
 
     val resultTable = mockedServer.lastServed.get.asInstanceOf[Table]
-    resultTable.head.toList shouldBe List("column1", "column2")
+    resultTable.head.toList shouldBe List("arg1", "arg2")
     resultTable.rows.toList shouldBe List(List("a", 1), List("b", 2))
   }
 
