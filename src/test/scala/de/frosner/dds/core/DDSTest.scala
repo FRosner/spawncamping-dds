@@ -239,6 +239,7 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
 
   "Help" should "work" in {
     DDS.help()
+    DDS.help("start")
   }
 
 }

@@ -57,7 +57,7 @@ class HelperTest extends FlatSpec with Matchers {
     val result = new ByteArrayOutputStream()
     val out = new PrintStream(result)
     val helper = Helper(new TestClass().getClass)
-    helper.printMethods(out)
+    helper.printAllMethods(out)
     result.toString.split("\n") shouldBe Array(
         s"\033[1ma\033[0m",
         "- help(): short help",
@@ -67,5 +67,47 @@ class HelperTest extends FlatSpec with Matchers {
         "- helpWithParameters(i: Int)(s: String): sph"
       )
   }
+
+  it should "print the long description if a method help is requested" in {
+    val result = new ByteArrayOutputStream()
+    val out = new PrintStream(result)
+    val helper = Helper(new TestClass().getClass)
+    helper.printMethods("help", out)
+    result.toString.split("\n") shouldBe Array(
+        s"\033[1mhelp()\033[0m",
+        "long help"
+      )
+  }
+
+  it should "print help for multiple methods if there are multiple methods with the same name but different parameters" in {
+    class TestClass2 {
+      @Help(
+        category = "category",
+        shortDescription = "without parameters",
+        longDescription = "method without parameters"
+      )
+      def method = ???
+      @Help(
+        category = "category",
+        shortDescription = "with parameters",
+        longDescription = "method with one parameter",
+        parameters = "s: String"
+      )
+      def method(s: String) = ???
+    }
+
+    val result = new ByteArrayOutputStream()
+    val out = new PrintStream(result)
+    val helper = Helper(new TestClass2().getClass)
+    helper.printMethods("method", out)
+    result.toString.split("\n") shouldBe Array(
+      s"\033[1mmethod()\033[0m",
+      "method without parameters",
+      "",
+      s"\033[1mmethod(s: String)\033[0m",
+      "method with one parameter"
+    )
+  }
+
 
 }

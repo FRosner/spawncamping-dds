@@ -77,7 +77,17 @@ object DDS {
     longDescription = "Shows all commands available in DDS."
   )
   def help() = {
-    helper.printMethods(System.out)
+    helper.printAllMethods(System.out)
+  }
+
+  @Help(
+    category = "Help",
+    shortDescription = "Explains given command",
+    longDescription = "Explains the given command.",
+    parameters = "commandName: String"
+  )
+  def help(methodName: String) = {
+    helper.printMethods(methodName, System.out)
   }
 
   private def seriesPlot[N](series: Iterable[Series[N]], chartTypes: ChartTypes)(implicit num: Numeric[N]): Unit = {
