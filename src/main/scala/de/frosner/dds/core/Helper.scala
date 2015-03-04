@@ -8,7 +8,7 @@ case class Helper[T](classWithHelp: Class[T]) {
   type ShortDescription = String
   type LongDescription = String
 
-  val methods = {
+  private[core] val methods = {
     val methodsThatOfferHelp = classWithHelp.getMethods.filter(method => method.getAnnotations.exists(
       annotation => annotation.isInstanceOf[Help]
     ))
