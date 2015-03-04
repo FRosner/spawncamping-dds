@@ -10,6 +10,9 @@ import scala.reflect.runtime.universe._
 import scala.reflect.ClassTag
 
 /**
+ * Main object containing the core commands that can be executed from the Spark shell. It holds a mutable reference
+ * to a [[Server]] which is used to communicate the results to the web front-end.
+ * 
  * Hacks applied here:
  *
  * - ClassTags are needed for conversion to PairRDD
@@ -259,6 +262,9 @@ object DDS {
     summarizeGroups(toBeGroupedValues.groupByKey())
   }
 
+  /**
+   * Just a way to quickly have a JS playground.
+   */
   def main(args: Array[String]): Unit = {
     start()
   }
