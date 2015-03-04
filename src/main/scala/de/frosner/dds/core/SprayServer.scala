@@ -11,11 +11,11 @@ import spray.routing.SimpleRoutingApp
 
 import scala.concurrent.duration._
 
-case class SprayChartServer(name: String,
+case class SprayServer(name: String,
                             launchBrowser: Boolean,
-                            interface: String = SprayChartServer.DEFAULT_INTERFACE,
-                            port: Int = SprayChartServer.DEFAULT_PORT)
-  extends SimpleRoutingApp with ChartServer {
+                            interface: String = SprayServer.DEFAULT_INTERFACE,
+                            port: Int = SprayServer.DEFAULT_PORT)
+  extends SimpleRoutingApp with Server {
 
   private var servable: Option[Servable] = Option.empty
 
@@ -59,13 +59,13 @@ case class SprayChartServer(name: String,
 
 }
 
-object SprayChartServer {
+object SprayServer {
 
   val DEFAULT_INTERFACE = "localhost"
   val DEFAULT_PORT = 8080
 
-  def apply(name: String): SprayChartServer = SprayChartServer(name, true)
+  def apply(name: String): SprayServer = SprayServer(name, true)
 
-  def withoutLaunchingBrowser(name: String) = SprayChartServer(name, false)
+  def withoutLaunchingBrowser(name: String) = SprayServer(name, false)
 
 }

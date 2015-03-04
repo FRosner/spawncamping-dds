@@ -1,6 +1,6 @@
 package de.frosner.dds.core
 
-trait ChartServer {
+trait Server {
 
   def start()
 
