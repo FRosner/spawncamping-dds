@@ -3,6 +3,14 @@ package de.frosner.dds.chart
 import de.frosner.dds.chart.ChartTypeEnum.ChartType
 import spray.json.{JsNumber, JsString, JsArray, JsObject}
 
+/**
+ * Representation of sequential data points. A [[SeriesData]] object can contain several sequences / series. The type
+ * at position x corresponds to the sequence at the same position.
+ *
+ * @param series of data
+ * @param types of charts (how to plot the corresponding series)
+ * @tparam N type of the data points
+ */
 case class SeriesData[N](series: Iterable[Series[N]], types: ChartTypes) extends Data {
 
   override def toJson: JsObject = {

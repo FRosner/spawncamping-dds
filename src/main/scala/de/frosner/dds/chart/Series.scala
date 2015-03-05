@@ -2,6 +2,14 @@ package de.frosner.dds.chart
 
 import spray.json.{JsString, JsNumber, JsArray}
 
+/**
+ * Class representing a single series of numeric data points and a corresponding label.
+ *
+ * @param label of the series
+ * @param values of the series (numeric)
+ * @param num implicit conversion from the values to numeric values
+ * @tparam N type of the values
+ */
 case class Series[N](label: String, values: Iterable[N])(implicit num: Numeric[N]) {
 
   def toJson: JsArray = {

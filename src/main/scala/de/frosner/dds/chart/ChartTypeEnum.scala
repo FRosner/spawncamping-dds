@@ -1,5 +1,8 @@
 package de.frosner.dds.chart
 
+/**
+ * Constants representing the types of C3 charts available.
+ */
 object ChartTypeEnum extends Enumeration {
 
   type ChartType = Value

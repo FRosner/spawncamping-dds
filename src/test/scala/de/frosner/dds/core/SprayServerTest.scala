@@ -3,21 +3,21 @@ package de.frosner.dds.core
 import de.frosner.dds.chart.{Chart, DummyData, Table}
 import org.apache.spark.util.StatCounter
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
-import de.frosner.dds.core.SprayChartServer._
+import de.frosner.dds.core.SprayServer._
 
 import scala.io.Source
 import scalaj.http.Http
 
-class SprayChartServerTest extends FlatSpec with Matchers with BeforeAndAfter{
+class SprayServerTest extends FlatSpec with Matchers with BeforeAndAfter{
 
   private val waitTime = 2000
   private var testNumber = 0
-  private var chartServer: SprayChartServer = _
+  private var chartServer: SprayServer = _
   private val hostName = Source.fromInputStream(Runtime.getRuntime().exec("hostname").getInputStream).mkString.trim
 
   before {
     Thread.sleep(waitTime)
-    chartServer = SprayChartServer.withoutLaunchingBrowser("server-" + testNumber)
+    chartServer = SprayServer.withoutLaunchingBrowser("server-" + testNumber)
     testNumber += 1
     chartServer.start()
     Thread.sleep(waitTime)
@@ -36,7 +36,7 @@ class SprayChartServerTest extends FlatSpec with Matchers with BeforeAndAfter{
   it should "be available on the given interface and port as specified" in {
     assume(hostName != "", "Hostname could not be found. This test requires the 'hostname' command to be present.")
     val port = 25331
-    val customServer = SprayChartServer(
+    val customServer = SprayServer(
       "custom-server-" + testNumber, interface = hostName, port = port, launchBrowser = false
     )
     customServer.start()

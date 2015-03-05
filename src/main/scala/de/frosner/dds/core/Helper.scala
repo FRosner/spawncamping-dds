@@ -2,13 +2,21 @@ package de.frosner.dds.core
 
 import java.io._
 
+/**
+ * Utility class to provide interactive help for methods of a given class. It scans the class method definitions for
+ * the ones that contain a [[Help]] annotation. Use it to print a list of methods with help available or to print
+ * a longer description for individual methods.
+ *
+ * @param classWithHelp to scan for [[Help]] annotations
+ * @tparam T type of the class
+ */
 case class Helper[T](classWithHelp: Class[T]) {
 
   type Name = String
   type ShortDescription = String
   type LongDescription = String
 
-  val methods = {
+  private[core] val methods = {
     val methodsThatOfferHelp = classWithHelp.getMethods.filter(method => method.getAnnotations.exists(
       annotation => annotation.isInstanceOf[Help]
     ))
@@ -29,6 +37,11 @@ case class Helper[T](classWithHelp: Class[T]) {
     }
   }
 
+  /**
+   * Prints all methods that offer help (have the [[Help]] annotation) to the given [[PrintStream]].
+   *
+   * @param out to print method overview to
+   */
   def printAllMethods(out: PrintStream) = methods.foreach {
     case (category, methods) => {
       out.println(s"\033[1m${category}\033[0m")
@@ -53,6 +66,12 @@ case class Helper[T](classWithHelp: Class[T]) {
       (if (help.parameters9() != "") { "(" + help.parameters9 + ")" } else "")
   }
 
+  /**
+   * Prints the long description of all methods having the given name to the specified [[PrintStream]].
+   *
+   * @param methodName to print help for
+   * @param out to print help to
+   */
   def printMethods(methodName: String, out: PrintStream) = {
     val methodsToPrint = methods.flatMap {
       case (category, methods) => methods.filter {

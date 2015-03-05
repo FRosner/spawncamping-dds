@@ -9,14 +9,14 @@ import org.scalatest._
 
 class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfterEach with BeforeAndAfterAll {
   
-  class MockedServer extends ChartServer {
+  class MockedServer extends Server {
     var lastServed: Option[Servable] = Option.empty
     override def start(): Unit = {}
     override def stop(): Unit = {}
     override def serve(servable: Servable): Unit = lastServed = Option(servable)
   }
 
-  private var stubbedServer: ChartServer = _
+  private var stubbedServer: Server = _
   private var mockedServer: MockedServer = _
   private val sc: SparkContext = new SparkContext("local", this.getClass.toString)
 
@@ -25,7 +25,7 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
   }
 
   override def beforeEach() {
-    stubbedServer = stub[ChartServer]
+    stubbedServer = stub[Server]
     mockedServer = new MockedServer()
   }
 

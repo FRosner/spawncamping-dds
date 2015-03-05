@@ -10,6 +10,9 @@ import scala.reflect.runtime.universe._
 import scala.reflect.ClassTag
 
 /**
+ * Main object containing the core commands that can be executed from the Spark shell. It holds a mutable reference
+ * to a [[Server]] which is used to communicate the results to the web front-end.
+ * 
  * Hacks applied here:
  *
  * - ClassTags are needed for conversion to PairRDD
@@ -19,18 +22,18 @@ object DDS {
 
   private val helper = Helper(this.getClass)
 
-  private var chart: Option[Servable] = Option.empty
+  private var servable: Option[Servable] = Option.empty
 
-  private var chartServer: Option[ChartServer] = Option.empty
+  private var server: Option[Server] = Option.empty
   private var serverNumber = 1
 
-  private[core] def start(server: ChartServer): Unit = {
-    if (chartServer.isDefined) {
+  private[core] def start(server: Server): Unit = {
+    if (this.server.isDefined) {
       println("Server already started! Type 'help()' to see a list of available commands.")
     } else {
-      chartServer = Option(server)
+      this.server = Option(server)
       serverNumber += 1
-      chartServer.map(_.start())
+      this.server.map(_.start())
     }
   }
 
@@ -40,7 +43,7 @@ object DDS {
     longDescription = "Starts the DDS Web UI bound to the default interface and port. You can stop it by calling stop()."
   )
   def start(): Unit = {
-    start(SprayChartServer("dds-" + serverNumber))
+    start(SprayServer("dds-" + serverNumber))
   }
 
   @Help(
@@ -50,11 +53,11 @@ object DDS {
     parameters = "interface: String, port: Int"
   )
   def start(interface: String, port: Int): Unit = {
-    start(SprayChartServer("dds-" + serverNumber, interface = interface, port = port, launchBrowser = true))
+    start(SprayServer("dds-" + serverNumber, interface = interface, port = port, launchBrowser = true))
   }
 
   private[core] def resetServer() = {
-    chartServer = Option.empty
+    server = Option.empty
   }
 
   @Help(
@@ -63,10 +66,10 @@ object DDS {
     longDescription = "Stops the DDS Web UI. You can restart it again by calling start()."
   )
   def stop() = {
-    if (!chartServer.isDefined) {
+    if (!server.isDefined) {
       println("No server there to stop! Type 'start()' to start one.")
     } else {
-      chartServer.map(_.stop())
+      server.map(_.stop())
       resetServer()
     }
   }
@@ -93,7 +96,7 @@ object DDS {
   private def seriesPlot[N](series: Iterable[Series[N]], chartTypes: ChartTypes)(implicit num: Numeric[N]): Unit = {
     require(series.size == chartTypes.types.size)
     val chart = Chart(SeriesData(series, chartTypes))
-    chartServer.map(_.serve(chart))
+    server.map(_.serve(chart))
   }
 
   private def seriesPlot[N](series: Iterable[Series[N]], chartType: ChartType)(implicit num: Numeric[N]): Unit = {
@@ -181,7 +184,7 @@ object DDS {
   }
   
   private def table(table: Table): Unit = {
-    chartServer.map(_.serve(table))
+    server.map(_.serve(table))
   }
 
   @Help(
@@ -259,6 +262,9 @@ object DDS {
     summarizeGroups(toBeGroupedValues.groupByKey())
   }
 
+  /**
+   * Just a way to quickly have a JS playground.
+   */
   def main(args: Array[String]): Unit = {
     start()
   }
