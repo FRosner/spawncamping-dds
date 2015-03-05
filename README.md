@@ -60,3 +60,12 @@ All (most of the) code committed should be covered by some automated unit tests.
 ### Licensing
 
 This project is licensed under the Apache License Version 2.0. For details please see the file called LICENSE.
+
+### Included Libraries
+
+| Library       | License        |
+| ------------  | -------------- |
+| [spray](http://spray.io/project-info/current-versions/) | Apache 2 |
+| [D3.js](http://d3js.org/) | Custom |
+| [C3.js](http://c3js.org/) | MIT |
+| [jQuery](http://jquery.com/) | Custom (MITish) |
