@@ -12,9 +12,9 @@ import spray.routing.SimpleRoutingApp
 import scala.concurrent.duration._
 
 case class SprayServer(name: String,
-                            launchBrowser: Boolean,
-                            interface: String = SprayServer.DEFAULT_INTERFACE,
-                            port: Int = SprayServer.DEFAULT_PORT)
+                       launchBrowser: Boolean,
+                       interface: String = SprayServer.DEFAULT_INTERFACE,
+                       port: Int = SprayServer.DEFAULT_PORT)
   extends SimpleRoutingApp with Server {
 
   private var servable: Option[Servable] = Option.empty
