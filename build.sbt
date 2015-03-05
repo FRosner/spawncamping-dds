@@ -11,14 +11,12 @@ crossScalaVersions := Seq("2.10.4", scalaVersion.value)
 scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
 
 libraryDependencies ++= {
-  val akkaV = "2.3.6"
   val sprayV = "1.3.2"
   Seq(
     "io.spray"            %%  "spray-can"     % sprayV,
     "io.spray"            %%  "spray-routing" % sprayV,
     "io.spray"            %%  "spray-caching" % sprayV,
-    "io.spray"            %%  "spray-json"    % "1.3.1",
-    "com.typesafe.akka"   %%  "akka-actor"    % akkaV
+    "io.spray"            %%  "spray-json"    % "1.3.1"
   )
 }
 
