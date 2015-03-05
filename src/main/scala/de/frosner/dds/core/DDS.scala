@@ -271,13 +271,6 @@ object DDS {
     summarizeGroups(toBeGroupedValues.groupByKey())
   }
 
-  /**
-   * Just a way to quickly have a JS playground.
-   */
-  def main(args: Array[String]): Unit = {
-    start()
-  }
-
 }
 
 
