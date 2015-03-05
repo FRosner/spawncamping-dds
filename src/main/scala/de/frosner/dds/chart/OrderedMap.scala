@@ -1,5 +1,13 @@
 package de.frosner.dds.chart
 
+/**
+ * Map implementation that returns an iterator respecting the sequence of the input values. It is used to ensure the
+ * ordering of the JSON object keys sent to the front-end, so that D3 displays them in the desired order.
+ *
+ * @param entries of the map
+ * @tparam A key type
+ * @tparam B value type
+ */
 case class OrderedMap[A, B](entries: Seq[(A, B)]) extends Map[A, B] {
   lazy val entriesMap = entries.toMap
 
