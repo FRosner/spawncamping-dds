@@ -11,6 +11,15 @@ import spray.routing.SimpleRoutingApp
 
 import scala.concurrent.duration._
 
+/**
+ * [[Server]] based on spray-can HTTP server. If multiple servers shall be used, they need to have different names.
+ *
+ * @param name of the server
+ * @param launchBrowser indicating whether a browser window pointing to the web UI should be launched
+ *                      when the server is started
+ * @param interface to bind the server to
+ * @param port to bind the server to
+ */
 case class SprayServer(name: String,
                        launchBrowser: Boolean,
                        interface: String = SprayServer.DEFAULT_INTERFACE,
@@ -64,8 +73,20 @@ object SprayServer {
   val DEFAULT_INTERFACE = "localhost"
   val DEFAULT_PORT = 8080
 
+  /**
+   * Create a server instance bound to default port and interface, and open a browser window once the server is started.
+   *
+   * @param name of the server
+   * @return A server bound to default port and interface.
+   */
   def apply(name: String): SprayServer = SprayServer(name, true)
 
+  /**
+   * Create a server instance bound to default port and interface, without opening a browser window.
+   *
+   * @param name of the server
+   * @return A server bound to default port and interface.
+   */
   def withoutLaunchingBrowser(name: String) = SprayServer(name, false)
 
 }
