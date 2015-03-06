@@ -14,7 +14,6 @@ object Index {
         <script src="/lib/jquery.js"></script>
       </head>
       <body>
-        <div id={Chart.id}></div>
         <script src="/app/main.js"></script>
       </body>
     </html>
