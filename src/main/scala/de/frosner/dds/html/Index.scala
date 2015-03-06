@@ -1,7 +1,5 @@
 package de.frosner.dds.html
 
-import de.frosner.dds.servables.c3.Chart
-
 object Index {
 
   val html =
@@ -14,6 +12,7 @@ object Index {
         <script src="/lib/jquery.js"></script>
       </head>
       <body>
+        <object data="/img/watermark.svg" type="image/svg+xml" id={Watermark.id} style="display: block; width: 50%; margin: 0 auto;"></object>
         <script src="/app/main.js"></script>
       </body>
     </html>

@@ -4,9 +4,13 @@ import java.awt.Desktop
 import java.net.URI
 
 import akka.actor.ActorSystem
-import de.frosner.dds.html.Index
+import de.frosner.dds.core.SprayServer._
+import de.frosner.dds.html.{Watermark, Index}
 import de.frosner.dds.js.{C3, D3, JQuery, Main}
 import de.frosner.dds.servables.tabular.Table
+import spray.http.HttpHeaders.`Content-Type`
+import spray.http.{ContentType, HttpCharsets, MediaTypes}
+import spray.http.MediaTypes._
 import spray.routing.SimpleRoutingApp
 
 import scala.concurrent.duration._
@@ -35,18 +39,57 @@ case class SprayServer(name: String,
   def start() = {
     println(s"""Starting server on $interface:$port""")
     val server = startServer(interface, port, actorName) {
-      path(""){                  get{ complete{ Index.html } } } ~
-      path("lib" / "d3.js"){     get{ complete{ D3.js } } } ~
-      path("lib" / "c3.js"){     get{ complete{ C3.js } } } ~
-      path("css" / "c3.css"){    get{ complete{ C3.css } } } ~
-      path("css" / "table.css"){ get{ complete{ Table.css } } } ~
-      path("lib" / "jquery.js"){ get{ complete{ JQuery.js } } } ~
-      path("app" / "main.js"){   get{ complete{ Main.js } } } ~
-      path("chart" / "update"){  get{ complete{
-        val response = servable.map(_.toJsonString).getOrElse("{}")
-        servable = Option.empty
-        response
-      } } }
+      path("") {
+        get {
+          complete{ Index.html }
+        }
+      } ~
+      path("img" / "watermark.svg"){
+        get {
+          respondWithMediaType(`image/svg+xml`) {
+            complete{ Watermark.svg }
+          }
+        }
+      } ~
+      path("lib" / "d3.js") {
+        get {
+          complete{ D3.js }
+        }
+      } ~
+      path("lib" / "c3.js") {
+        get {
+          complete{ C3.js }
+        }
+      } ~
+      path("css" / "c3.css") {
+        get {
+          complete{ C3.css }
+        }
+      } ~
+      path("css" / "table.css") {
+        get {
+          complete{ Table.css }
+        }
+      } ~
+      path("lib" / "jquery.js") {
+        get {
+          complete{ JQuery.js }
+        }
+      } ~
+      path("app" / "main.js") {
+        get {
+          complete{ Main.js }
+        }
+      } ~
+      path("chart" / "update") {
+        get {
+          complete {
+            val response = servable.map(_.toJsonString).getOrElse("{}")
+            servable = Option.empty
+            response
+          }
+        }
+      }
     }
 
     Thread.sleep(1000)
@@ -69,6 +112,8 @@ case class SprayServer(name: String,
 }
 
 object SprayServer {
+
+//  val `image/svg+xml` = ContentType(MediaTypes.`image/svg+xml`, HttpCharsets.`UTF-8`)
 
   val DEFAULT_INTERFACE = "localhost"
   val DEFAULT_PORT = 8080
