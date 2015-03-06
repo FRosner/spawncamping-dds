@@ -58,6 +58,10 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     (stubbedServer.stop _).verify().once()
   }
 
+  it should "print an error message when a chart is served without the server being started" in {
+    DDS.line(List(1,2,3))
+  }
+
   "Generic plot functions" should "serve correct pie chart" in {
     DDS.start(stubbedServer)
     DDS.pie(List(

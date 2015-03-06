@@ -94,10 +94,18 @@ object DDS {
     helper.printMethods(methodName, System.out)
   }
 
+  private def serve(servable: Servable) = {
+    if (server.isDefined) {
+      server.get.serve(servable)
+    } else {
+      println("Front-end not started. Type 'start()' to start the web-UI.")
+    }
+  }
+
   private def seriesPlot[N](series: Iterable[Series[N]], chartTypes: ChartTypes)(implicit num: Numeric[N]): Unit = {
     require(series.size == chartTypes.types.size)
     val chart = Chart(SeriesData(series, chartTypes))
-    server.map(_.serve(chart))
+    serve(chart)
   }
 
   private def seriesPlot[N](series: Iterable[Series[N]], chartType: ChartType)(implicit num: Numeric[N]): Unit = {
@@ -185,7 +193,7 @@ object DDS {
   }
   
   private def table(table: Table): Unit = {
-    server.map(_.serve(table))
+    serve(table)
   }
 
   @Help(
