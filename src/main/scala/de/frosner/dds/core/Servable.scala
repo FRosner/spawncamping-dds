@@ -1,6 +1,6 @@
 package de.frosner.dds.core
 
-import spray.json.{JsString, JsValue, JsObject}
+import spray.json.{JsObject, JsString, JsValue}
 
 /**
  * Object that can be served to a [[Server]]. It needs to have a content that can be transformed to JSON and a type

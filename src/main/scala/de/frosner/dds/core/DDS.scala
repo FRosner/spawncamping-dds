@@ -1,13 +1,14 @@
 package de.frosner.dds.core
 
-import de.frosner.dds.chart.ChartTypeEnum.ChartType
-import de.frosner.dds.chart._
+import de.frosner.dds.servables.c3.ChartTypeEnum.ChartType
+import de.frosner.dds.servables.c3._
+import de.frosner.dds.servables.tabular.Table
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.util.StatCounter
 
-import scala.reflect.runtime.universe._
 import scala.reflect.ClassTag
+import scala.reflect.runtime.universe._
 
 /**
  * Main object containing the core commands that can be executed from the Spark shell. It holds a mutable reference

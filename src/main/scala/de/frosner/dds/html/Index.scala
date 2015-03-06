@@ -1,6 +1,6 @@
 package de.frosner.dds.html
 
-import de.frosner.dds.chart.Chart
+import de.frosner.dds.servables.c3.Chart
 
 object Index {
 

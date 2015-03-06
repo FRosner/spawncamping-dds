@@ -1,6 +1,7 @@
 package de.frosner.dds.core
 
-import de.frosner.dds.chart._
+import de.frosner.dds.servables.c3._
+import de.frosner.dds.servables.tabular.Table
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.util.StatCounter

@@ -1,9 +1,10 @@
 package de.frosner.dds.core
 
-import de.frosner.dds.chart.{Chart, DummyData, Table}
+import de.frosner.dds.core.SprayServer._
+import de.frosner.dds.servables.c3.{Chart, DummyData}
+import de.frosner.dds.servables.tabular.Table
 import org.apache.spark.util.StatCounter
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
-import de.frosner.dds.core.SprayServer._
 
 import scala.io.Source
 import scalaj.http.Http

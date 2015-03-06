@@ -1,6 +1,6 @@
-package de.frosner.dds.chart
+package de.frosner.dds.servables.c3
 
-import spray.json.{JsString, JsNumber, JsArray}
+import spray.json.{JsArray, JsNumber, JsString}
 
 /**
  * Class representing a single series of numeric data points and a corresponding label.

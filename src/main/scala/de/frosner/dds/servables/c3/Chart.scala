@@ -1,4 +1,4 @@
-package de.frosner.dds.chart
+package de.frosner.dds.servables.c3
 
 import de.frosner.dds.core.Servable
 import spray.json._

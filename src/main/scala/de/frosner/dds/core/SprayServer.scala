@@ -4,9 +4,9 @@ import java.awt.Desktop
 import java.net.URI
 
 import akka.actor.ActorSystem
-import de.frosner.dds.chart.Table
 import de.frosner.dds.html.Index
 import de.frosner.dds.js.{C3, D3, JQuery, Main}
+import de.frosner.dds.servables.tabular.Table
 import spray.routing.SimpleRoutingApp
 
 import scala.concurrent.duration._

@@ -1,4 +1,4 @@
-package de.frosner.dds.chart
+package de.frosner.dds.servables.tabular
 
 import de.frosner.dds.core.Servable
 import de.frosner.dds.util.StringResource

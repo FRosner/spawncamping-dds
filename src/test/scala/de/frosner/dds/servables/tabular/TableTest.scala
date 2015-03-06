@@ -1,7 +1,7 @@
-package de.frosner.dds.chart
+package de.frosner.dds.servables.tabular
 
 import org.apache.spark.util.StatCounter
-import org.scalatest.{Matchers, FlatSpec}
+import org.scalatest.{FlatSpec, Matchers}
 import spray.json._
 
 class TableTest extends FlatSpec with Matchers {

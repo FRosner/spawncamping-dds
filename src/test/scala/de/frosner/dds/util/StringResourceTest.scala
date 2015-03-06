@@ -1,6 +1,6 @@
 package de.frosner.dds.util
 
-import org.scalatest.{Matchers, FlatSpec}
+import org.scalatest.{FlatSpec, Matchers}
 
 class StringResourceTest extends FlatSpec with Matchers {
 

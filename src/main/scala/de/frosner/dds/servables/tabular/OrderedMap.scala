@@ -1,4 +1,4 @@
-package de.frosner.dds.chart
+package de.frosner.dds.servables.tabular
 
 /**
  * Map implementation that returns an iterator respecting the sequence of the input values. It is used to ensure the
