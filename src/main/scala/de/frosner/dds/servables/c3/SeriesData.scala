@@ -1,7 +1,7 @@
-package de.frosner.dds.chart
+package de.frosner.dds.servables.c3
 
-import de.frosner.dds.chart.ChartTypeEnum.ChartType
-import spray.json.{JsNumber, JsString, JsArray, JsObject}
+import de.frosner.dds.servables.c3.ChartTypeEnum.ChartType
+import spray.json.{JsArray, JsObject}
 
 /**
  * Representation of sequential data points. A [[SeriesData]] object can contain several sequences / series. The type

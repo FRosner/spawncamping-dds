@@ -1,7 +1,7 @@
-package de.frosner.dds.chart
+package de.frosner.dds.servables.c3
 
-import org.scalatest.{Matchers, FlatSpec}
-import spray.json.{JsNumber, JsString, JsArray}
+import org.scalatest.{FlatSpec, Matchers}
+import spray.json.{JsArray, JsNumber, JsString}
 
 class SeriesTest extends FlatSpec with Matchers {
 

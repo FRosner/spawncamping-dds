@@ -1,4 +1,4 @@
-package de.frosner.dds.chart
+package de.frosner.dds.servables.c3
 
 /**
  * Constants representing the types of C3 charts available.

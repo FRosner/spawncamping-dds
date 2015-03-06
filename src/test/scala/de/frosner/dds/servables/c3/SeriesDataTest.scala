@@ -1,4 +1,4 @@
-package de.frosner.dds.chart
+package de.frosner.dds.servables.c3
 
 import org.scalatest._
 import spray.json.{JsArray, JsObject}

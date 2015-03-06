@@ -1,6 +1,6 @@
-package de.frosner.dds.chart
+package de.frosner.dds.servables.c3
 
-import de.frosner.dds.chart.ChartTypeEnum.ChartType
+import de.frosner.dds.servables.c3.ChartTypeEnum.ChartType
 import spray.json.{JsObject, JsString}
 
 /**
