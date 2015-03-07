@@ -1,0 +1,566 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   id="svg2"
+   sodipodi:docname="watermark.svg"
+   sodipodi:modified="true"
+   viewBox="0 0 129.42404 98.151889"
+   sodipodi:version="0.32"
+   version="1.0"
+   inkscape:output_extension="org.inkscape.output.svg.inkscape"
+   inkscape:version="0.91 r13725"
+   width="129.42404"
+   height="98.151886">
+  <sodipodi:namedview
+     id="base"
+     bordercolor="#666666"
+     inkscape:pageshadow="2"
+     inkscape:window-y="0"
+     guidetolerance="16.5"
+     pagecolor="#ffffff"
+     inkscape:window-height="755"
+     inkscape:zoom="2.8310802"
+     inkscape:window-x="0"
+     borderopacity="1.0"
+     inkscape:current-layer="layer1"
+     inkscape:cx="-12.064133"
+     inkscape:cy="85.987733"
+     showguides="true"
+     inkscape:guide-bbox="true"
+     inkscape:guide-points="false"
+     inkscape:window-width="1280"
+     inkscape:pageopacity="0.0"
+     inkscape:document-units="px"
+     showgrid="false"
+     inkscape:window-maximized="0"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0" />
+  <defs
+     id="defs4">
+    <linearGradient
+       id="linearGradient8460">
+      <stop
+         id="stop8462"
+         style="stop-color:#4d4d4d"
+         offset="0" />
+      <stop
+         id="stop8464"
+         style="stop-color:#efefef"
+         offset="1" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient7209">
+      <stop
+         id="stop7211"
+         style="stop-color:#eeeeee"
+         offset="0" />
+      <stop
+         id="stop7213"
+         style="stop-color:#474747"
+         offset=".5" />
+      <stop
+         id="stop7215"
+         style="stop-color:#434343"
+         offset=".75" />
+      <stop
+         id="stop7217"
+         style="stop-color:#999999"
+         offset=".875" />
+      <stop
+         id="stop7219"
+         style="stop-color:#3f3f3f"
+         offset="1" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient4248">
+      <stop
+         id="stop4250"
+         style="stop-color:#ffffff"
+         offset="0" />
+      <stop
+         id="stop4252"
+         style="stop-color:#4d4d4d"
+         offset="1" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient5355">
+      <stop
+         id="stop5357"
+         style="stop-color:#3f3f3f"
+         offset="0" />
+      <stop
+         id="stop5373"
+         style="stop-color:#929292"
+         offset=".0625" />
+      <stop
+         id="stop5371"
+         style="stop-color:#434343"
+         offset=".125" />
+      <stop
+         id="stop5369"
+         style="stop-color:#c3c3c3"
+         offset=".25" />
+      <stop
+         id="stop5359"
+         style="stop-color:#f6f6f6"
+         offset=".5" />
+      <stop
+         id="stop5361"
+         style="stop-color:#343434"
+         offset=".75" />
+      <stop
+         id="stop5363"
+         style="stop-color:#dfdfdf"
+         offset=".875" />
+      <stop
+         id="stop5365"
+         style="stop-color:#484848"
+         offset="1" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient5315">
+      <stop
+         id="stop5317"
+         style="stop-color:#191919"
+         offset="0" />
+      <stop
+         id="stop5325"
+         style="stop-color:#d3d3d3"
+         offset=".5" />
+      <stop
+         id="stop5327"
+         style="stop-color:#343434"
+         offset=".75" />
+      <stop
+         id="stop5329"
+         style="stop-color:#9a9a9a"
+         offset=".875" />
+      <stop
+         id="stop5319"
+         style="stop-color:#1a1a1a"
+         offset="1" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient5297">
+      <stop
+         id="stop5299"
+         style="stop-color:#ffffff"
+         offset="0" />
+      <stop
+         id="stop5301"
+         style="stop-color:#ffffff"
+         offset=".34043" />
+      <stop
+         id="stop5303"
+         style="stop-color:#d4d1bf"
+         offset="1" />
+    </linearGradient>
+    <filter
+       inkscape:label="Opacity"
+       style="color-interpolation-filters:sRGB"
+       id="filter4110">
+      <feColorMatrix
+         values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 -2.05669e-14 "
+         result="colormatrix"
+         id="feColorMatrix4112" />
+      <feComposite
+         in2="colormatrix"
+         operator="arithmetic"
+         k2="0.0984043"
+         result="fbSourceGraphic"
+         id="feComposite4114"
+         k1="0"
+         k3="0"
+         k4="0" />
+      <feColorMatrix
+         result="fbSourceGraphicAlpha"
+         in="fbSourceGraphic"
+         values="0 0 0 -1 0 0 0 0 -1 0 0 0 0 -1 0 0 0 0 1 0"
+         id="feColorMatrix4116" />
+      <feColorMatrix
+         id="feColorMatrix4118"
+         values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 -2.05669e-14 "
+         result="colormatrix"
+         in="fbSourceGraphic" />
+      <feComposite
+         id="feComposite4120"
+         in2="colormatrix"
+         operator="arithmetic"
+         k2="0.1"
+         result="composite"
+         k1="0"
+         k3="0"
+         k4="0" />
+    </filter>
+    <filter
+       x="-0.25"
+       width="1.5"
+       y="-0.25"
+       height="1.5"
+       inkscape:menu="Non realistic 3D shaders"
+       inkscape:menu-tooltip="Aluminium effect with sharp brushed reflections"
+       inkscape:label="Aluminium"
+       style="color-interpolation-filters:sRGB"
+       id="filter5731">
+      <feGaussianBlur
+         result="result8"
+         stdDeviation="5"
+         in="SourceGraphic"
+         id="feGaussianBlur5733" />
+      <feComposite
+         operator="xor"
+         in2="SourceGraphic"
+         result="result22"
+         id="feComposite5735" />
+      <feComposite
+         k2="1"
+         operator="arithmetic"
+         result="result20"
+         in2="result22"
+         in="result22"
+         id="feComposite5737"
+         k1="0"
+         k3="0"
+         k4="0" />
+      <feComposite
+         in2="result22"
+         in="result20"
+         operator="over"
+         result="result6"
+         id="feComposite5739" />
+      <feOffset
+         in="result6"
+         result="result21"
+         id="feOffset5741" />
+      <feDisplacementMap
+         in2="result20"
+         result="result4"
+         scale="100"
+         yChannelSelector="A"
+         xChannelSelector="A"
+         in="result21"
+         id="feDisplacementMap5743" />
+      <feComposite
+         in2="SourceGraphic"
+         k1="1"
+         operator="arithmetic"
+         result="fbSourceGraphic"
+         k3="0.5"
+         in="result4"
+         id="feComposite5745"
+         k2="0"
+         k4="0" />
+      <feComposite
+         in2="result4"
+         result="result12"
+         operator="in"
+         in="fbSourceGraphic"
+         id="feComposite5747" />
+      <feComposite
+         in2="SourceGraphic"
+         operator="in"
+         result="result18"
+         id="feComposite5749" />
+      <feComposite
+         result="result19"
+         in2="SourceGraphic"
+         operator="in"
+         in="result18"
+         id="feComposite5751" />
+    </filter>
+    <filter
+       x="-0.25"
+       width="1.5"
+       y="-0.25"
+       height="1.5"
+       inkscape:menu="Non realistic 3D shaders"
+       inkscape:menu-tooltip="Aluminium effect with sharp brushed reflections"
+       inkscape:label="Aluminium"
+       style="color-interpolation-filters:sRGB"
+       id="filter5753">
+      <feGaussianBlur
+         result="result8"
+         stdDeviation="5"
+         in="SourceGraphic"
+         id="feGaussianBlur5755" />
+      <feComposite
+         operator="xor"
+         in2="SourceGraphic"
+         result="result22"
+         id="feComposite5757" />
+      <feComposite
+         k2="1"
+         operator="arithmetic"
+         result="result20"
+         in2="result22"
+         in="result22"
+         id="feComposite5759"
+         k1="0"
+         k3="0"
+         k4="0" />
+      <feComposite
+         in2="result22"
+         in="result20"
+         operator="over"
+         result="result6"
+         id="feComposite5761" />
+      <feOffset
+         in="result6"
+         result="result21"
+         id="feOffset5763" />
+      <feDisplacementMap
+         in2="result20"
+         result="result4"
+         scale="100"
+         yChannelSelector="A"
+         xChannelSelector="A"
+         in="result21"
+         id="feDisplacementMap5765" />
+      <feComposite
+         in2="SourceGraphic"
+         k1="1"
+         operator="arithmetic"
+         result="fbSourceGraphic"
+         k3="0.5"
+         in="result4"
+         id="feComposite5767"
+         k2="0"
+         k4="0" />
+      <feComposite
+         in2="result4"
+         result="result12"
+         operator="in"
+         in="fbSourceGraphic"
+         id="feComposite5769" />
+      <feComposite
+         in2="SourceGraphic"
+         operator="in"
+         result="result18"
+         id="feComposite5771" />
+      <feComposite
+         result="result19"
+         in2="SourceGraphic"
+         operator="in"
+         in="result18"
+         id="feComposite5773" />
+    </filter>
+    <filter
+       inkscape:label="Gold Paste"
+       x="-0.25"
+       y="-0.25"
+       height="1.5"
+       width="1.5"
+       inkscape:menu="Materials"
+       inkscape:menu-tooltip="Fat pasted cast metal, with golden highlights"
+       style="color-interpolation-filters:sRGB"
+       id="filter5806">
+      <feGaussianBlur
+         in="SourceAlpha"
+         stdDeviation="0.01"
+         result="result91"
+         id="feGaussianBlur5808" />
+      <feComposite
+         result="fbSourceGraphic"
+         operator="in"
+         in="SourceGraphic"
+         in2="result91"
+         id="feComposite5810" />
+      <feGaussianBlur
+         result="result1"
+         in="fbSourceGraphic"
+         stdDeviation="0.01"
+         id="feGaussianBlur5812" />
+      <feTurbulence
+         result="result0"
+         numOctaves="4"
+         baseFrequency="0.04"
+         type="fractalNoise"
+         seed="20"
+         id="feTurbulence5814" />
+      <feDisplacementMap
+         result="result2"
+         scale="30"
+         yChannelSelector="G"
+         xChannelSelector="R"
+         in="result1"
+         in2="result0"
+         id="feDisplacementMap5816" />
+      <feColorMatrix
+         type="saturate"
+         values="1"
+         result="result3"
+         id="feColorMatrix5818" />
+      <feGaussianBlur
+         result="result4"
+         in="fbSourceGraphic"
+         stdDeviation="0.01"
+         id="feGaussianBlur5820" />
+      <feComposite
+         operator="atop"
+         result="fbSourceGraphic"
+         in="result4"
+         in2="result3"
+         id="feComposite5822" />
+      <feGaussianBlur
+         result="result0"
+         in="fbSourceGraphic"
+         stdDeviation="1.5"
+         id="feGaussianBlur5824" />
+      <feTurbulence
+         baseFrequency="0.02"
+         seed="20"
+         numOctaves="8"
+         result="result1"
+         type="fractalNoise"
+         id="feTurbulence5826" />
+      <feComposite
+         result="result2"
+         operator="out"
+         in2="result1"
+         in="result0"
+         id="feComposite5828" />
+      <feSpecularLighting
+         lighting-color="#dfbc10"
+         surfaceScale="2.5"
+         result="result4"
+         specularConstant="2"
+         specularExponent="30"
+         in="result2"
+         id="feSpecularLighting5830">
+        <feDistantLight
+           elevation="62"
+           azimuth="225"
+           id="feDistantLight5832" />
+      </feSpecularLighting>
+      <feComposite
+         in2="result2"
+         in="result4"
+         operator="atop"
+         result="result92"
+         id="feComposite5834" />
+      <feBlend
+         mode="multiply"
+         in2="result92"
+         id="feBlend5836" />
+    </filter>
+  </defs>
+  <g
+     id="layer1"
+     inkscape:label="Ebene 1"
+     inkscape:groupmode="layer"
+     transform="translate(-113.48462,-102.58659)">
+    <rect
+       id="rect5331"
+       style="color:#000000;fill:#333333;fill-rule:evenodd"
+       ry="0"
+       height="0"
+       width="0.50340003"
+       y="228.17"
+       x="86.584999" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;filter:url(#filter5753)"
+       x="165.01559"
+       y="184.37981"
+       id="text4126"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4128"
+         x="165.01559"
+         y="184.37981"
+         style="font-size:90px">D</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="279.45956"
+       y="149.0576"
+       id="text5121"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan5123"
+         x="279.45956"
+         y="149.0576"></tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;filter:url(#filter5731)"
+       x="-238.5834"
+       y="184.37984"
+       id="text5146"
+       sodipodi:linespacing="125%"
+       transform="matrix(-1,0,0,1,-47.205721,0)"><tspan
+         sodipodi:role="line"
+         id="tspan5148"
+         x="-238.5834"
+         y="184.37984"
+         style="font-size:90px">D</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:47.9875946px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;filter:url(#filter5806)"
+       x="105.79728"
+       y="227.81505"
+       id="text5150"
+       sodipodi:linespacing="125%"
+       transform="matrix(0.71462429,0,0,0.51066017,76.736541,55.203966)"><tspan
+         sodipodi:role="line"
+         id="tspan5152"
+         x="105.79728"
+         y="227.81505"
+         style="font-size:107.9720993px">S</tspan></text>
+  </g>
+  <metadata
+     id="metadata3670">
+    <rdf:RDF>
+      <cc:Work>
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <cc:license
+           rdf:resource="http://creativecommons.org/publicdomain/zero/1.0/" />
+        <dc:publisher>
+          <cc:Agent
+             rdf:about="http://openclipart.org/">
+            <dc:title>Openclipart</dc:title>
+          </cc:Agent>
+        </dc:publisher>
+        <dc:title>Spark Plug</dc:title>
+        <dc:date>2007-11-14T11:53:27</dc:date>
+        <dc:description>An unused part of a Logo made in Inkscape. Have fun !</dc:description>
+        <dc:source>https://openclipart.org/detail/8357/spark-plug-by-chrisdesign</dc:source>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>Chrisdesign</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:subject>
+          <rdf:Bag>
+            <rdf:li>car</rdf:li>
+            <rdf:li>jpg</rdf:li>
+            <rdf:li>motor</rdf:li>
+            <rdf:li>plug</rdf:li>
+            <rdf:li>spark</rdf:li>
+            <rdf:li>technic</rdf:li>
+          </rdf:Bag>
+        </dc:subject>
+      </cc:Work>
+      <cc:License
+         rdf:about="http://creativecommons.org/publicdomain/zero/1.0/">
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Reproduction" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Distribution" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#DerivativeWorks" />
+      </cc:License>
+    </rdf:RDF>
+  </metadata>
+</svg>
