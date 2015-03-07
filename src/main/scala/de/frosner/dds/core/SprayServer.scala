@@ -41,52 +41,68 @@ case class SprayServer(name: String,
     val server = startServer(interface, port, actorName) {
       path("") {
         get {
-          complete{ Index.html }
+          respondWithMediaType(`text/html`) {
+            complete(Index.html)
+          }
         }
       } ~
       path("img" / "watermark.svg"){
         get {
           respondWithMediaType(`image/svg+xml`) {
-            complete{ Watermark.svg }
+            complete(Watermark.svg)
           }
         }
       } ~
       path("lib" / "d3.js") {
         get {
-          complete{ D3.js }
+          respondWithMediaType(`application/javascript`) {
+            complete(D3.js)
+          }
         }
       } ~
       path("lib" / "c3.js") {
         get {
-          complete{ C3.js }
+          respondWithMediaType(`application/javascript`) {
+            complete(C3.js)
+          }
         }
       } ~
       path("css" / "c3.css") {
         get {
-          complete{ C3.css }
+          respondWithMediaType(`text/css`) {
+            complete(C3.css)
+          }
         }
       } ~
       path("css" / "table.css") {
         get {
-          complete{ Table.css }
+          respondWithMediaType(`text/css`) {
+            complete(Table.css)
+          }
         }
       } ~
       path("lib" / "jquery.js") {
         get {
-          complete{ JQuery.js }
+          respondWithMediaType(`application/javascript`) {
+            complete(JQuery.js)
+          }
         }
       } ~
       path("app" / "main.js") {
         get {
-          complete{ Main.js }
+          respondWithMediaType(`application/javascript`) {
+            complete(Main.js)
+          }
         }
       } ~
       path("chart" / "update") {
         get {
-          complete {
-            val response = servable.map(_.toJsonString).getOrElse("{}")
-            servable = Option.empty
-            response
+          respondWithMediaType(`application/json`) {
+            complete {
+              val response = servable.map(_.toJsonString).getOrElse("{}")
+              servable = Option.empty
+              response
+            }
           }
         }
       }
