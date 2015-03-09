@@ -1,7 +1,7 @@
 assemblyJar=$1
 jarjarjar=$assemblyJar-jarjared.jar
 
-echo "Jarjaring $assemblyJar..."
+echo "Jarjaring $assemblyJar into $jarjarjar..."
 java -jar build/jarjar-1.4.jar process build/rules.txt $assemblyJar $jarjarjar
 
 oldSprayConf=reference.conf
