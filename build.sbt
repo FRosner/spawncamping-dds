@@ -38,9 +38,9 @@ assemblyJarName in assembly := name.value + "-" + version.value + "_" + scalaVer
 
 fork in Compile := true
 
-lazy val jarjar = taskKey[Unit]("Jarjar link the assembly jar!")
+lazy val build = taskKey[Unit]("Jarjar link the assembly jar!")
 
-jarjar <<= {
+build <<= {
   assembly map { (asm) => {
     val artifactLocation = asm.getAbsolutePath()
     s"./build.sh $artifactLocation" !
