@@ -41,8 +41,10 @@ fork in Compile := true
 lazy val build = taskKey[Unit]("Jarjar link the assembly jar!")
 
 build <<= {
-  assembly map { (asm) => {
-    val artifactLocation = asm.getAbsolutePath()
-    s"./build.sh $artifactLocation" !
-  } }
+  assembly map {
+    (asm) => {
+      val artifactLocation = asm.getAbsolutePath()
+      s"./build.sh $artifactLocation" !
+    }
+  }
 }
