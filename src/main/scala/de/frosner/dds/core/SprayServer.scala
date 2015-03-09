@@ -34,7 +34,7 @@ case class SprayServer(name: String,
   private var servable: Option[Servable] = Option.empty
 
   private implicit val system = ActorSystem(name + "-system", {
-    val conf = ConfigFactory.parseResources("dds-akka.conf")
+    val conf = ConfigFactory.parseResources("dds.conf")
     conf.resolve()
   })
 
