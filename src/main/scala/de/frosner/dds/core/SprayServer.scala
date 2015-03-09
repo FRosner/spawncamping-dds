@@ -101,12 +101,10 @@ case class SprayServer(name: String,
       } ~
       path("chart" / "update") {
         get {
-          respondWithMediaType(`application/json`) {
-            complete {
-              val response = servable.map(_.toJsonString).getOrElse("{}")
-              servable = Option.empty
-              response
-            }
+          complete {
+            val response = servable.map(_.toJsonString).getOrElse("{}")
+            servable = Option.empty
+            response
           }
         }
       }
