@@ -4,13 +4,10 @@ import java.awt.Desktop
 import java.net.URI
 
 import akka.actor.ActorSystem
-import com.typesafe.config.{ConfigFactory, ConfigUtil, Config}
-import de.frosner.dds.core.SprayServer._
-import de.frosner.dds.html.{Watermark, Index}
-import de.frosner.dds.js.{C3, D3, JQuery, Main}
+import com.typesafe.config.ConfigFactory
+import de.frosner.dds.html.{Index, Watermark}
+import de.frosner.dds.js.{C3, D3, JQuery, Main, _}
 import de.frosner.dds.servables.tabular.Table
-import spray.http.HttpHeaders.`Content-Type`
-import spray.http.{ContentType, HttpCharsets, MediaTypes}
 import spray.http.MediaTypes._
 import spray.routing.SimpleRoutingApp
 
@@ -78,6 +75,20 @@ case class SprayServer(name: String,
           }
         }
       } ~
+      path("lib" / "d3.parcoords.js") {
+        get {
+          respondWithMediaType(`application/javascript`) {
+            complete(PC.js)
+          }
+        }
+      } ~
+      path("css" / "d3.parcoords.css") {
+        get {
+          respondWithMediaType(`text/css`) {
+            complete(PC.css)
+          }
+        }
+      }
       path("css" / "table.css") {
         get {
           respondWithMediaType(`text/css`) {

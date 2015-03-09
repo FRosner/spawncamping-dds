@@ -20,7 +20,7 @@ function checkForUpdate() {
             }
         }
     });
-    
+
 }
 
 function generateSingleChart(chart) {
@@ -48,6 +48,25 @@ function generateTable(stats) {
         root.appendChild(table);
     }
 
+    function generatePCVis(root, id) {
+        var div = document.createElement('div');
+        div.setAttribute("id", id);
+        div.setAttribute("class", 'parcoords');
+        div.setAttribute("style", 'height:350px');
+        root.appendChild(div);
+    }
+
+    generatePCVis(document.body, "pcvis")
+
+    var parcoords = d3.parcoords()("#pcvis")
+        .data(stats)
+        .alpha(0.5)
+        .composite("darker")
+        .reorderable()
+        .interactive()
+        .render()
+        .brushMode("1D-axes");
+
     generateTableSkeleton(document.body, "table")
 
     var tableHead = d3.select("thead").selectAll("th")
@@ -60,6 +79,4 @@ function generateTable(stats) {
       .data(function(rows){ return d3.values(rows) })
       .enter().append("td")
       .text(function(value){ return value });
-
 }
-

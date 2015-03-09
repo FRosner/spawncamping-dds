@@ -7,7 +7,11 @@ object Index {
       <head>
         <link href="/css/c3.css" rel="stylesheet" type="text/css"></link>
         <link href="/css/table.css" rel="stylesheet" type="text/css"></link>
+        <link href="/css/d3.parcoords.css" rel="stylesheet" type="text/css"></link>
+        <!--    <script src="https://syntagmatic.github.io/parallel-coordinates/d3.parcoords.css" charset="utf-8"></script> -->
         <script src="/lib/d3.js" charset="utf-8"></script>
+        <script src="/lib/d3.parcoords.js" charset="utf-8"></script>
+        <!--    <script src="https://syntagmatic.github.io/parallel-coordinates/d3.parcoords.js" charset="utf-8"></script> -->
         <script src="/lib/c3.js"></script>
         <script src="/lib/jquery.js"></script>
       </head>
