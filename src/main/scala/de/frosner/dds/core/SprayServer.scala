@@ -142,8 +142,6 @@ case class SprayServer(name: String,
 
 object SprayServer {
 
-//  val `image/svg+xml` = ContentType(MediaTypes.`image/svg+xml`, HttpCharsets.`UTF-8`)
-
   val DEFAULT_INTERFACE = "localhost"
   val DEFAULT_PORT = 8080
 
