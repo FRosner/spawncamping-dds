@@ -28,8 +28,20 @@ when working on the cluster. It does not offer a fully flexible plotting mechani
 4. Explore your data
 
     ```scala
-    val grades = sc.parallelize(List(1,2,1,1,2,4,5))
-    summarize(grades)
+    // create dummy transaction data and push to the cluster
+    case class Transaction(customer: String, day: String, amount: Double)
+    val transactions = sc.parallelize(List(
+      Transaction("Frank", "Monday", 50.2),
+      Transaction("Frank", "Tuesday", 102.50),
+      Transaction("Milos", "Monday", 73.24),
+      Transaction("Rick", "Wednesday", 9.99)
+    ))
+    
+    // look at a nice overview of transactions
+    show(transactions) 
+    
+    // compare summed amount of your customers
+    groupAndPie(transactions.map(t => (t.customer, t.amount)))(_ + _)
     ```
 
 5. Stop the server once you are done
