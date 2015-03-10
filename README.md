@@ -8,10 +8,10 @@ when working on the cluster. It does not offer a fully flexible plotting mechani
 
 ### Usage
 
-1. Add spawncamping-dds jar to Spark shell classpath
+1. Add spawncamping-dds jar to Spark classpath
 
     ```sh
-    ./bin/spark-shell --driver-class-path spawncamping-dds-x.y.z.jar
+    ./bin/spark-shell --jars spawncamping-dds-<ddsVersion>_<scalaVersion>.jar
     ```
 2. Import core functions
 
@@ -42,7 +42,7 @@ See the [User Guide](https://github.com/FRosner/spawncamping-dds/wiki/User-Guide
     
 ### Get Data-Driven Spark
 
-You can either grab the [latest release artifact](https://github.com/FRosner/spawncamping-dds/releases) or build from source (`sbt assembly`). Data-Driven Spark is currently developed and built against Spark 1.2, but can be run against other compatible/minor releases. It can be cross built against Scala version 2.10 and 2.11, depending on which version was used to built your Spark.
+You can either grab the [latest release artifact](https://github.com/FRosner/spawncamping-dds/releases) or build from source (`sbt build`). Data-Driven Spark is currently developed and built against Spark 1.2, but can be run against other compatible/minor releases. It can be cross built against Scala version 2.10 and 2.11, depending on which version was used to build your Spark.
 
 ### Contribution
 

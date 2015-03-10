@@ -4,6 +4,7 @@ import java.awt.Desktop
 import java.net.URI
 
 import akka.actor.ActorSystem
+import com.typesafe.config.{ConfigFactory, ConfigUtil, Config}
 import de.frosner.dds.core.SprayServer._
 import de.frosner.dds.html.{Watermark, Index}
 import de.frosner.dds.js.{C3, D3, JQuery, Main}
@@ -32,7 +33,10 @@ case class SprayServer(name: String,
 
   private var servable: Option[Servable] = Option.empty
 
-  private implicit val system = ActorSystem(name + "-system")
+  private implicit val system = ActorSystem(name + "-system", {
+    val conf = ConfigFactory.parseResources("dds.conf")
+    conf.resolve()
+  })
 
   private val actorName = "chart-server-" + name + "-actor"
   
@@ -97,12 +101,10 @@ case class SprayServer(name: String,
       } ~
       path("chart" / "update") {
         get {
-          respondWithMediaType(`application/json`) {
-            complete {
-              val response = servable.map(_.toJsonString).getOrElse("{}")
-              servable = Option.empty
-              response
-            }
+          complete {
+            val response = servable.map(_.toJsonString).getOrElse("{}")
+            servable = Option.empty
+            response
           }
         }
       }

@@ -37,3 +37,7 @@ assemblyOption in assembly := (assemblyOption in assembly).value.copy(includeSca
 assemblyJarName in assembly := name.value + "-" + version.value + "_" + scalaVersion.value + ".jar"
 
 fork in Compile := true
+
+lazy val build = taskKey[Unit]("Jarjar link the assembly jar!")
+
+build <<= assembly map { (asm) => s"./build.sh ${asm.getAbsolutePath()}" ! }
