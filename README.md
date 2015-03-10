@@ -55,7 +55,7 @@ All (most of the) code committed should be covered by some automated unit tests.
 ### Authors
 
 - [Frank Rosner](https://github.com/FRosner) (Creator)
-- [Milos Krstajic](https://github.com/milosk] (Contributor)
+- [Milos Krstajic](https://github.com/milosk) (Contributor)
 - [Rick Moritz](https://github.com/RPCMoritz) (Contributor)
     
 ### Licensing
