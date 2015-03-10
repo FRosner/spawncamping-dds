@@ -88,7 +88,7 @@ case class SprayServer(name: String,
             complete(PC.css)
           }
         }
-      }
+      } ~
       path("css" / "table.css") {
         get {
           respondWithMediaType(`text/css`) {
