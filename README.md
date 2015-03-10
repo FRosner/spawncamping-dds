@@ -8,10 +8,10 @@ when working on the cluster. It does not offer a fully flexible plotting mechani
 
 ### Usage
 
-1. Add spawncamping-dds jar to Spark shell classpath
+1. Add spawncamping-dds jar to Spark classpath
 
     ```sh
-    ./bin/spark-shell --driver-class-path spawncamping-dds-x.y.z.jar
+    ./bin/spark-shell --jars spawncamping-dds-<ddsVersion>_<scalaVersion>.jar
     ```
 2. Import core functions
 
