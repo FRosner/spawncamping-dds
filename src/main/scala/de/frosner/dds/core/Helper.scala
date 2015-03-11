@@ -42,17 +42,15 @@ case class Helper[T](classWithHelp: Class[T]) {
    *
    * @param out to print method overview to
    */
-  def printAllMethods(out: PrintStream) = methods.foreach {
-    case (category, methods) => {
-      out.println(s"\033[1m${category}\033[0m")
-      methods.foreach {
-        case (name, help) =>
-          out.println("- " + getMethodSignature(name, help) +
-            s": ${help.shortDescription}")
+  def printAllMethods(out: PrintStream) = out.println(
+    methods.map {
+      case (category, methods) => {
+        s"\033[1m${category}\033[0m\n" + methods.map {
+          case (name, help) => "- " + getMethodSignature(name, help) + s": ${help.shortDescription}"
+        }.mkString("\n")
       }
-      out.println()
-    }
-  }
+    }.mkString("\n\n")
+  )
 
   private def getMethodSignature(name: String, help: Help) = {
     s"$name(${help.parameters})" +
@@ -78,18 +76,18 @@ case class Helper[T](classWithHelp: Class[T]) {
         case (name, help) => name == methodName
       }
     }
-    methodsToPrint.sortBy {
-      case (name, help) => getMethodSignature(name, help)
-    }.foreach {
-      methodWithHelp => printLongDescription(methodWithHelp, out)
-    }
+    out.println(
+      methodsToPrint.sortBy {
+        case (name, help) => getMethodSignature(name, help)
+      }.map {
+        methodWithHelp => getLongDescriptionPrintable(methodWithHelp, out)
+      }.mkString("\n\n")
+    )
   }
 
-  private def printLongDescription(methodWithHelp: (String, Help), out: PrintStream) = {
+  private def getLongDescriptionPrintable(methodWithHelp: (String, Help), out: PrintStream) = {
     val (name, help) = methodWithHelp
-    out.println(s"\033[1m${getMethodSignature(name, help)}\033[0m")
-    out.println(help.longDescription)
-    out.println()
+    s"\033[1m${getMethodSignature(name, help)}\033[0m\n" + help.longDescription
   }
 
 }

@@ -58,13 +58,14 @@ class HelperTest extends FlatSpec with Matchers {
     val out = new PrintStream(result)
     val helper = Helper(new TestClass().getClass)
     helper.printAllMethods(out)
-    result.toString.split("\n") shouldBe Array(
+    result.toString.split("\n", -1) shouldBe Array(
         s"\033[1ma\033[0m",
         "- help(): short help",
         "- xhelp(): short help",
         "",
         s"\033[1mbbb\033[0m",
-        "- helpWithParameters(i: Int)(s: String): sph"
+        "- helpWithParameters(i: Int)(s: String): sph",
+        ""
       )
   }
 
@@ -73,9 +74,10 @@ class HelperTest extends FlatSpec with Matchers {
     val out = new PrintStream(result)
     val helper = Helper(new TestClass().getClass)
     helper.printMethods("help", out)
-    result.toString.split("\n") shouldBe Array(
+    result.toString.split("\n", -1) shouldBe Array(
         s"\033[1mhelp()\033[0m",
-        "long help"
+        "long help",
+        ""
       )
   }
 
@@ -100,12 +102,13 @@ class HelperTest extends FlatSpec with Matchers {
     val out = new PrintStream(result)
     val helper = Helper(new TestClass2().getClass)
     helper.printMethods("method", out)
-    result.toString.split("\n") shouldBe Array(
+    result.toString.split("\n", -1) shouldBe Array(
       s"\033[1mmethod()\033[0m",
       "method without parameters",
       "",
       s"\033[1mmethod(s: String)\033[0m",
-      "method with one parameter"
+      "method with one parameter",
+      ""
     )
   }
 
