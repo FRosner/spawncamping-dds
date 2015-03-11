@@ -198,8 +198,9 @@ object DDS {
 
   @Help(
     category = "Generic Plots",
-    shortDescription = "Displays a table",
-    longDescription = "Displays the given rows as a table using the specified head.",
+    shortDescription = "Displays data in tabular format",
+    longDescription = "Displays the given rows as a table using the specified head. DDS also shows visualizations of the" +
+      "data in the table.",
     parameters = "head: Seq[String], rows: Seq[Seq[Any]]"
   )
   def table(head: Seq[String], rows: Seq[Seq[Any]]): Unit = {
@@ -209,7 +210,8 @@ object DDS {
   @Help(
     category = "RDD Analysis",
     shortDescription = "Shows the first rows of an RDD",
-    longDescription = "Shows the first rows of an RDD. The second argument is optional and determines the sample size.",
+    longDescription = "Shows the first rows of an RDD. In addition to a tabular view DDS also shows visualizations" +
+      "of the data. The second argument is optional and determines the sample size.",
     parameters = "rdd: RDD[T], (optional) sampleSize: Int"
   )
   def show[V](rdd: RDD[V], sampleSize: Int = 20)(implicit tag: TypeTag[V]): Unit = {
