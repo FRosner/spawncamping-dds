@@ -208,7 +208,7 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     DDS.show(rdd)
 
     val resultTable = mockedServer.lastServed.get.asInstanceOf[Table]
-    resultTable.head.toList shouldBe List("column1")
+    resultTable.head.toList shouldBe List("sequence")
     resultTable.rows.toList shouldBe List(List(1))
   }
 
@@ -232,13 +232,43 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     resultTable.rows.toList shouldBe List(List("a", 1), List("b", 2))
   }
 
+  it should "be printed from a sequence of single values" in {
+    DDS.start(mockedServer)
+    val sequence = List(1, 2)
+    DDS.show(sequence)
+
+    val resultTable = mockedServer.lastServed.get.asInstanceOf[Table]
+    resultTable.head.toList shouldBe List("sequence")
+    resultTable.rows.toList shouldBe List(List(1), List(2))
+  }
+
+  it should "be printed from a sequence of tuples" in {
+    DDS.start(mockedServer)
+    val sequence = List(("a", 1), ("b", 2))
+    DDS.show(sequence)
+
+    val resultTable = mockedServer.lastServed.get.asInstanceOf[Table]
+    resultTable.head.toList shouldBe List("1", "2")
+    resultTable.rows.toList shouldBe List(List("a", 1), List("b", 2))
+  }
+
+  it should "be printed from a sequence of case classes" in {
+    DDS.start(mockedServer)
+    val sequence = List(DummyCaseClass("a", 1), DummyCaseClass("b", 2))
+    DDS.show(sequence)
+
+    val resultTable = mockedServer.lastServed.get.asInstanceOf[Table]
+    resultTable.head.toList shouldBe List("arg1", "arg2")
+    resultTable.rows.toList shouldBe List(List("a", 1), List("b", 2))
+  }
+
   "A table" should "print only as many rows as specified" in {
     DDS.start(mockedServer)
     val rdd = sc.makeRDD(List(1,2,3,4,5))
     DDS.show(rdd, 3)
 
     val resultTable = mockedServer.lastServed.get.asInstanceOf[Table]
-    resultTable.head.toList shouldBe List("column1")
+    resultTable.head.toList shouldBe List("sequence")
     resultTable.rows.toList shouldBe List(List(1), List(2), List(3))
   }
 

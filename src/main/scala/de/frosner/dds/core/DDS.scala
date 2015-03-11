@@ -208,6 +208,32 @@ object DDS {
   }
 
   @Help(
+    category = "Generic Plots",
+    shortDescription = "Shows a sequence",
+    longDescription = "Shows a sequence. In addition to a tabular view DDS also shows visualizations" +
+      "of the data.",
+    parameters = "sequence: Seq[T]"
+  )
+  def show[V](sequence: Seq[V])(implicit tag: TypeTag[V]): Unit = {
+    val vType = tag.tpe
+    if (sequence.length == 0) {
+      println("Sequence is empty!")
+    } else {
+      val result = if (vType <:< typeOf[Product]) {
+        def getMembers[T: TypeTag] = typeOf[T].members.sorted.collect {
+          case m: MethodSymbol if m.isCaseAccessor => m
+        }.toList
+        val header = getMembers[V].map(_.name.toString.replace("_", ""))
+        val rows = sequence.map(product => product.asInstanceOf[Product].productIterator.toSeq).toSeq
+        Table(header, rows)
+      } else {
+        Table(List("sequence"), sequence.map(c => List(c)).toList)
+      }
+      table(result)
+    }
+  }
+
+  @Help(
     category = "RDD Analysis",
     shortDescription = "Shows the first rows of an RDD",
     longDescription = "Shows the first rows of an RDD. In addition to a tabular view DDS also shows visualizations" +
@@ -215,23 +241,7 @@ object DDS {
     parameters = "rdd: RDD[T], (optional) sampleSize: Int"
   )
   def show[V](rdd: RDD[V], sampleSize: Int = 20)(implicit tag: TypeTag[V]): Unit = {
-    val vType = tag.tpe
-    val sample = rdd.take(sampleSize)
-    if (sample.length == 0) {
-      println("RDD is empty!")
-    } else {
-      val result = if (vType <:< typeOf[Product]) {
-        def getMembers[T: TypeTag] = typeOf[T].members.sorted.collect {
-          case m: MethodSymbol if m.isCaseAccessor => m
-        }.toList
-        val header = getMembers[V].map(_.name.toString.replace("_", ""))
-        val rows = sample.map(product => product.asInstanceOf[Product].productIterator.toSeq).toSeq
-        Table(header, rows)
-      } else {
-        Table(List("column1"), sample.map(c => List(c)).toList)
-      }
-      table(result)
-    }
+    show(rdd.take(sampleSize))(tag)
   }
 
   @Help(
