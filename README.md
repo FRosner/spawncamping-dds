@@ -4,7 +4,7 @@
 This library provides a comprehensible and simple interface for quick data exploration based on
 [Apache Spark](https://spark.apache.org/) and [D3.js/SVG](http://d3js.org/). The target audience is
 data scientists who miss functions like `summary()` and `plot()` from [R](http://www.r-project.org/)
-when working on the cluster. It does not offer a fully flexible plotting mechanism like [ggplot2](http://ggplot2.org/) but focuses on giving you quick insights into your data.
+when working on the cluster with the Spark REPL. It does not offer a fully flexible plotting mechanism like [ggplot2](http://ggplot2.org/) but focuses on giving you quick insights into your data.
 
 ### Usage
 
