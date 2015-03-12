@@ -1,0 +1,589 @@
+# see spray can config file for explanation - this is just repackaged
+spray.can {
+
+  server {
+    server-header = spray-can/${spray.version}
+    ssl-encryption = off
+    pipelining-limit = 1
+    idle-timeout = 60 s
+    request-timeout = 20 s
+    timeout-timeout = 2 s
+    chunkhandler-registration-timeout = 500 ms
+    timeout-handler = ""
+    reaping-cycle = 250 ms
+    stats-support = on
+    remote-address-header = off
+    raw-request-uri-header = off
+    transparent-head-requests = on
+    chunkless-streaming = off
+    verbose-error-messages = off
+    request-chunk-aggregation-limit = 1m
+    response-header-size-hint = 512
+    max-encryption-chunk-size = 1m
+    bind-timeout = 1s
+    unbind-timeout = 1s
+    registration-timeout = 1s
+    parsing-error-abort-timeout = 2s
+    default-host-header = ""
+    automatic-back-pressure-handling = on
+    back-pressure {
+        noack-rate = 10
+        reading-low-watermark = infinite
+    }
+    ssl-tracing = off
+    parsing = ${spray.can.parsing}
+  }
+
+  client {
+    user-agent-header = spray-can/${spray.version}
+    idle-timeout = 60 s
+    request-timeout = 20 s
+    reaping-cycle = 250 ms
+    response-chunk-aggregation-limit = 1m
+    chunkless-streaming = off
+    request-header-size-hint = 512
+    max-encryption-chunk-size = 1m
+    connecting-timeout = 10s
+    proxy {
+      http = default
+      https = default
+    }
+    ssl-tracing = off
+    parsing = ${spray.can.parsing}
+  }
+
+  host-connector {
+    max-connections = 4
+    max-retries = 5
+    max-redirects = 0
+    pipelining = off
+    idle-timeout = 30 s
+    client = ${spray.can.client}
+  }
+
+  parsing {
+    max-uri-length             = 2k
+    max-response-reason-length = 64
+    max-header-name-length     = 64
+    max-header-value-length    = 8k
+    max-header-count           = 64
+    max-content-length         = 8m
+    max-chunk-ext-length       = 256
+    max-chunk-size             = 1m
+    uri-parsing-mode = strict
+    illegal-header-warnings = on
+    header-cache {
+      default = 12
+      Content-MD5 = 0
+      Date = 0
+      If-Match = 0
+      If-Modified-Since = 0
+      If-None-Match = 0
+      If-Range = 0
+      If-Unmodified-Since = 0
+      User-Agent = 32
+    }
+    incoming-auto-chunking-threshold-size = infinite
+    ssl-session-info-header = off
+  }
+
+  manager-dispatcher = "de.frosner.dds.akka.actor.default-dispatcher"
+  settings-group-dispatcher = "de.frosner.dds.akka.actor.default-dispatcher"
+  host-connector-dispatcher = "de.frosner.dds.akka.actor.default-dispatcher"
+  listener-dispatcher = "de.frosner.dds.akka.actor.default-dispatcher"
+  connection-dispatcher = "de.frosner.dds.akka.actor.default-dispatcher"
+
+}
+
+spray {
+  version = "1.3.2"
+}
+
+spray.routing {
+  verbose-error-messages = off
+  file-chunking-threshold-size = 128k
+  file-chunking-chunk-size = 128k
+  file-get-conditional = on
+  render-vanity-footer = yes
+  users {
+    # bob = secret
+  }
+  range-coalescing-threshold = 80
+  range-count-limit = 16
+}
+
+akka {
+
+  version = "2.3.6"
+  home = ""
+  loggers = ["de.frosner.dds.akka.event.Logging$DefaultLogger"]
+  logger-startup-timeout = 5s
+  loglevel = "WARNING"
+  stdout-loglevel = "WARNING"
+  log-config-on-start = off
+  log-dead-letters = 10
+  log-dead-letters-during-shutdown = off
+  extensions = []
+  daemonic = off
+  jvm-exit-on-fatal-error = off
+
+  actor {
+
+    provider = "de.frosner.dds.akka.actor.LocalActorRefProvider"
+    guardian-supervisor-strategy = "de.frosner.dds.akka.actor.DefaultSupervisorStrategy"
+    creation-timeout = 20s
+    reaper-interval = 5s
+    serialize-messages = off
+    serialize-creators = off
+    unstarted-push-timeout = 10s
+    typed {
+      timeout = 5s
+    }
+    router.type-mapping {
+      from-code = "de.frosner.dds.akka.routing.NoRouter"
+      round-robin-pool = "de.frosner.dds.akka.routing.RoundRobinPool"
+      round-robin-group = "de.frosner.dds.akka.routing.RoundRobinGroup"
+      random-pool = "de.frosner.dds.akka.routing.RandomPool"
+      random-group = "de.frosner.dds.akka.routing.RandomGroup"
+      balancing-pool = "de.frosner.dds.akka.routing.BalancingPool"
+      smallest-mailbox-pool = "de.frosner.dds.akka.routing.SmallestMailboxPool"
+      broadcast-pool = "de.frosner.dds.akka.routing.BroadcastPool"
+      broadcast-group = "de.frosner.dds.akka.routing.BroadcastGroup"
+      scatter-gather-pool = "de.frosner.dds.akka.routing.ScatterGatherFirstCompletedPool"
+      scatter-gather-group = "de.frosner.dds.akka.routing.ScatterGatherFirstCompletedGroup"
+      tail-chopping-pool = "de.frosner.dds.akka.routing.TailChoppingPool"
+      tail-chopping-group = "de.frosner.dds.akka.routing.TailChoppingGroup"
+      consistent-hashing-pool = "de.frosner.dds.akka.routing.ConsistentHashingPool"
+      consistent-hashing-group = "de.frosner.dds.akka.routing.ConsistentHashingGroup"
+    }
+
+    deployment {
+      default {
+        dispatcher = ""
+        mailbox = ""
+        router = "from-code"
+        nr-of-instances = 1
+        within = 5 seconds
+        virtual-nodes-factor = 10
+        tail-chopping-router {
+          interval = 10 milliseconds
+        }
+        routees {
+          paths = []
+        }
+        resizer {
+          enabled = off
+          lower-bound = 1
+          upper-bound = 10
+          pressure-threshold = 1
+          rampup-rate = 0.2
+          backoff-threshold = 0.3
+          backoff-rate = 0.1
+          messages-per-resize = 10
+        }
+      }
+    }
+
+    default-dispatcher {
+
+      type = "Dispatcher"
+      executor = "default-executor"
+      default-executor {
+        fallback = "fork-join-executor"
+      }
+      fork-join-executor {
+        parallelism-min = 8
+        parallelism-factor = 3.0
+        parallelism-max = 64
+      }
+      thread-pool-executor {
+        keep-alive-time = 60s
+        core-pool-size-min = 8
+        core-pool-size-factor = 3.0
+        core-pool-size-max = 64
+        max-pool-size-min = 8
+        max-pool-size-factor  = 3.0
+        max-pool-size-max = 64
+        task-queue-size = -1
+        task-queue-type = "linked"
+        allow-core-timeout = on
+      }
+      shutdown-timeout = 1s
+      throughput = 5
+      throughput-deadline-time = 0ms
+      attempt-teamwork = on
+      mailbox-requirement = ""
+
+    }
+
+    default-mailbox {
+      mailbox-type = "de.frosner.dds.akka.dispatch.UnboundedMailbox"
+      mailbox-capacity = 1000
+      mailbox-push-timeout-time = 10s
+      stash-capacity = -1
+    }
+
+    mailbox {
+      requirements {
+        "de.frosner.dds.akka.dispatch.UnboundedMessageQueueSemantics" =
+          de.frosner.dds.akka.actor.mailbox.unbounded-queue-based
+        "de.frosner.dds.akka.dispatch.BoundedMessageQueueSemantics" =
+          de.frosner.dds.akka.dds.actor.mailbox.bounded-queue-based
+        "de.frosner.dds.akka.dispatch.DequeBasedMessageQueueSemantics" =
+          de.frosner.dds.akka.dds.actor.mailbox.unbounded-deque-based
+        "de.frosner.dds.akka.dispatch.UnboundedDequeBasedMessageQueueSemantics" =
+          de.frosner.dds.akka.dds.actor.mailbox.unbounded-deque-based
+        "de.frosner.dds.akka.dispatch.BoundedDequeBasedMessageQueueSemantics" =
+          de.frosner.dds.akka.dds.actor.mailbox.bounded-deque-based
+        "de.frosner.dds.akka.dispatch.MultipleConsumerSemantics" =
+          de.frosner.dds.akka.dds.actor.mailbox.unbounded-queue-based
+      }
+
+      unbounded-queue-based {
+        mailbox-type = "de.frosner.dds.akka.dispatch.UnboundedMailbox"
+      }
+
+      bounded-queue-based {
+        mailbox-type = "de.frosner.dds.akka.dispatch.BoundedMailbox"
+      }
+
+      unbounded-deque-based {
+        mailbox-type = "de.frosner.dds.akka.dispatch.UnboundedDequeBasedMailbox"
+      }
+
+      bounded-deque-based {
+        mailbox-type = "de.frosner.dds.akka.dispatch.BoundedDequeBasedMailbox"
+      }
+    }
+
+    debug {
+      receive = off
+      autoreceive = off
+      lifecycle = off
+      fsm = off
+      event-stream = off
+      unhandled = off
+      router-misconfiguration = off
+    }
+
+    serializers {
+      java = "de.frosner.dds.akka.serialization.JavaSerializer"
+      bytes = "de.frosner.dds.akka.serialization.ByteArraySerializer"
+    }
+
+    serialization-bindings {
+      "[B" = bytes
+      "java.io.Serializable" = java
+    }
+
+    dsl {
+      inbox-size = 1000
+      default-timeout = 5s
+    }
+
+  }
+
+  scheduler {
+    tick-duration = 10ms
+    ticks-per-wheel = 512
+    implementation = de.frosner.dds.akka.actor.LightArrayRevolverScheduler
+    shutdown-timeout = 5s
+  }
+
+  io {
+
+    pinned-dispatcher {
+      type = "PinnedDispatcher"
+      executor = "thread-pool-executor"
+      thread-pool-executor.allow-core-pool-timeout = off
+    }
+
+    tcp {
+      nr-of-selectors = 1
+      max-channels = 256000
+      selector-association-retries = 10
+      batch-accept-limit = 10
+      direct-buffer-size = 128 KiB
+      direct-buffer-pool-limit = 1000
+      register-timeout = 5s
+      max-received-message-size = unlimited
+      trace-logging = off
+      selector-dispatcher = "de.frosner.dds.akka.io.pinned-dispatcher"
+      worker-dispatcher = "de.frosner.dds.akka.actor.default-dispatcher"
+      management-dispatcher = "de.frosner.dds.akka.actor.default-dispatcher"
+      file-io-dispatcher = "de.frosner.dds.akka.actor.default-dispatcher"
+      file-io-transferTo-limit = 512 KiB
+      finish-connect-retries = 5
+    }
+
+    udp {
+      nr-of-selectors = 1
+      max-channels = 4096
+      select-timeout = infinite
+      selector-association-retries = 10
+      receive-throughput = 3
+      direct-buffer-size = 128 KiB
+      direct-buffer-pool-limit = 1000
+      received-message-size-limit = unlimited
+      trace-logging = off
+      selector-dispatcher = "de.frosner.dds.akka.io.pinned-dispatcher"
+      worker-dispatcher = "de.frosner.dds.akka.actor.default-dispatcher"
+      management-dispatcher = "de.frosner.dds.akka.actor.default-dispatcher"
+    }
+
+    udp-connected {
+      nr-of-selectors = 1
+      max-channels = 4096
+      select-timeout = infinite
+      selector-association-retries = 10
+      receive-throughput = 3
+      direct-buffer-size = 128 KiB
+      direct-buffer-pool-limit = 1000
+      received-message-size-limit = unlimited
+      trace-logging = off
+      selector-dispatcher = "de.frosner.dds.akka.io.pinned-dispatcher"
+      worker-dispatcher = "de.frosner.dds.akka.actor.default-dispatcher"
+      management-dispatcher = "de.frosner.dds.akka.actor.default-dispatcher"
+    }
+
+  }
+
+}
+
+de.frosner.dds.akka {
+
+  version = "2.3.6"
+  home = ""
+  loggers = ["de.frosner.dds.akka.event.Logging$DefaultLogger"]
+  logger-startup-timeout = 5s
+  loglevel = "WARNING"
+  stdout-loglevel = "WARNING"
+  log-config-on-start = off
+  log-dead-letters = 10
+  log-dead-letters-during-shutdown = off
+  extensions = []
+  daemonic = off
+  jvm-exit-on-fatal-error = off
+
+  actor {
+
+    provider = "de.frosner.dds.akka.actor.LocalActorRefProvider"
+    guardian-supervisor-strategy = "de.frosner.dds.akka.actor.DefaultSupervisorStrategy"
+    creation-timeout = 20s
+    reaper-interval = 5s
+    serialize-messages = off
+    serialize-creators = off
+    unstarted-push-timeout = 10s
+    typed {
+      timeout = 5s
+    }
+    router.type-mapping {
+      from-code = "de.frosner.dds.akka.routing.NoRouter"
+      round-robin-pool = "de.frosner.dds.akka.routing.RoundRobinPool"
+      round-robin-group = "de.frosner.dds.akka.routing.RoundRobinGroup"
+      random-pool = "de.frosner.dds.akka.routing.RandomPool"
+      random-group = "de.frosner.dds.akka.routing.RandomGroup"
+      balancing-pool = "de.frosner.dds.akka.routing.BalancingPool"
+      smallest-mailbox-pool = "de.frosner.dds.akka.routing.SmallestMailboxPool"
+      broadcast-pool = "de.frosner.dds.akka.routing.BroadcastPool"
+      broadcast-group = "de.frosner.dds.akka.routing.BroadcastGroup"
+      scatter-gather-pool = "de.frosner.dds.akka.routing.ScatterGatherFirstCompletedPool"
+      scatter-gather-group = "de.frosner.dds.akka.routing.ScatterGatherFirstCompletedGroup"
+      tail-chopping-pool = "de.frosner.dds.akka.routing.TailChoppingPool"
+      tail-chopping-group = "de.frosner.dds.akka.routing.TailChoppingGroup"
+      consistent-hashing-pool = "de.frosner.dds.akka.routing.ConsistentHashingPool"
+      consistent-hashing-group = "de.frosner.dds.akka.routing.ConsistentHashingGroup"
+    }
+
+    deployment {
+      default {
+        dispatcher = ""
+        mailbox = ""
+        router = "from-code"
+        nr-of-instances = 1
+        within = 5 seconds
+        virtual-nodes-factor = 10
+        tail-chopping-router {
+          interval = 10 milliseconds
+        }
+        routees {
+          paths = []
+        }
+        resizer {
+          enabled = off
+          lower-bound = 1
+          upper-bound = 10
+          pressure-threshold = 1
+          rampup-rate = 0.2
+          backoff-threshold = 0.3
+          backoff-rate = 0.1
+          messages-per-resize = 10
+        }
+      }
+    }
+
+    default-dispatcher {
+
+      type = "Dispatcher"
+      executor = "default-executor"
+      default-executor {
+        fallback = "fork-join-executor"
+      }
+      fork-join-executor {
+        parallelism-min = 8
+        parallelism-factor = 3.0
+        parallelism-max = 64
+      }
+      thread-pool-executor {
+        keep-alive-time = 60s
+        core-pool-size-min = 8
+        core-pool-size-factor = 3.0
+        core-pool-size-max = 64
+        max-pool-size-min = 8
+        max-pool-size-factor  = 3.0
+        max-pool-size-max = 64
+        task-queue-size = -1
+        task-queue-type = "linked"
+        allow-core-timeout = on
+      }
+      shutdown-timeout = 1s
+      throughput = 5
+      throughput-deadline-time = 0ms
+      attempt-teamwork = on
+      mailbox-requirement = ""
+
+    }
+
+    default-mailbox {
+      mailbox-type = "de.frosner.dds.akka.dispatch.UnboundedMailbox"
+      mailbox-capacity = 1000
+      mailbox-push-timeout-time = 10s
+      stash-capacity = -1
+    }
+
+    mailbox {
+      requirements {
+        "de.frosner.dds.akka.dispatch.UnboundedMessageQueueSemantics" =
+          de.frosner.dds.akka.actor.mailbox.unbounded-queue-based
+        "de.frosner.dds.akka.dispatch.BoundedMessageQueueSemantics" =
+          de.frosner.dds.akka.dds.actor.mailbox.bounded-queue-based
+        "de.frosner.dds.akka.dispatch.DequeBasedMessageQueueSemantics" =
+          de.frosner.dds.akka.dds.actor.mailbox.unbounded-deque-based
+        "de.frosner.dds.akka.dispatch.UnboundedDequeBasedMessageQueueSemantics" =
+          de.frosner.dds.akka.dds.actor.mailbox.unbounded-deque-based
+        "de.frosner.dds.akka.dispatch.BoundedDequeBasedMessageQueueSemantics" =
+          de.frosner.dds.akka.dds.actor.mailbox.bounded-deque-based
+        "de.frosner.dds.akka.dispatch.MultipleConsumerSemantics" =
+          de.frosner.dds.akka.dds.actor.mailbox.unbounded-queue-based
+      }
+
+      unbounded-queue-based {
+        mailbox-type = "de.frosner.dds.akka.dispatch.UnboundedMailbox"
+      }
+
+      bounded-queue-based {
+        mailbox-type = "de.frosner.dds.akka.dispatch.BoundedMailbox"
+      }
+
+      unbounded-deque-based {
+        mailbox-type = "de.frosner.dds.akka.dispatch.UnboundedDequeBasedMailbox"
+      }
+
+      bounded-deque-based {
+        mailbox-type = "de.frosner.dds.akka.dispatch.BoundedDequeBasedMailbox"
+      }
+    }
+
+    debug {
+      receive = off
+      autoreceive = off
+      lifecycle = off
+      fsm = off
+      event-stream = off
+      unhandled = off
+      router-misconfiguration = off
+    }
+
+    serializers {
+      java = "de.frosner.dds.akka.serialization.JavaSerializer"
+      bytes = "de.frosner.dds.akka.serialization.ByteArraySerializer"
+    }
+
+    serialization-bindings {
+      "[B" = bytes
+      "java.io.Serializable" = java
+    }
+
+    dsl {
+      inbox-size = 1000
+      default-timeout = 5s
+    }
+
+  }
+
+  scheduler {
+    tick-duration = 10ms
+    ticks-per-wheel = 512
+    implementation = de.frosner.dds.akka.actor.LightArrayRevolverScheduler
+    shutdown-timeout = 5s
+  }
+
+  io {
+
+    pinned-dispatcher {
+      type = "PinnedDispatcher"
+      executor = "thread-pool-executor"
+      thread-pool-executor.allow-core-pool-timeout = off
+    }
+
+    tcp {
+      nr-of-selectors = 1
+      max-channels = 256000
+      selector-association-retries = 10
+      batch-accept-limit = 10
+      direct-buffer-size = 128 KiB
+      direct-buffer-pool-limit = 1000
+      register-timeout = 5s
+      max-received-message-size = unlimited
+      trace-logging = off
+      selector-dispatcher = "de.frosner.dds.akka.io.pinned-dispatcher"
+      worker-dispatcher = "de.frosner.dds.akka.actor.default-dispatcher"
+      management-dispatcher = "de.frosner.dds.akka.actor.default-dispatcher"
+      file-io-dispatcher = "de.frosner.dds.akka.actor.default-dispatcher"
+      file-io-transferTo-limit = 512 KiB
+      finish-connect-retries = 5
+    }
+
+    udp {
+      nr-of-selectors = 1
+      max-channels = 4096
+      select-timeout = infinite
+      selector-association-retries = 10
+      receive-throughput = 3
+      direct-buffer-size = 128 KiB
+      direct-buffer-pool-limit = 1000
+      received-message-size-limit = unlimited
+      trace-logging = off
+      selector-dispatcher = "de.frosner.dds.akka.io.pinned-dispatcher"
+      worker-dispatcher = "de.frosner.dds.akka.actor.default-dispatcher"
+      management-dispatcher = "de.frosner.dds.akka.actor.default-dispatcher"
+    }
+
+    udp-connected {
+      nr-of-selectors = 1
+      max-channels = 4096
+      select-timeout = infinite
+      selector-association-retries = 10
+      receive-throughput = 3
+      direct-buffer-size = 128 KiB
+      direct-buffer-pool-limit = 1000
+      received-message-size-limit = unlimited
+      trace-logging = off
+      selector-dispatcher = "de.frosner.dds.akka.io.pinned-dispatcher"
+      worker-dispatcher = "de.frosner.dds.akka.actor.default-dispatcher"
+      management-dispatcher = "de.frosner.dds.akka.actor.default-dispatcher"
+    }
+
+  }
+
+}
