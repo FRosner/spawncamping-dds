@@ -8,7 +8,7 @@ oldSprayConf=reference.conf
 echo "[info] Deleting $oldSprayConf from $jarjarjar"
 zip -d $jarjarjar $oldSprayConf >> build.log
 
-newSprayConf=dds.conf
+newSprayConf=dds.typesafe-conf
 echo "[info] Including $newSprayConf into $jarjarjar"
 cd build
 zip -g $jarjarjar $newSprayConf >> build.log
