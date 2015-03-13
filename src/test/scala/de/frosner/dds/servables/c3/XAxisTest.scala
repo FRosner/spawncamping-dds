@@ -14,4 +14,15 @@ class XAxisTest extends FlatSpec with Matchers {
     new CustomXAxis().toJson shouldBe JsObject(("type", JsString("category")))
   }
 
+  it should "serialize other properties correctly" in {
+    class CustomXAxis extends XAxis {
+      override val axisType: AxisType = AxisTypeEnum.Categorical
+      override private[servables] val configJson: Map[String, JsValue] = Map(("key", JsString("value")))
+    }
+    new CustomXAxis().toJson shouldBe JsObject(
+      ("type", JsString("category")),
+      ("key", JsString("value"))
+    )
+  }
+
 }
