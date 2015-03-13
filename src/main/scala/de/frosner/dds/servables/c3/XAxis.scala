@@ -1,7 +1,7 @@
 package de.frosner.dds.servables.c3
 
 import de.frosner.dds.servables.c3.AxisTypeEnum._
-import spray.json.{JsString, JsObject, JsValue}
+import spray.json.{JsArray, JsString, JsObject, JsValue}
 
 trait XAxis {
 
@@ -21,5 +21,13 @@ object XAxis {
   }
 
   val indexed: XAxis = new IndexedXAxis()
+
+  private case class CategoricalXAxis(categories: Seq[String]) extends XAxis {
+    override val axisType: AxisType = AxisTypeEnum.Categorical
+    override private[servables] val configJson: Map[String, JsValue] =
+      Map(("categories", JsArray(categories.map(c => JsString(c)).toVector)))
+  }
+
+  def categorical(categories: Seq[String]): XAxis = CategoricalXAxis(categories)
 
 }

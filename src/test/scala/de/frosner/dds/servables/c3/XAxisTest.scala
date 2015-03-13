@@ -2,11 +2,11 @@ package de.frosner.dds.servables.c3
 
 import de.frosner.dds.servables.c3.AxisTypeEnum.AxisType
 import org.scalatest.{Matchers, FlatSpec}
-import spray.json.{JsString, JsObject, JsValue}
+import spray.json.{JsArray, JsString, JsObject, JsValue}
 
 class XAxisTest extends FlatSpec with Matchers {
 
-  "An X-Axis" should "serialize its type correctly" in {
+  "An x-axis" should "serialize its type correctly" in {
     class CustomXAxis extends XAxis {
       override val axisType: AxisType = AxisTypeEnum.Categorical
       override private[servables] val configJson: Map[String, JsValue] = Map.empty
@@ -23,6 +23,24 @@ class XAxisTest extends FlatSpec with Matchers {
       ("type", JsString("category")),
       ("key", JsString("value"))
     )
+  }
+
+  "An indexed x-axis" should "have the correct axis type" in {
+    XAxis.indexed.axisType shouldBe AxisTypeEnum.Indexed
+  }
+
+  it should "have no additional properties" in {
+    XAxis.indexed.configJson shouldBe Map.empty
+  }
+
+
+  "A categorical x-axis" should "have the correct axis type" in {
+    XAxis.categorical(Seq.empty).axisType shouldBe AxisTypeEnum.Categorical
+  }
+
+  it should "have the categories as additional properties" in {
+    XAxis.categorical(List("a", "b")).configJson shouldBe
+      Map(("categories", JsArray(JsString("a"), JsString("b"))))
   }
 
 }
