@@ -162,8 +162,19 @@ object DDS {
     longDescription = "Plots a pie chart with the given value per group. The input must contain each key only once.",
     parameters = "keyValuePairs: Iterable[(Key, NumericValue)]"
   )
-  def pie[K, V](keyValuePairs: Iterable[(K, V)])(implicit num: Numeric[V]) = {
+  def pie[K, V](keyValuePairs: Iterable[(K, V)])(implicit num: Numeric[V]): Unit = {
     seriesPlot(keyValuePairs.map{ case (key, value) => Series(key.toString, List(value))}, ChartTypeEnum.Pie)
+  }
+
+  @Help(
+    category = "RDD Analysis",
+    shortDescription = "Plots a pie chart with the counts of all distinct values in this RDD",
+    longDescription = "Plots a pie chart with the counts of all distinct values in this RDD. This makes most sense for " +
+      "non-numeric values that have a relatively low cardinality.",
+    parameters = "values: RDD[Value]"
+  )
+  def pie[V: ClassTag](values: RDD[V]): Unit = {
+    pie(values.map((_, 1)).reduceByKey(_ + _).collect)
   }
 
   @Help(
@@ -189,7 +200,7 @@ object DDS {
   def groupAndPie[K: ClassTag, N: ClassTag](toBeGroupedValues: RDD[(K, N)])
                                            (reduceFunction: (N, N) => N)
                                            (implicit num: Numeric[N]): Unit = {
-    pie(toBeGroupedValues.reduceByKey(reduceFunction).collect)
+    pie(toBeGroupedValues.reduceByKey(reduceFunction).collect.sortBy{ case (value, count) => count })
   }
   
   private def table(table: Table): Unit = {
