@@ -215,6 +215,18 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     )
   }
 
+  it should "be served for non-numeric values" in {
+    DDS.start(mockedServer)
+    val valueRdd = sc.makeRDD(List("a", "b", "b", "c"))
+    DDS.summarize(valueRdd)
+
+    val resultTable = mockedServer.lastServed.get.asInstanceOf[Table]
+    resultTable.head.toList shouldBe List("label", "mode", "cardinality")
+    resultTable.rows.toList shouldBe List(
+      List("data", "b", 3)
+    )
+  }
+
   "A correct table" should "be printed from generic RDD of single values" in {
     DDS.start(mockedServer)
     val rdd = sc.makeRDD(List(1))

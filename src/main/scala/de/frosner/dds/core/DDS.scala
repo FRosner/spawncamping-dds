@@ -247,12 +247,23 @@ object DDS {
   @Help(
     category = "RDD Analysis",
     shortDescription = "Shows some basic summary statistics of the given dataset",
-    longDescription = "Shows some basic summary statistics of the given dataset. " +
-      "Statistics are: count, sum, min, max, mean, stdev, variance.",
+    longDescription = "Shows some basic summary statistics of the given dataset.\n" +
+      "Statistics for numeric values are: count, sum, min, max, mean, stdev, variance\n" +
+      "Statistics for nominal values are: mode, cardinality",
     parameters = "values: RDD[NumericValue]"
   )
-  def summarize[N](values: RDD[N])(implicit num: Numeric[N]): Unit = {
-    table(Table.fromStatCounter(values.stats()))
+  def summarize[N: ClassTag](values: RDD[N])(implicit num: Numeric[N] = null): Unit = {
+    if (num != null) {
+      table(Table.fromStatCounter(values.stats()))
+    } else {
+      val cardinality = values.distinct.count
+      val valueCounts = values.map((_, 1)).reduceByKey(_ + _)
+      val (mode, modeCount) = valueCounts.max()(Ordering.by{ case (value, count) => count })
+      table(
+        List("label", "mode", "cardinality"),
+        List(List("data", mode, cardinality))
+      )
+    }
   }
 
   @Help(
