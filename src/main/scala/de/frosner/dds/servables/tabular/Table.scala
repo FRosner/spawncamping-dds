@@ -14,10 +14,15 @@ case class Table(head: Seq[String], rows: Seq[Seq[Any]]) extends Servable {
       JsObject(OrderedMap[String, JsValue](
         head.zip(row).map{ case (columnName, value) => {
           val jsValue = value match {
-            case int: Int => JsNumber(value.asInstanceOf[Int])
-            case double: Double => JsNumber(value.asInstanceOf[Double])
-            case long: Long => JsNumber(value.asInstanceOf[Long])
-            case default => JsString(value.toString)
+            case None => JsNull
+            case Some(int: Int) => JsNumber(int)
+            case int: Int => JsNumber(int)
+            case Some(double: Double) => JsNumber(double)
+            case double: Double => JsNumber(double)
+            case Some(long: Long) => JsNumber(long)
+            case long: Long => JsNumber(long)
+            case Some(default) => JsString(default.toString)
+            case default => JsString(default.toString)
           }
           (columnName, jsValue)
         }}

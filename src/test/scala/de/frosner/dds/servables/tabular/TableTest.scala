@@ -6,7 +6,7 @@ import spray.json._
 
 class TableTest extends FlatSpec with Matchers {
 
-  "A table" should "have the correct JSON format when constructed from single stat counter" in {
+  "A stat table" should "have the correct JSON format when constructed from single stat counter" in {
     val statCounter = StatCounter(1D, 2D, 3D)
     val stats = Table.fromStatCounter(statCounter)
     stats.contentAsJson shouldBe JsArray(JsObject(OrderedMap[String, JsValue](List(
@@ -49,7 +49,7 @@ class TableTest extends FlatSpec with Matchers {
     )
   }
 
-  it should "have the correct JSON format when constructed directly" in {
+  "A regular table" should "have the correct JSON format when constructed directly" in {
     Table(List("a", "b"), List(List("va1", "vb1"), List("va2", "vb2"))).contentAsJson shouldBe
       JsArray(
         JsObject(
@@ -59,6 +59,43 @@ class TableTest extends FlatSpec with Matchers {
         JsObject(
           ("a", JsString("va2")),
           ("b", JsString("vb2"))
+        )
+      )
+  }
+
+  it should "work well with optional String values" in {
+    Table(List("data"), List(List(Option("a")), List(Option.empty[String]))).contentAsJson shouldBe
+      JsArray(
+        JsObject(
+          ("data", JsString("a"))
+        ),
+        JsObject(
+          ("data", JsNull)
+        )
+      )
+  }
+
+  it should "work well with optional Int values" in {
+    Table(List("data"), List(List(Option(1)), List(Option.empty[Int]))).contentAsJson shouldBe
+      JsArray(
+        JsObject(
+          ("data", JsNumber(1))
+        ),
+        JsObject(
+          ("data", JsNull)
+        )
+      )
+  }
+
+  it should "work well with optional custom class values" in {
+    case class Custom(value: String)
+    Table(List("data"), List(List(Option(Custom("a"))), List(Option.empty[Custom]))).contentAsJson shouldBe
+      JsArray(
+        JsObject(
+          ("data", JsString("Custom(a)"))
+        ),
+        JsObject(
+          ("data", JsNull)
         )
       )
   }
