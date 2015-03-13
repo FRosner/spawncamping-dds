@@ -12,6 +12,7 @@ import spray.http.MediaTypes._
 import spray.routing.SimpleRoutingApp
 
 import scala.concurrent.duration._
+import scala.util.Try
 
 /**
  * [[Server]] based on spray-can HTTP server. If multiple servers shall be used, they need to have different names.
@@ -38,93 +39,100 @@ case class SprayServer(name: String,
   private val actorName = "chart-server-" + name + "-actor"
   
   def start() = {
-    println(s"""Starting server on $interface:$port""")
-    val server = startServer(interface, port, actorName) {
-      path("") {
-        get {
-          respondWithMediaType(`text/html`) {
-            complete(Index.html)
+    val tryToConnectToSocket = Try(scalaj.http.Http(s"http://$interface:$port").asString)
+    if (tryToConnectToSocket.isSuccess) {
+      println(s"""$interface:$port is already in use. Server started already? Another server blocking the socket?""")
+      println()
+      DDS.help("start")
+    } else {
+      println(s"""Starting server on $interface:$port""")
+      val server = startServer(interface, port, actorName) {
+        path("") {
+          get {
+            respondWithMediaType(`text/html`) {
+              complete(Index.html)
+            }
           }
-        }
-      } ~
-      path("img" / "watermark.svg"){
-        get {
-          respondWithMediaType(`image/svg+xml`) {
-            complete(Watermark.svg)
+        } ~
+          path("img" / "watermark.svg") {
+            get {
+              respondWithMediaType(`image/svg+xml`) {
+                complete(Watermark.svg)
+              }
+            }
+          } ~
+          path("lib" / "d3.js") {
+            get {
+              respondWithMediaType(`application/javascript`) {
+                complete(D3.js)
+              }
+            }
+          } ~
+          path("lib" / "c3.js") {
+            get {
+              respondWithMediaType(`application/javascript`) {
+                complete(C3.js)
+              }
+            }
+          } ~
+          path("css" / "c3.css") {
+            get {
+              respondWithMediaType(`text/css`) {
+                complete(C3.css)
+              }
+            }
+          } ~
+          path("lib" / "d3.parcoords.js") {
+            get {
+              respondWithMediaType(`application/javascript`) {
+                complete(PC.js)
+              }
+            }
+          } ~
+          path("css" / "d3.parcoords.css") {
+            get {
+              respondWithMediaType(`text/css`) {
+                complete(PC.css)
+              }
+            }
+          } ~
+          path("css" / "table.css") {
+            get {
+              respondWithMediaType(`text/css`) {
+                complete(Table.css)
+              }
+            }
+          } ~
+          path("lib" / "jquery.js") {
+            get {
+              respondWithMediaType(`application/javascript`) {
+                complete(JQuery.js)
+              }
+            }
+          } ~
+          path("app" / "main.js") {
+            get {
+              respondWithMediaType(`application/javascript`) {
+                complete(Main.js)
+              }
+            }
+          } ~
+          path("chart" / "update") {
+            get {
+              complete {
+                val response = servable.map(_.toJsonString).getOrElse("{}")
+                servable = Option.empty
+                response
+              }
+            }
           }
-        }
-      } ~
-      path("lib" / "d3.js") {
-        get {
-          respondWithMediaType(`application/javascript`) {
-            complete(D3.js)
-          }
-        }
-      } ~
-      path("lib" / "c3.js") {
-        get {
-          respondWithMediaType(`application/javascript`) {
-            complete(C3.js)
-          }
-        }
-      } ~
-      path("css" / "c3.css") {
-        get {
-          respondWithMediaType(`text/css`) {
-            complete(C3.css)
-          }
-        }
-      } ~
-      path("lib" / "d3.parcoords.js") {
-        get {
-          respondWithMediaType(`application/javascript`) {
-            complete(PC.js)
-          }
-        }
-      } ~
-      path("css" / "d3.parcoords.css") {
-        get {
-          respondWithMediaType(`text/css`) {
-            complete(PC.css)
-          }
-        }
-      } ~
-      path("css" / "table.css") {
-        get {
-          respondWithMediaType(`text/css`) {
-            complete(Table.css)
-          }
-        }
-      } ~
-      path("lib" / "jquery.js") {
-        get {
-          respondWithMediaType(`application/javascript`) {
-            complete(JQuery.js)
-          }
-        }
-      } ~
-      path("app" / "main.js") {
-        get {
-          respondWithMediaType(`application/javascript`) {
-            complete(Main.js)
-          }
-        }
-      } ~
-      path("chart" / "update") {
-        get {
-          complete {
-            val response = servable.map(_.toJsonString).getOrElse("{}")
-            servable = Option.empty
-            response
-          }
-        }
       }
-    }
 
-    Thread.sleep(1000)
-    if (launchBrowser && Desktop.isDesktopSupported()) {
-      println("Opening browser")
-      Desktop.getDesktop().browse(new URI( s"""http://$interface:$port/"""))
+      Thread.sleep(1000)
+      if (launchBrowser && Desktop.isDesktopSupported()) {
+        println("Opening browser")
+        Desktop.getDesktop().browse(new URI( s"""http://$interface:$port/"""))
+      }
     }
   }
 

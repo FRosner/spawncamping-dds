@@ -46,6 +46,18 @@ class SprayServerTest extends FlatSpec with Matchers with BeforeAndAfter{
     customServer.stop()
   }
 
+  it should "display a meaningful error message when socket is already in use" in {
+    val firstServer = SprayServer(
+      "first-server-" + testNumber, interface = "localhost", port = 23456, launchBrowser = false
+    )
+    val secondServer = SprayServer(
+      "second-server-" + testNumber, interface = "localhost", port = 23456, launchBrowser = false
+    )
+    firstServer.start()
+    secondServer.start() // see nice error message :P
+    firstServer.stop()
+  }
+
   it should "respond with an empty object if no chart is served" in {
     Http(s"http://$DEFAULT_INTERFACE:$DEFAULT_PORT/chart/update").asString.body shouldBe "{}"
   }

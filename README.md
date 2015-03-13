@@ -79,6 +79,7 @@ This project is licensed under the Apache License Version 2.0. For details pleas
 | Library       | License        |
 | ------------  | -------------- |
 | [spray](http://spray.io/) | Apache 2 |
+| [scalaj-http](https://github.com/scalaj/scalaj-http) | Apache 2 |
 | [D3.js](http://d3js.org/) | Custom |
 | [C3.js](http://c3js.org/) | MIT |
 | [Parallel Coordinates](https://github.com/syntagmatic/parallel-coordinates) | Custom |
