@@ -9,7 +9,7 @@ import spray.json._
  *
  * @param data to plot in the chart
  */
-case class Chart(data: Data) extends Servable {
+case class Chart(data: Data, xAxis: XAxis = XAxis.indexed) extends Servable {
 
   val servableType = "chart"
 
@@ -17,7 +17,8 @@ case class Chart(data: Data) extends Servable {
 
   def contentAsJson: JsValue = JsObject(
     ("bindto", JsString(bindTo)),
-    ("data", data.toJson)
+    ("data", data.toJson),
+    ("axis", JsObject(("x", xAxis.toJson)))
   )
 
 }
