@@ -50,7 +50,7 @@ class TableTest extends FlatSpec with Matchers {
   }
 
   it should "have the correct JSON format when constructed directly" in {
-    Table(List("a", "b"), List(List("va1", "vb1"), List("va2", "vb2"))).contentAsJson shouldBe(
+    Table(List("a", "b"), List(List("va1", "vb1"), List("va2", "vb2"))).contentAsJson shouldBe
       JsArray(
         JsObject(
           ("a", JsString("va1")),
@@ -60,7 +60,6 @@ class TableTest extends FlatSpec with Matchers {
           ("a", JsString("va2")),
           ("b", JsString("vb2"))
         )
-      )
       )
   }
 
