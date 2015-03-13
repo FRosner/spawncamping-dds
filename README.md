@@ -19,7 +19,7 @@ when working on the cluster with the Spark REPL. It does not offer a fully flexi
     import de.frosner.dds.core.DDS._
     ```
 
-3. Start the chart server + web interface
+3. Start the web server + user interface
 
     ```scala
     start()
