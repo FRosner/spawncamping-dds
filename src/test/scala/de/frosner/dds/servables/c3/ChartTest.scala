@@ -16,4 +16,11 @@ class ChartTest extends FlatSpec with Matchers {
     )
   }
 
+  it should "include a custom axis type in the JSON format" in {
+    val data = new DummyData("data", "1")
+    val categoricalAxis = XAxis.categorical(List("a", "b"))
+    Chart(data, categoricalAxis).contentAsJson.asJsObject.fields("axis") shouldBe
+      JsObject(("x", categoricalAxis.toJson))
+  }
+
 }
