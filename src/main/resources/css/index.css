@@ -1,0 +1,11 @@
+#header {
+  width:100%;
+}
+
+#lockButton {
+  cursor:pointer;
+  float:right;
+  width:14px;
+  height:14px;
+  background:url("/img/lock.png");
+}

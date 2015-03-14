@@ -1,12 +1,15 @@
 package de.frosner.dds.html
 
+import de.frosner.dds.util.StringResource
+
 object Index {
 
-  val html =
+  lazy val html =
     <html>
       <head>
         <link href="/css/c3.css" rel="stylesheet" type="text/css"></link>
         <link href="/css/table.css" rel="stylesheet" type="text/css"></link>
+        <link href="/css/index.css" rel="stylesheet" type="text/css"></link>
         <link href="/css/d3.parcoords.css" rel="stylesheet" type="text/css"></link>
         <script src="/lib/d3.js" charset="utf-8"></script>
         <script src="/lib/d3.parcoords.js" charset="utf-8"></script>
@@ -15,6 +18,7 @@ object Index {
       </head>
       <body>
         <div id="header">
+          <div id={LockButton.id} onclick="toggleUpdating()">aaa</div>
         </div>
         <div id="content">
           <object data="/img/watermark.svg" type="image/svg+xml" id={Watermark.id} style="display: block; width: 50%; margin: 0 auto;"></object>
@@ -22,5 +26,7 @@ object Index {
         </div>
       </body>
     </html>
+
+  lazy val css = StringResource.read("/css/index.css")
 
 }

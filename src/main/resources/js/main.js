@@ -1,9 +1,17 @@
-$(document).ready(function(){
-    setInterval("checkForUpdate()",100);
-});
+function toggleUpdating() {
+    if (document.checkingForUpdate == true) {
+        document.checkingForUpdate = false;
+        clearInterval(document.updater)
+        document.updater = null;
+    } else {
+        document.updater = setInterval("checkForUpdate()",100);
+        document.checkingForUpdate = true;
+    }
+}
+
+$(document).ready(toggleUpdating);
 
 function checkForUpdate() {
-
     $.ajax({
         url: "/chart/update",
         success: function(response) {
@@ -20,7 +28,6 @@ function checkForUpdate() {
             }
         }
     });
-
 }
 
 function generateSingleChart(chart) {
