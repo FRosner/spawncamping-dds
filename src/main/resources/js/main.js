@@ -8,7 +8,7 @@ function checkForUpdate() {
         url: "/chart/update",
         success: function(response) {
             if (response != "{}") {
-                document.body.innerHTML = "";
+                document.getElementById("content").innerHTML = "";
                 var servable = JSON.parse(response);
                 if (servable.type == "chart") {
                     generateSingleChart(servable.content)
@@ -56,7 +56,7 @@ function generateTable(stats) {
         root.appendChild(div);
     }
 
-    generatePCVis(document.body, "pcvis")
+    generatePCVis(document.getElementById("content"), "pcvis")
 
     var parcoords = d3.parcoords()("#pcvis")
         .data(stats)
@@ -67,7 +67,7 @@ function generateTable(stats) {
         .render()
         .brushMode("1D-axes");
 
-    generateTableSkeleton(document.body, "table")
+    generateTableSkeleton(document.getElementById("content"), "table")
 
     var tableHead = d3.select("thead").selectAll("th")
         .data(d3.keys(stats[0]))
