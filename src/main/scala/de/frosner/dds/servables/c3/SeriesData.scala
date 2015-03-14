@@ -13,6 +13,8 @@ import spray.json.{JsArray, JsObject}
  */
 case class SeriesData[N](series: Iterable[Series[N]], types: ChartTypes) extends Data {
 
+  require(series.size == types.types.size)
+
   override def toJson: JsObject = {
     JsObject(
       ("columns", JsArray(series.map(_.toJson).toVector)),

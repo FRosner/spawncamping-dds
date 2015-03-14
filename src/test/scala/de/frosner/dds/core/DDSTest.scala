@@ -80,7 +80,7 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     (stubbedServer.serve _).verify(expectedChart)
   }
 
-  it should "serve correct line chart with single value sequence" in {
+  it should "serve correct indexed line chart with single value sequence" in {
     DDS.start(stubbedServer)
     DDS.line(List(1,2,3))
 
@@ -90,7 +90,7 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     (stubbedServer.serve _).verify(expectedChart)
   }
 
-  it should "serve correct line chart with multiple value sequences" in {
+  it should "serve correct indexed line chart with multiple value sequences" in {
     DDS.start(stubbedServer)
     DDS.lines(List("a", "b"), List(List(1,2,3), List(3,2,1)))
 
@@ -103,7 +103,7 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     (stubbedServer.serve _).verify(expectedChart)
   }
 
-  it should "serve correct bar chart with single value sequence" in {
+  it should "serve correct indexed bar chart with single value sequence" in {
     DDS.start(stubbedServer)
     DDS.bar(List(1,2,3))
 
@@ -113,7 +113,7 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     (stubbedServer.serve _).verify(expectedChart)
   }
 
-  it should "serve correct bar chart with multiple value sequences" in {
+  it should "serve correct indexed bar chart with multiple value sequences" in {
     DDS.start(stubbedServer)
     DDS.bars(List("a", "b"), List(List(1,2,3), List(3,2,1)))
 
@@ -123,6 +123,35 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
       Series("b", List(3,2,1))
     )
     val expectedChart = Chart(SeriesData(expectedChartSeries, expectedChartTypes))
+    (stubbedServer.serve _).verify(expectedChart)
+  }
+
+  it should "serve correct categorical bar chart with single value sequence" in {
+    DDS.start(stubbedServer)
+    DDS.bar(List(1,2,3), List("a", "b", "c"))
+
+    val expectedChartType = ChartTypes(ChartTypeEnum.Bar)
+    val expectedChartSeries = List(Series("data", List(1,2,3)))
+    val expectedChart = Chart(
+      SeriesData(expectedChartSeries, expectedChartType),
+      XAxis.categorical(List("a", "b", "c"))
+    )
+    (stubbedServer.serve _).verify(expectedChart)
+  }
+
+  it should "serve correct categorical bar chart with multiple value sequences" in {
+    DDS.start(stubbedServer)
+    DDS.bars(List("a", "b"), List(List(1,2,3), List(3,2,1)), List("x", "y", "z"))
+
+    val expectedChartTypes = ChartTypes.multiple(ChartTypeEnum.Bar, 2)
+    val expectedChartSeries = List(
+      Series("a", List(1,2,3)),
+      Series("b", List(3,2,1))
+    )
+    val expectedChart = Chart(
+      SeriesData(expectedChartSeries, expectedChartTypes),
+      XAxis.categorical(List("x", "y", "z"))
+    )
     (stubbedServer.serve _).verify(expectedChart)
   }
 
