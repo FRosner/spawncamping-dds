@@ -102,14 +102,24 @@ object DDS {
     }
   }
 
-  private def seriesPlot[N](series: Iterable[Series[N]], chartTypes: ChartTypes)(implicit num: Numeric[N]): Unit = {
-    require(series.size == chartTypes.types.size)
-    val chart = Chart(SeriesData(series, chartTypes))
-    serve(chart)
+  private def indexedPlot[N](series: Iterable[Series[N]], chartTypes: ChartTypes)(implicit num: Numeric[N]): Unit = {
+    serve(Chart(SeriesData(series, chartTypes)))
   }
 
-  private def seriesPlot[N](series: Iterable[Series[N]], chartType: ChartType)(implicit num: Numeric[N]): Unit = {
-    seriesPlot(series, ChartTypes.multiple(chartType, series.size))
+  private def indexedPlot[N](series: Iterable[Series[N]], chartType: ChartType)(implicit num: Numeric[N]): Unit = {
+    indexedPlot(series, ChartTypes.multiple(chartType, series.size))
+  }
+
+  private def categoricalPlot[N](series: Iterable[Series[N]],
+                                 categories: Seq[String],
+                                 chartTypes: ChartTypes)(implicit num: Numeric[N]): Unit = {
+    serve(Chart(SeriesData(series, chartTypes), XAxis.categorical(categories)))
+  }
+
+  private def categoricalPlot[N](series: Iterable[Series[N]],
+                                 categories: Seq[String],
+                                 chartType: ChartType)(implicit num: Numeric[N]): Unit = {
+    categoricalPlot(series, categories, ChartTypes.multiple(chartType, series.size))
   }
 
   @Help(
@@ -131,13 +141,13 @@ object DDS {
   )
   def lines[N](labels: Seq[String], values: Seq[Seq[N]])(implicit num: Numeric[N]) = {
     val series = labels.zip(values).map{ case (label, values) => Series(label, values) }
-    seriesPlot(series, ChartTypeEnum.Line)
+    indexedPlot(series, ChartTypeEnum.Line)
   }
 
   @Help(
     category = "Generic Plots",
-    shortDescription = "Plots a bar chart",
-    longDescription = "Plots a bar chart visualizing the given value sequence.",
+    shortDescription = "Plots a bar chart with an indexed x-axis.",
+    longDescription = "Plots a bar chart with an indexed x-axis visualizing the given value sequence.",
     parameters = "values: Seq[NumericValue]"
   )
   def bar[N](values: Seq[N])(implicit num: Numeric[N]) = {
@@ -146,14 +156,38 @@ object DDS {
 
   @Help(
     category = "Generic Plots",
-    shortDescription = "Plots a bar chart with multiple bar colors",
-    longDescription = "Plots a bar chart with multiple bar colors. Each color corresponds to one of the value sequences " +
+    shortDescription = "Plots a bar chart with a categorical x-axis.",
+    longDescription = "Plots a bar chart with a categorical x-axis visualizing the given value sequence.",
+    parameters = "values: Seq[NumericValue], categories: Seq[String]"
+  )
+  def bar[N](values: Seq[N], categories: Seq[String])(implicit num: Numeric[N]) = {
+    bars(List("data"), List(values), categories)
+  }
+
+  @Help(
+    category = "Generic Plots",
+    shortDescription = "Plots a bar chart with an indexed x-axis and multiple bar colors",
+    longDescription = "Plots a bar chart with an indexed x-axis and multiple bar colors. " +
+      "Each color corresponds to one of the value sequences " +
       "and is labeled according to the labels specified.",
     parameters = "labels: Seq[String], values: Seq[Seq[NumericValue]]"
   )
   def bars[N](labels: Seq[String], values: Seq[Seq[N]])(implicit num: Numeric[N]) = {
     val series = labels.zip(values).map{ case (label, values) => Series(label, values) }
-    seriesPlot(series, ChartTypeEnum.Bar)
+    indexedPlot(series, ChartTypeEnum.Bar)
+  }
+
+  @Help(
+    category = "Generic Plots",
+    shortDescription = "Plots a bar chart with a categorical x-axis and multiple bar colors",
+    longDescription = "Plots a bar chart with a categorical x-axis and multiple bar colors. " +
+      "Each color corresponds to one of the value sequences " +
+      "and is labeled according to the labels specified.",
+    parameters = "labels: Seq[String], values: Seq[Seq[NumericValue]], categories: Seq[String]"
+  )
+  def bars[N](labels: Seq[String], values: Seq[Seq[N]], categories: Seq[String])(implicit num: Numeric[N]) = {
+    val series = labels.zip(values).map{ case (label, values) => Series(label, values) }
+    categoricalPlot(series, categories, ChartTypeEnum.Bar)
   }
 
   @Help(
@@ -163,7 +197,20 @@ object DDS {
     parameters = "keyValuePairs: Iterable[(Key, NumericValue)]"
   )
   def pie[K, V](keyValuePairs: Iterable[(K, V)])(implicit num: Numeric[V]): Unit = {
-    seriesPlot(keyValuePairs.map{ case (key, value) => Series(key.toString, List(value))}, ChartTypeEnum.Pie)
+    indexedPlot(keyValuePairs.map{ case (key, value) => Series(key.toString, List(value))}, ChartTypeEnum.Pie)
+  }
+
+  @Help(
+    category = "RDD Analysis",
+    shortDescription = "Plots a bar chart with the counts of all distinct values in this RDD",
+    longDescription = "Plots a bar chart with the counts of all distinct values in this RDD. This makes most sense for " +
+      "non-numeric values that have a relatively low cardinality.",
+    parameters = "values: RDD[Value]"
+  )
+  def bar[V: ClassTag](values: RDD[V]): Unit = {
+    val (distinctValues, distinctCounts) =
+      values.map((_, 1)).reduceByKey(_ + _).collect.sortBy{ case (value, count) => count }.reverse.unzip
+    bar(distinctCounts, distinctValues.map(_.toString))
   }
 
   @Help(
