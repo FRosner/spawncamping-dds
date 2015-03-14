@@ -202,6 +202,19 @@ object DDS {
 
   @Help(
     category = "RDD Analysis",
+    shortDescription = "Plots a bar chart with the counts of all distinct values in this RDD",
+    longDescription = "Plots a bar chart with the counts of all distinct values in this RDD. This makes most sense for " +
+      "non-numeric values that have a relatively low cardinality.",
+    parameters = "values: RDD[Value]"
+  )
+  def bar[V: ClassTag](values: RDD[V]): Unit = {
+    val (distinctValues, distinctCounts) =
+      values.map((_, 1)).reduceByKey(_ + _).collect.sortBy{ case (value, count) => count }.reverse.unzip
+    bar(distinctCounts, distinctValues.map(_.toString))
+  }
+
+  @Help(
+    category = "RDD Analysis",
     shortDescription = "Plots a pie chart with the counts of all distinct values in this RDD",
     longDescription = "Plots a pie chart with the counts of all distinct values in this RDD. This makes most sense for " +
       "non-numeric values that have a relatively low cardinality.",

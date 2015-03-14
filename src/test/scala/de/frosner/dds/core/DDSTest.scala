@@ -176,6 +176,20 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     actualChartData.types shouldBe ChartTypes.multiple(ChartTypeEnum.Pie, 3)
   }
 
+  "A correct bar chart" should "be served from a single value RDD" in {
+    DDS.start(mockedServer)
+    val values = sc.makeRDD(List(1,1,1,2,3,3))
+    DDS.bar(values)
+
+    val actualChart = mockedServer.lastServed.get.asInstanceOf[Chart]
+    actualChart.xAxis shouldBe XAxis.categorical(List("1", "3", "2"))
+    val actualChartData = actualChart.data.asInstanceOf[SeriesData[Int]]
+    actualChartData.series.toList shouldBe List(
+      Series("data", List(3, 2, 1))
+    )
+    actualChartData.types shouldBe ChartTypes.multiple(ChartTypeEnum.Bar, 1)
+  }
+
   "Correct pie chart from RDD after groupBy" should "be served when values are already grouped" in {
     DDS.start(stubbedServer)
     val groupedRdd = sc.makeRDD(List(("a", 1), ("a", 2), ("b", 3), ("c", 5))).groupBy(_._1).
