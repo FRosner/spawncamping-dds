@@ -4,7 +4,7 @@ version       := "1.2.0-SNAPSHOT"
 
 name          := "spawncamping-dds"
 
-scalaVersion  := "2.11.2"
+scalaVersion  := "2.11.4"
 
 crossScalaVersions := Seq("2.10.4", scalaVersion.value)
 
