@@ -1,0 +1,24 @@
+#header {
+  width:100%;
+  height:14px;
+}
+
+#lockButton {
+  cursor:pointer;
+  float:right;
+  width:14px;
+  height:14px;
+  background-image:url("/img/lock.png");
+}
+
+#lockButton.unlocked {
+  background-position:14px;
+}
+
+#lockButton.locked {
+  background-position:0px;
+}
+
+#lockButton.unlocked:hover {
+  background-position:0px;
+}

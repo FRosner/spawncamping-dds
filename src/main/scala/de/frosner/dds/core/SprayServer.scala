@@ -5,7 +5,7 @@ import java.net.URI
 
 import akka.actor.ActorSystem
 import com.typesafe.config.ConfigFactory
-import de.frosner.dds.html.{Index, Watermark}
+import de.frosner.dds.html.{LockButton, Index, Watermark}
 import de.frosner.dds.js.{C3, D3, JQuery, Main, _}
 import de.frosner.dds.servables.tabular.Table
 import spray.http.MediaTypes._
@@ -61,6 +61,13 @@ case class SprayServer(name: String,
               }
             }
           } ~
+          path("img" / "lock.png") {
+            get {
+              respondWithMediaType(`image/png`) {
+                complete(LockButton.png)
+              }
+            }
+          } ~
           path("lib" / "d3.js") {
             get {
               respondWithMediaType(`application/javascript`) {
@@ -100,6 +107,13 @@ case class SprayServer(name: String,
             get {
               respondWithMediaType(`text/css`) {
                 complete(Table.css)
+              }
+            }
+          } ~
+          path("css" / "index.css") {
+            get {
+              respondWithMediaType(`text/css`) {
+                complete(Index.css)
               }
             }
           } ~

@@ -1,14 +1,27 @@
-$(document).ready(function(){
-    setInterval("checkForUpdate()",100);
-});
+function toggleUpdating() {
+    var lockButton = document.getElementById("lockButton");
+    if (document.checkingForUpdate == true) {
+        lockButton.className = "locked";
+        lockButton.title = "Unlock Vizboard"
+        document.checkingForUpdate = false;
+        clearInterval(document.updater);
+        document.updater = null;
+    } else {
+        lockButton.className = "unlocked"
+        lockButton.title = "Lock Vizboard"
+        document.updater = setInterval("checkForUpdate()",100);
+        document.checkingForUpdate = true;
+    }
+}
+
+$(document).ready(toggleUpdating);
 
 function checkForUpdate() {
-
     $.ajax({
         url: "/chart/update",
         success: function(response) {
             if (response != "{}") {
-                document.body.innerHTML = "";
+                document.getElementById("content").innerHTML = "";
                 var servable = JSON.parse(response);
                 if (servable.type == "chart") {
                     generateSingleChart(servable.content)
@@ -20,7 +33,6 @@ function checkForUpdate() {
             }
         }
     });
-
 }
 
 function generateSingleChart(chart) {
@@ -56,7 +68,7 @@ function generateTable(stats) {
         root.appendChild(div);
     }
 
-    generatePCVis(document.body, "pcvis")
+    generatePCVis(document.getElementById("content"), "pcvis")
 
     var parcoords = d3.parcoords()("#pcvis")
         .data(stats)
@@ -67,7 +79,7 @@ function generateTable(stats) {
         .render()
         .brushMode("1D-axes");
 
-    generateTableSkeleton(document.body, "table")
+    generateTableSkeleton(document.getElementById("content"), "table")
 
     var tableHead = d3.select("thead").selectAll("th")
         .data(d3.keys(stats[0]))
