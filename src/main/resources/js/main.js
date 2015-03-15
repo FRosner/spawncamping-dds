@@ -1,16 +1,18 @@
 function toggleUpdating() {
+    var lockButton = document.getElementById("lockButton");
     if (document.checkingForUpdate == true) {
-        document.getElementById("lockButton").className = "locked";
+        lockButton.className = "locked";
+        lockButton.title = "Unlock Vizboard"
         document.checkingForUpdate = false;
         clearInterval(document.updater);
         document.updater = null;
     } else {
-        document.getElementById("lockButton").className = "unlocked";
-        document.updater = setInterval("checkForUpdate()", 100);
+        lockButton.className = "unlocked"
+        lockButton.title = "Lock Vizboard"
+        document.updater = setInterval("checkForUpdate()",100);
         document.checkingForUpdate = true;
     }
 }
-
 
 $(document).ready(toggleUpdating);
 
