@@ -43,7 +43,7 @@ function generateSingleChart(chart) {
         root.appendChild(div);
     }
 
-    generateChartDiv(document.body, "chart")
+    generateChartDiv(document.getElementById("content"), "chart")
     var chart = c3.generate(chart);
 
 }
