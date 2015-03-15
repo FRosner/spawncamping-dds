@@ -1,13 +1,16 @@
 function toggleUpdating() {
     if (document.checkingForUpdate == true) {
+        document.getElementById("lockButton").className = "locked";
         document.checkingForUpdate = false;
-        clearInterval(document.updater)
+        clearInterval(document.updater);
         document.updater = null;
     } else {
-        document.updater = setInterval("checkForUpdate()",100);
+        document.getElementById("lockButton").className = "unlocked";
+        document.updater = setInterval("checkForUpdate()", 100);
         document.checkingForUpdate = true;
     }
 }
+
 
 $(document).ready(toggleUpdating);
 

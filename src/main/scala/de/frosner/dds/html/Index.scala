@@ -18,7 +18,7 @@ object Index {
       </head>
       <body>
         <div id="header">
-          <div id={LockButton.id} onclick="toggleUpdating()">aaa</div>
+          <div id={LockButton.id} onclick="toggleUpdating()" class="unlocked"></div>
         </div>
         <div id="content">
           <object data="/img/watermark.svg" type="image/svg+xml" id={Watermark.id} style="display: block; width: 50%; margin: 0 auto;"></object>

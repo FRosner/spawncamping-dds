@@ -7,5 +7,17 @@
   float:right;
   width:14px;
   height:14px;
-  background:url("/img/lock.png");
+  background-image:url("/img/lock.png");
+}
+
+#lockButton.unlocked {
+  background-position:14px;
+}
+
+#lockButton.locked {
+  background-position:0px;
+}
+
+#lockButton.unlocked:hover {
+  background-position:0px;
 }
