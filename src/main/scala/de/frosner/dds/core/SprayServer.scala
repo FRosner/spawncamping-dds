@@ -54,83 +54,6 @@ case class SprayServer(name: String,
             }
           }
         } ~
-          path("img" / "watermark.svg") {
-            get {
-              respondWithMediaType(`image/svg+xml`) {
-                complete(Watermark.svg)
-              }
-            }
-          } ~
-          path("img" / "lock.png") {
-            get {
-              respondWithMediaType(`image/png`) {
-                complete(LockButton.png)
-              }
-            }
-          } ~
-          path("lib" / "d3.js") {
-            get {
-              respondWithMediaType(`application/javascript`) {
-                complete(D3.js)
-              }
-            }
-          } ~
-          path("lib" / "c3.js") {
-            get {
-              respondWithMediaType(`application/javascript`) {
-                complete(C3.js)
-              }
-            }
-          } ~
-          path("css" / "c3.css") {
-            get {
-              respondWithMediaType(`text/css`) {
-                complete(C3.css)
-              }
-            }
-          } ~
-          path("lib" / "d3.parcoords.js") {
-            get {
-              respondWithMediaType(`application/javascript`) {
-                complete(PC.js)
-              }
-            }
-          } ~
-          path("css" / "d3.parcoords.css") {
-            get {
-              respondWithMediaType(`text/css`) {
-                complete(PC.css)
-              }
-            }
-          } ~
-          path("css" / "table.css") {
-            get {
-              respondWithMediaType(`text/css`) {
-                complete(Table.css)
-              }
-            }
-          } ~
-          path("css" / "index.css") {
-            get {
-              respondWithMediaType(`text/css`) {
-                complete(Index.css)
-              }
-            }
-          } ~
-          path("lib" / "jquery.js") {
-            get {
-              respondWithMediaType(`application/javascript`) {
-                complete(JQuery.js)
-              }
-            }
-          } ~
-          path("app" / "main.js") {
-            get {
-              respondWithMediaType(`application/javascript`) {
-                complete(Main.js)
-              }
-            }
-          } ~
           path("chart" / "update") {
             get {
               complete {
@@ -139,6 +62,9 @@ case class SprayServer(name: String,
                 response
               }
             }
+          } ~
+          pathPrefix("ui") {
+            getFromResourceDirectory("ui")
           }
       }
 
