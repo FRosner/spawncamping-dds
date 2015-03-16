@@ -27,6 +27,9 @@ function checkForUpdate() {
                     generateSingleChart(servable.content)
                 } else if (servable.type == "table") {
                     generateTable(servable.content)
+                } else if (servable.type == "histogram") {
+                    var bins = [{start:1.0, end:7, y:8}, {start: 7, end:13, y:2}, {start:13, end:50, y:1}];
+                    generateHistogram(bins);
                 } else {
                     console.log("Unrecognized response: " + response);
                 }
@@ -93,12 +96,12 @@ function generateTable(stats) {
       .text(function(value){ return value });
 }
 
-function generateHistogram() {
+function generateHistogram(bins) {
     var margin = {top: 30, right: 60, bottom: 60, left: 60},
         width = window.innerWidth - margin.left - margin.right,
         height = window.innerHeight - margin.top - margin.bottom;
 
-    var svg = d3.select("body").append("svg")
+    var svg = d3.select("content").append("svg")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
       .append("g")
@@ -109,8 +112,6 @@ function generateHistogram() {
 
     var y = d3.scale.linear()
         .range([height, 0]);
-
-    var bins = [{start:1.0, end:7, y:8}, {start: 7, end:13, y:2}, {start:13, end:50, y:1}];
 
     bins = bins.map(function(bin) {
         bin.width = bin.end - bin.start;
