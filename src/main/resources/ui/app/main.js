@@ -92,3 +92,54 @@ function generateTable(stats) {
       .enter().append("td")
       .text(function(value){ return value });
 }
+
+function generateHistogram() {
+    var margin = {top: 30, right: 60, bottom: 60, left: 60},
+        width = window.innerWidth - margin.left - margin.right,
+        height = window.innerHeight - margin.top - margin.bottom;
+
+    var svg = d3.select("body").append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    var x = d3.scale.linear()
+        .range([0, width]);
+
+    var y = d3.scale.linear()
+        .range([height, 0]);
+
+    var bins = [{start:1.0, end:7, y:8}, {start: 7, end:13, y:2}, {start:13, end:50, y:1}];
+
+    bins = bins.map(function(bin) {
+        bin.width = bin.end - bin.start;
+        bin.height = bin.y / bin.width;
+        return bin;
+    });
+
+    x.domain([0, d3.max(bins.map(function(bin) { return bin.start + bin.width; }))]);
+    y.domain([0, d3.max(bins.map(function(bin) { return bin.height; }))]);
+
+    svg.selectAll(".bin")
+        .data(bins)
+        .enter().append("rect")
+        .attr("class", "bin")
+        .attr("x", function(bin) { return x(bin.start); })
+        .attr("width", function(bin) { return x(bin.width) - 1; })
+        .attr("y", function(bin) { return y(bin.height); })
+        .attr("height", function(bin) { return height - y(bin.height); });
+
+    svg.append("g")
+        .attr("class", "x axis")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.svg.axis()
+        .scale(x)
+        .orient("bottom"));
+
+    svg.append("g")
+        .attr("class", "y axis")
+        .call(d3.svg.axis()
+        .scale(y)
+        .orient("left"));
+}
