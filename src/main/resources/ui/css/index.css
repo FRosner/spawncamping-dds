@@ -8,7 +8,7 @@
   float:right;
   width:14px;
   height:14px;
-  background-image:url("/img/lock.png");
+  background-image:url("/ui/img/lock.png");
 }
 
 #lockButton.unlocked {

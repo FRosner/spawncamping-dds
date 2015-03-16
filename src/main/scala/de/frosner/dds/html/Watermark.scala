@@ -6,6 +6,6 @@ object Watermark {
 
   val id = "watermark"
 
-  val svg = StringResource.read("/img/watermark.svg")
+  val svg = StringResource.read("/ui/img/watermark.svg")
 
 }

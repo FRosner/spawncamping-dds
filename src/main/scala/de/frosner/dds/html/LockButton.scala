@@ -6,6 +6,6 @@ object LockButton {
 
   val id = "lockButton"
 
-  val png = BinaryResource.read("/img/lock.png")
+  val png = BinaryResource.read("/ui/img/lock.png")
 
 }

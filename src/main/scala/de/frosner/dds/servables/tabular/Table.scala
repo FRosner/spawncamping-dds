@@ -47,6 +47,6 @@ object Table {
     Table(head, rows)
   }
 
-  lazy val css = StringResource.read("/css/table.css")
+  lazy val css = StringResource.read("/ui/css/table.css")
 
 }
