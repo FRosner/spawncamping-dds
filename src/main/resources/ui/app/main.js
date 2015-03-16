@@ -101,7 +101,7 @@ function generateHistogram(bins) {
         width = window.innerWidth - margin.left - margin.right,
         height = window.innerHeight - margin.top - margin.bottom;
 
-    var svg = d3.select("content").append("svg")
+    var svg = d3.select("#content").append("svg")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
       .append("g")
