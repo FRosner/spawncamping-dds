@@ -1,7 +1,5 @@
 package de.frosner.dds.html
 
-import de.frosner.dds.util.StringResource
-
 object Index {
 
   lazy val html =
@@ -18,15 +16,13 @@ object Index {
       </head>
       <body>
         <div id="header">
-          <div id={LockButton.id} onclick="toggleUpdating()" class="unlocked" title="Lock Vizboard"></div>
+          <div id="lockButton" onclick="toggleUpdating()" class="unlocked" title="Lock Vizboard"></div>
         </div>
         <div id="content">
-          <object data="/ui/img/watermark.svg" type="image/svg+xml" id={Watermark.id} style="display: block; width: 50%; margin: 0 auto;"></object>
+          <object data="/ui/img/watermark.svg" type="image/svg+xml" id="watermark" style="display: block; width: 50%; margin: 0 auto;"></object>
           <script src="/ui/app/main.js"></script>
         </div>
       </body>
     </html>
-
-  lazy val css = StringResource.read("/ui/css/index.css")
 
 }

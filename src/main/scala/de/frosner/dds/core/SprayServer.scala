@@ -5,9 +5,7 @@ import java.net.URI
 
 import akka.actor.ActorSystem
 import com.typesafe.config.ConfigFactory
-import de.frosner.dds.html.{LockButton, Index, Watermark}
-import de.frosner.dds.js.{C3, D3, JQuery, Main, _}
-import de.frosner.dds.servables.tabular.Table
+import de.frosner.dds.html.Index
 import spray.http.MediaTypes._
 import spray.routing.SimpleRoutingApp
 
