@@ -63,7 +63,7 @@ case class SprayServer(name: String,
               }
             }
           } ~
-          path("ui") {
+          pathPrefix("ui") {
             getFromResourceDirectory("ui")
           }
       }
