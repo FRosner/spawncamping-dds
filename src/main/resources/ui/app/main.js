@@ -1,19 +1,3 @@
-    /*
-    svg {
-      font: 10px sans-serif;
-    }
-
-    rect {
-      fill: steelblue;
-    }
-
-    .axis path, .axis line {
-      fill: none;
-      stroke: #000;
-      shape-rendering: crispEdges;
-    }
-    */
-
 function toggleUpdating() {
     var lockButton = document.getElementById("lockButton");
     if (document.checkingForUpdate == true) {
@@ -131,14 +115,26 @@ function generateHistogram(bins) {
     var y = d3.scale.linear()
         .range([height, 0]);
 
+    x.domain([
+        d3.min(bins.map(function(bin) { return bin.start; })),
+        d3.max(bins.map(function(bin) { return bin.end; }))
+    ]);
+
     bins = bins.map(function(bin) {
-        bin.width = bin.end - bin.start;
-        bin.height = bin.y / bin.width;
+        bin.width = x(bin.end) - x(bin.start);
+        bin.height = bin.y / (bin.end - bin.start);
         return bin;
     });
 
-    x.domain([0, d3.max(bins.map(function(bin) { return bin.start + bin.width; }))]);
-    y.domain([0, d3.max(bins.map(function(bin) { return bin.height; }))]);
+    y.domain([
+        0,
+        d3.max(bins.map(function(bin) { return bin.height; }))
+    ]);
+
+    bins = bins.map(function(bin) {
+        bin.height = y(bin.height);
+        return bin;
+    });
 
     svg.selectAll(".bin")
         .data(bins)
@@ -146,9 +142,9 @@ function generateHistogram(bins) {
         .attr("fill", "steelblue")
         .attr("class", "bin")
         .attr("x", function(bin) { return x(bin.start); })
-        .attr("width", function(bin) { return x(bin.width) - 1; })
-        .attr("y", function(bin) { return y(bin.height); })
-        .attr("height", function(bin) { return height - y(bin.height); });
+        .attr("width", function(bin) { return bin.width - 1; })
+        .attr("y", function(bin) { return bin.height; })
+        .attr("height", function(bin) { return height - bin.height; });
 
     svg.append("g")
         .attr("class", "x axis")
