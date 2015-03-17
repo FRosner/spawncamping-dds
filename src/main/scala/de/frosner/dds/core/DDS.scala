@@ -2,6 +2,7 @@ package de.frosner.dds.core
 
 import de.frosner.dds.servables.c3.ChartTypeEnum.ChartType
 import de.frosner.dds.servables.c3._
+import de.frosner.dds.servables.histogram.Histogram
 import de.frosner.dds.servables.tabular.Table
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
@@ -123,6 +124,20 @@ object DDS {
   }
 
   @Help(
+    category = "Generic Plots",
+    shortDescription = "Plots a histogram chart",
+    longDescription = "Plots a histogram chart visualizing the bins and frequencies. " +
+      "The bins are defined by their borders. To specify n bins, you need to pass n+1 borders and n frequencies." +
+      "\n\nExample: \n" +
+      "* 5 people are between 0 and 18 years old, 10 people between 18 and 25\n" +
+      "* bins = [0, 18, 25], frequencies = [5, 10]",
+    parameters = "bins: Seq[Numeric], frequencies: Seq[Numeric]"
+  )
+  def histogram[N1, N2](bins: Seq[N1], frequencies: Seq[N2])(implicit num1: Numeric[N1], num2: Numeric[N2]) = {
+    serve(Histogram(bins.map(b => num1.toDouble(b)), frequencies.map(f => num2.toDouble(f))))
+  }
+
+    @Help(
     category = "Generic Plots",
     shortDescription = "Plots a line chart",
     longDescription = "Plots a line chart visualizing the given value sequence.",

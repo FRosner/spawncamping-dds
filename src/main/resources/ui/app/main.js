@@ -28,7 +28,7 @@ function checkForUpdate() {
                 } else if (servable.type == "table") {
                     generateTable(servable.content)
                 } else if (servable.type == "histogram") {
-                    var bins = [{start:1.0, end:7, y:8}, {start: 7, end:13, y:2}, {start:13, end:50, y:1}];
+                    var bins = servable.content;
                     generateHistogram(bins);
                 } else {
                     console.log("Unrecognized response: " + response);
