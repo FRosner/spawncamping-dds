@@ -125,8 +125,8 @@ object DDS {
 
   @Help(
     category = "Generic Plots",
-    shortDescription = "Plots a histogram chart",
-    longDescription = "Plots a histogram chart visualizing the bins and frequencies. " +
+    shortDescription = "Plots a histogram chart of already binned data",
+    longDescription = "Plots a histogram chart visualizing the given bins and frequencies. " +
       "The bins are defined by their borders. To specify n bins, you need to pass n+1 borders and n frequencies." +
       "\n\nExample: \n" +
       "* 5 people are between 0 and 18 years old, 10 people between 18 and 25\n" +
@@ -137,7 +137,7 @@ object DDS {
     serve(Histogram(bins.map(b => num1.toDouble(b)), frequencies.map(f => num2.toDouble(f))))
   }
 
-    @Help(
+  @Help(
     category = "Generic Plots",
     shortDescription = "Plots a line chart",
     longDescription = "Plots a line chart visualizing the given value sequence.",
