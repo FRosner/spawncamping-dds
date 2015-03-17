@@ -1,3 +1,19 @@
+    /*
+    svg {
+      font: 10px sans-serif;
+    }
+
+    rect {
+      fill: steelblue;
+    }
+
+    .axis path, .axis line {
+      fill: none;
+      stroke: #000;
+      shape-rendering: crispEdges;
+    }
+    */
+
 function toggleUpdating() {
     var lockButton = document.getElementById("lockButton");
     if (document.checkingForUpdate == true) {
@@ -38,17 +54,16 @@ function checkForUpdate() {
     });
 }
 
-function generateSingleChart(chart) {
-
-    function generateChartDiv(root, id) {
+function generateChartDiv(root, id) {
         var div = document.createElement('div');
         div.setAttribute("id", id);
         root.appendChild(div);
+        return div;
     }
 
+function generateSingleChart(chart) {
     generateChartDiv(document.getElementById("content"), "chart")
     var chart = c3.generate(chart);
-
 }
 
 function generateTable(stats) {
@@ -97,11 +112,14 @@ function generateTable(stats) {
 }
 
 function generateHistogram(bins) {
+    var chartDiv = generateChartDiv(document.getElementById("content"), "chart");
+    chartDiv.className = "c3";
+
     var margin = {top: 30, right: 60, bottom: 60, left: 60},
         width = window.innerWidth - margin.left - margin.right,
         height = window.innerHeight - margin.top - margin.bottom;
 
-    var svg = d3.select("#content").append("svg")
+    var svg = d3.select("#chart").append("svg")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
       .append("g")
@@ -125,6 +143,7 @@ function generateHistogram(bins) {
     svg.selectAll(".bin")
         .data(bins)
         .enter().append("rect")
+        .attr("fill", "steelblue")
         .attr("class", "bin")
         .attr("x", function(bin) { return x(bin.start); })
         .attr("width", function(bin) { return x(bin.width) - 1; })
