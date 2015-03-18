@@ -16,12 +16,21 @@ function toggleUpdating() {
 
 $(document).ready(toggleUpdating);
 
+function clearContent() {
+    document.getElementById("content").innerHTML = "";
+}
+
+function doAndRedoOnResize(f) {
+    f();
+    window.onresize = f;
+}
+
 function checkForUpdate() {
     $.ajax({
         url: "/chart/update",
         success: function(response) {
             if (response != "{}") {
-                document.getElementById("content").innerHTML = "";
+                clearContent();
                 var servable = JSON.parse(response);
                 if (servable.type == "chart") {
                     generateSingleChart(servable.content)
@@ -29,7 +38,10 @@ function checkForUpdate() {
                     generateTable(servable.content)
                 } else if (servable.type == "histogram") {
                     var bins = servable.content;
-                    generateHistogram(bins);
+                    doAndRedoOnResize(function() {
+                        clearContent();
+                        generateHistogram(bins);
+                    });
                 } else {
                     console.log("Unrecognized response: " + response);
                 }
