@@ -30,21 +30,20 @@ function checkForUpdate() {
         url: "/chart/update",
         success: function(response) {
             if (response != "{}") {
-                clearContent();
                 var servable = JSON.parse(response);
-                if (servable.type == "chart") {
-                    generateSingleChart(servable.content)
-                } else if (servable.type == "table") {
-                    generateTable(servable.content)
-                } else if (servable.type == "histogram") {
-                    var bins = servable.content;
-                    doAndRedoOnResize(function() {
-                        clearContent();
+                doAndRedoOnResize(function() {
+                    clearContent();
+                    if (servable.type == "chart") {
+                        generateSingleChart(servable.content)
+                    } else if (servable.type == "table") {
+                        generateTable(servable.content); 
+                    } else if (servable.type == "histogram") {
+                        var bins = servable.content;
                         generateHistogram(bins);
-                    });
-                } else {
-                    console.log("Unrecognized response: " + response);
-                }
+                    } else {
+                        console.log("Unrecognized response: " + response);
+                    }
+                });
             }
         }
     });
