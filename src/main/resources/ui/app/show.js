@@ -1,4 +1,4 @@
-function showTable(data) {
+function showTable(table) {
 
     function generatePCVis(root, id) {
         var div = document.createElement('div');
@@ -18,8 +18,18 @@ function showTable(data) {
     generatePCVis(document.getElementById("content"), "pcvis")
 
 	// slickgrid needs each data element to have an id
-	data.forEach(function(d,i) { d.id = d.id || i; });
-
+	var ids = table.map(function(row, i) {
+		return { id: i };
+	});
+	var data = ids.map(function(idObject, i) {
+		var dataObject = { id: idObject.id }
+		var tableRow = table[i];
+		for (key in tableRow) {
+			var keyWithIdReplaced = (key == "id") ? "_id" : key;
+			dataObject[keyWithIdReplaced] = tableRow[key];
+		}
+		return dataObject
+	});
 
 	var parcoords = d3.parcoords() ("#pcvis")
 		.data(data)
