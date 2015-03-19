@@ -22,31 +22,3 @@
 #lockButton.unlocked:hover {
   background-position:0px;
 }
-
-body, html, #pcvis {
-    margin: 0;
-    height: 100%;
-    width: 100%;
-    overflow: hidden;
-    font-size: 12px;
-}
-
-#grid, #pager {
-    position: fixed;
-    width: 100%;
-}
-
-#grid {
-    bottom: 0;
-    height: 400px;
-}
-
-#pager {
-    bottom: 406px;
-    height: 20px;
-}
-
-.slick-row:hover {
-    font-weight: bold;
-    color: #069;
-}
