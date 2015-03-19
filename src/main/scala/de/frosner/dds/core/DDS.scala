@@ -260,7 +260,7 @@ object DDS {
   )
   def histogram[N1: ClassTag, N2: ClassTag](values: RDD[N1], buckets: Seq[N2])
                                            (implicit num1: Numeric[N1], num2: Numeric[N2]): Unit = {
-    val frequencies = values.map(v => num1.toLong(v)).histogram(buckets.map(b => num2.toDouble(b)).toArray, true)
+    val frequencies = values.map(v => num1.toLong(v)).histogram(buckets.map(b => num2.toDouble(b)).toArray, false)
     histogram(buckets, frequencies)
   }
 
