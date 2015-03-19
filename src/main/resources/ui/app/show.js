@@ -27,6 +27,8 @@ function showData(data) {
 		.data(data)
 		.width(window.innerWidth)
 		.height(window.innerHeight / 2)
+		.mode("queue")
+		.rate(60)
 		.render()
 		.reorderable()
 		.brushMode("1D-axes");
