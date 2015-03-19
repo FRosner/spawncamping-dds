@@ -1,17 +1,13 @@
-table { 
-  border-collapse: collapse; 
+#grid, #pager {
+    position: static;
+    width: 100%;
 }
 
-#table {
-  margin: 0 auto;
+#pager {
+    height: 20px;
 }
 
-#table th {
-  background: #c9dff0;
-  padding: 10px;
-}
-
-#table tbody tr td {
-  text-align: right;
-  padding: 15px 10px;
+.slick-row:hover {
+    font-weight: bold;
+    color: #069;
 }
