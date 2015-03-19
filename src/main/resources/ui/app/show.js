@@ -26,7 +26,7 @@ function showTable(table) {
 		var tableRow = table[i];
 		for (key in tableRow) {
 			var keyWithIdReplaced = (key == "id") ? "_id" : key;
-			dataObject[keyWithIdReplaced] = tableRow[key];
+			dataObject[keyWithIdReplaced + " "] = tableRow[key];
 		}
 		return dataObject
 	});
