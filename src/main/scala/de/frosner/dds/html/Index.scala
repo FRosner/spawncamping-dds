@@ -12,12 +12,7 @@ object Index {
         <script src="/ui/lib/d3.v3.min.js" charset="utf-8"></script>
         <script src="/ui/lib/d3.parcoords.js" charset="utf-8"></script>
         <script src="/ui/lib/c3.min.js"></script>
-        <script src="/ui/lib/slickgrid/jquery-1.7.min.js"></script>
-
-        <!--
-        downgraded jquery to 1.7 so we don't need jquery migrate
-        <script src="/ui/lib/jquery-migrate-1.2.1.js"></script>
-        -->
+        <script src="/ui/lib/jquery-1.7.min.js"></script>
         <link rel="stylesheet" href="/ui/lib/slickgrid/slick.grid.css" type="text/css"/>
         <link rel="stylesheet" href="/ui/lib/slickgrid/jquery-ui-1.8.16.custom.css" type="text/css"/>
         <link rel="stylesheet" href="/ui/lib/slickgrid/slick.pager.css" type="text/css"/>
@@ -27,9 +22,7 @@ object Index {
         <script src="/ui/lib/slickgrid/slick.grid.js"></script>
         <script src="/ui/lib/slickgrid/slick.pager.js"></script>
         <script src="/ui/lib/slickgrid/slick.dataview.js"></script>
-
         <script src="/ui/lib/divgrid.js"></script>
-
       </head>
       <body>
         <div id="header">
