@@ -36,7 +36,7 @@ function checkForUpdate() {
                     if (servable.type == "chart") {
                         generateSingleChart(servable.content)
                     } else if (servable.type == "table") {
-                        showData(servable.content)
+                        showTable(servable.content)
                     } else if (servable.type == "histogram") {
                         var bins = servable.content;
                         generateHistogram(bins);

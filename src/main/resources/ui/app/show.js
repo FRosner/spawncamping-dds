@@ -1,6 +1,4 @@
-
-
-function showData(data) {
+function showTable(data) {
 
     function generatePCVis(root, id) {
         var div = document.createElement('div');
@@ -112,4 +110,3 @@ function showData(data) {
 	};
 
 }
-
