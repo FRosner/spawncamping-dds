@@ -134,7 +134,7 @@ object DDS {
     parameters = "bins: Seq[Numeric], frequencies: Seq[Numeric]"
   )
   def histogram[N1, N2](bins: Seq[N1], frequencies: Seq[N2])(implicit num1: Numeric[N1], num2: Numeric[N2]) = {
-    serve(Histogram(bins.map(b => num1.toDouble(b)), frequencies.map(f => num2.toDouble(f))))
+    serve(Histogram(bins.map(b => num1.toDouble(b)), frequencies.map(f => num2.toLong(f))))
   }
 
   @Help(
@@ -237,6 +237,31 @@ object DDS {
   )
   def pie[V: ClassTag](values: RDD[V]): Unit = {
     pie(values.map((_, 1)).reduceByKey(_ + _).collect)
+  }
+
+  @Help(
+    category = "RDD Analysis",
+    shortDescription = "Plots a histogram of a numerical RDD for the given number of buckets",
+    longDescription = "Plots a histogram of a numerical RDD for the given number of buckets. " +
+      "The number of buckets parameter is optional having the default value of 10.",
+    parameters = "values: RDD[NumericValue], (optional) numBuckets: Int"
+  )
+  def histogram[N: ClassTag](values: RDD[N], numBuckets: Int = 10)(implicit num: Numeric[N]): Unit = {
+    val (buckets, frequencies) = values.map(v => num.toDouble(v)).histogram(numBuckets)
+    histogram(buckets, frequencies)
+  }
+
+  @Help(
+    category = "RDD Analysis",
+    shortDescription = "Plots a histogram of a numerical RDD for the given buckets",
+    longDescription = "Plots a histogram of a numerical RDD for the given buckets. " +
+      "If the buckets do not include the complete range of possible values, some values will be missing in the histogram.",
+    parameters = "values: RDD[NumericValue], buckets: Seq[NumericValue]"
+  )
+  def histogram[N1: ClassTag, N2: ClassTag](values: RDD[N1], buckets: Seq[N2])
+                                           (implicit num1: Numeric[N1], num2: Numeric[N2]): Unit = {
+    val frequencies = values.map(v => num1.toLong(v)).histogram(buckets.map(b => num2.toDouble(b)).toArray, true)
+    histogram(buckets, frequencies)
   }
 
   @Help(

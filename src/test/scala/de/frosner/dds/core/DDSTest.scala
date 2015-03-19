@@ -200,6 +200,28 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     actualChartData.types shouldBe ChartTypes.multiple(ChartTypeEnum.Bar, 1)
   }
 
+  "A correct histogram chart" should "be served from a single numeric value RDD with numBins fixed" in {
+    DDS.start(mockedServer)
+    val values = sc.makeRDD(List(1,1,1,2,3,3))
+    DDS.histogram(values, 4)
+
+    val actualChart = mockedServer.lastServed.get.asInstanceOf[Histogram]
+    // Bug in Spark -> 3 bins don't work
+    // Histogram(ArrayBuffer(1.0, 1.6666666666666665, 2.333333333333333, 3.0),ArrayBuffer(3.0, 1.0, 0.0))
+    actualChart.bins.toList shouldBe(List(1.0, 1.5, 2.0, 2.5, 3.0))
+    actualChart.frequencies.toList shouldBe List(3,0,1,2)
+  }
+
+  it should "be served from a single numeric value RDD with bins fixed" in {
+    DDS.start(mockedServer)
+    val values = sc.makeRDD(List(1,1,1,2,3,3))
+    DDS.histogram(values, List(0.5, 1.5, 2.5, 3.5))
+
+    val actualChart = mockedServer.lastServed.get.asInstanceOf[Histogram]
+    actualChart.bins.toList shouldBe List(0.5, 1.5, 2.5, 3.5)
+    actualChart.frequencies.toList shouldBe List(3,1,2)
+  }
+
   "Correct pie chart from RDD after groupBy" should "be served when values are already grouped" in {
     DDS.start(stubbedServer)
     val groupedRdd = sc.makeRDD(List(("a", 1), ("a", 2), ("b", 3), ("c", 5))).groupBy(_._1).
