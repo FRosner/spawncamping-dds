@@ -6,14 +6,15 @@ function showData(data) {
         var div = document.createElement('div');
         div.setAttribute("id", id);
         div.setAttribute("class", 'parcoords');
-        div.setAttribute("style", 'height:350px');
+        div.style.height = window.innerHeight / 2
         root.appendChild(div);
-        var grid = document.createElement('div');
-        grid.setAttribute("id", 'grid');
-        root.appendChild(grid);
         var pager = document.createElement('div');
         pager.setAttribute("id", 'pager');
         root.appendChild(pager);
+        var grid = document.createElement('div');
+        grid.setAttribute("id", 'grid');
+        grid.style.height = window.innerHeight/2
+        root.appendChild(grid);
     }
 
     generatePCVis(document.getElementById("content"), "pcvis")
@@ -24,6 +25,8 @@ function showData(data) {
 
 	var parcoords = d3.parcoords() ("#pcvis")
 		.data(data)
+		.width(window.innerWidth)
+		.height(window.innerHeight / 2)
 		.render()
 		.reorderable()
 		.brushMode("1D-axes");
