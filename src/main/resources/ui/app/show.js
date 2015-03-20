@@ -129,7 +129,14 @@ function generateChartDiv(root, id) {
 }
 
 function showSingleChart(chart) {
-    generateChartDiv(document.getElementById("content"), "chart")
+    generateChartDiv(document.getElementById("content"), "chart");
+    chart.size = {
+    	width: window.innerWidth,
+    	height: window.innerHeight - 40 // -x to leave space for legends
+    };
+    chart.padding = {
+    	right: 15,
+    };
     c3.generate(chart);
 }
 
@@ -197,4 +204,3 @@ function showHistogram(bins) {
         .scale(y)
         .orient("left"));
 }
-
