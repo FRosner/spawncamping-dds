@@ -26,6 +26,7 @@ object Index {
       </head>
       <body>
         <div id="header">
+          <input type="text" id="vizTitle" value="Visualization Title"/>
           <div id="lockButton" onclick="toggleUpdating()" class="unlocked" title="Lock Vizboard"></div>
         </div>
         <div id="content">

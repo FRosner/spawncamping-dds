@@ -11,8 +11,15 @@ body {
   height:14px;
 }
 
+#vizTitle {
+  border:0px;
+  margin-left:10px;
+  width:30%;
+}
+
 #lockButton {
-  margin-right:7px;
+  margin-top:1px;
+  margin-right:10px;
   cursor:pointer;
   float:right;
   width:14px;
