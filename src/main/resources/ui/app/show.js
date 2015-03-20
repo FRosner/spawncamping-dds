@@ -130,7 +130,7 @@ function generateChartDiv(root, id) {
 
 function showSingleChart(chart) {
     generateChartDiv(document.getElementById("content"), "chart")
-    var chart = c3.generate(chart);
+    c3.generate(chart);
 }
 
 function showHistogram(bins) {
