@@ -38,7 +38,10 @@ when working on the cluster with the Spark REPL. It does not offer a fully flexi
     ))
     
     // look at a nice overview of transactions
-    show(transactions) 
+    show(transactions)
+
+    // view distribution of transaction amount
+    histogram(transactions.map(_.amount), buckets = List(0,50,100,200))
     
     // compare summed amount of your customers
     groupAndPie(transactions.map(t => (t.customer, t.amount)))(_ + _)
