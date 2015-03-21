@@ -37,6 +37,7 @@ function showTable(table) {
 		.height(window.innerHeight/5*2)
 		.mode("queue")
 		.rate(60)
+		.hideAxis(["id"])
 		.render()
 		.reorderable()
 		.brushMode("1D-axes");
