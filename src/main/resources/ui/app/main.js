@@ -38,8 +38,9 @@ function checkForUpdate() {
                     } else if (servable.type == "table") {
                         showTable(servable.content)
                     } else if (servable.type == "histogram") {
-                        var bins = servable.content;
-                        showHistogram(bins);
+                        showHistogram(servable.content);
+                    } else if (servable.type == "graph") {
+                        showGraph(servable.content);
                     } else {
                         console.log("Unrecognized response: " + response);
                     }

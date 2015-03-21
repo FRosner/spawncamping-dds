@@ -205,3 +205,53 @@ function showHistogram(bins) {
         .scale(y)
         .orient("left"));
 }
+
+function showGraph(graph) {
+	var width = window.innerWidth,
+        height = window.innerHeight;
+
+    var nodes = graph.vertices;
+    var links = graph.edges;
+
+    var svg = d3.select('#content').append('svg')
+        .attr('width', width)
+        .attr('height', height);
+
+    var force = d3.layout.force()
+        .size([width, height])
+        .nodes(nodes)
+        .links(links)
+        .linkDistance(Math.min(width, height)/6.5);
+
+    var links = svg.selectAll('.link')
+        .data(links)
+        .enter().append('line')
+        .attr('class', 'link');
+
+    var nodes = svg.selectAll('.node')
+        .data(nodes)
+        .enter()
+
+    var circles = nodes.append('circle')
+        .attr('class', 'node');
+
+    var labels = nodes.append('text')
+    	.text(function(n) { return n.label; })
+		.attr('fill', 'black');
+
+    force.on('tick', function() {
+        circles.attr('r', 5)
+            .attr('cx', function(n) { return n.x; })
+            .attr('cy', function(n) { return n.y; });
+
+        labels.attr('x', function(n) { return n.x+7; })
+			.attr('y', function(n) { return n.y-4; })
+
+        links.attr('x1', function(l) { return l.source.x; })
+            .attr('y1', function(l) { return l.source.y; })
+            .attr('x2', function(l) { return l.target.x; })
+            .attr('y2', function(l) { return l.target.y; });
+    });
+
+    force.start();
+}

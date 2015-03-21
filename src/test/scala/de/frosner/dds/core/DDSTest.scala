@@ -1,6 +1,7 @@
 package de.frosner.dds.core
 
 import de.frosner.dds.servables.c3._
+import de.frosner.dds.servables.graph.Graph
 import de.frosner.dds.servables.histogram.Histogram
 import de.frosner.dds.servables.tabular.Table
 import org.apache.spark.SparkContext
@@ -170,6 +171,15 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     val actualHistogram = mockedServer.lastServed.get.asInstanceOf[Histogram]
     actualHistogram.bins.toList shouldBe List(0.0, 5.0, 15.0)
     actualHistogram.frequencies.toList shouldBe List(3.0, 8.0)
+  }
+
+  it should "serve a correct graph" in {
+    DDS.start(mockedServer)
+    DDS.graph(List((1, "label1"), (5, "label5")), List((1,1), (1,5)))
+
+    val actualGraph = mockedServer.lastServed.get.asInstanceOf[Graph]
+    actualGraph.vertices.toList shouldBe List("label1", "label5")
+    actualGraph.edges.toList shouldBe List((0, 0), (0, 1))
   }
 
   "A correct pie chart" should "be served from a single value RDD" in {

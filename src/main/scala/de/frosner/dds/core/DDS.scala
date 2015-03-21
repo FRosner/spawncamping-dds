@@ -2,6 +2,7 @@ package de.frosner.dds.core
 
 import de.frosner.dds.servables.c3.ChartTypeEnum.ChartType
 import de.frosner.dds.servables.c3._
+import de.frosner.dds.servables.graph.Graph
 import de.frosner.dds.servables.histogram.Histogram
 import de.frosner.dds.servables.tabular.Table
 import org.apache.spark.SparkContext._
@@ -121,6 +122,21 @@ object DDS {
                                  categories: Seq[String],
                                  chartType: ChartType)(implicit num: Numeric[N]): Unit = {
     categoricalPlot(series, categories, ChartTypes.multiple(chartType, series.size))
+  }
+
+  @Help(
+    category = "Generic Plots",
+    shortDescription = "Plots a graph",
+    longDescription = "Plots a graph layouted by the D3 force layout.",
+    parameters = "vertices: Seq[(VertexId, Label)], edges: Seq[(SourceVertexId, TargetVertexId)]"
+  )
+  def graph[ID, L](vertices: Seq[(ID, L)], edges: Iterable[(ID, ID)]): Unit = {
+    val indexMap = vertices.map{ case (id, label) => id }.zip(0 to vertices.size).toMap
+    val graph = Graph(
+      vertices.map{ case (id, label) => label.toString},
+      edges.map{ case (sourceId, targetId) => (indexMap(sourceId), indexMap(targetId))}
+    )
+    serve(graph)
   }
 
   @Help(
