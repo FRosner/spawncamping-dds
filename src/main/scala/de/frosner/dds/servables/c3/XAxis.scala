@@ -1,7 +1,7 @@
 package de.frosner.dds.servables.c3
 
 import de.frosner.dds.servables.c3.AxisTypeEnum._
-import spray.json.{JsArray, JsString, JsObject, JsValue}
+import spray.json.{JsArray, JsObject, JsString, JsValue}
 
 trait XAxis {
 

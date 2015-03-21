@@ -1,7 +1,7 @@
 package de.frosner.dds.servables.histogram
 
 import de.frosner.dds.core.Servable
-import spray.json.{JsNumber, JsObject, JsArray, JsValue}
+import spray.json.{JsArray, JsNumber, JsObject, JsValue}
 
 case class Histogram(bins: Seq[Double], frequencies: Seq[Long]) extends Servable {
 

@@ -1,7 +1,7 @@
 package de.frosner.dds.servables.histogram
 
-import org.scalatest.{Matchers, FlatSpec}
-import spray.json.{JsString, JsObject, JsNumber, JsArray}
+import org.scalatest.{FlatSpec, Matchers}
+import spray.json.{JsArray, JsNumber, JsObject, JsString}
 
 class HistogramTest extends FlatSpec with Matchers {
 

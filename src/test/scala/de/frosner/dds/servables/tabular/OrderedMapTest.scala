@@ -1,8 +1,6 @@
 package de.frosner.dds.servables.tabular
 
-import org.apache.spark.util.StatCounter
 import org.scalatest.{FlatSpec, Matchers}
-import spray.json._
 
 class OrderedMapTest extends FlatSpec with Matchers {
 

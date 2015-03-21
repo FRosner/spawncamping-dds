@@ -1,8 +1,8 @@
 package de.frosner.dds.servables.c3
 
 import de.frosner.dds.servables.c3.AxisTypeEnum.AxisType
-import org.scalatest.{Matchers, FlatSpec}
-import spray.json.{JsArray, JsString, JsObject, JsValue}
+import org.scalatest.{FlatSpec, Matchers}
+import spray.json.{JsArray, JsObject, JsString, JsValue}
 
 class XAxisTest extends FlatSpec with Matchers {
 

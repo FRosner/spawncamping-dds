@@ -1,7 +1,6 @@
 package de.frosner.dds.servables.tabular
 
 import de.frosner.dds.core.Servable
-import de.frosner.dds.util.StringResource
 import org.apache.spark.util.StatCounter
 import spray.json._
 
@@ -46,7 +45,5 @@ object Table {
     }
     Table(head, rows)
   }
-
-  lazy val css = StringResource.read("/ui/css/table.css")
 
 }
