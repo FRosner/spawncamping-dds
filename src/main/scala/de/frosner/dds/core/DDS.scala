@@ -130,7 +130,7 @@ object DDS {
     longDescription = "Plots a graph layouted by the D3 force layout.",
     parameters = "vertices: Seq[(VertexId, Label)], edges: Seq[(SourceVertexId, TargetVertexId)]"
   )
-  def graph[ID, L](vertices: Seq[(ID, L)], edges: Seq[(ID, ID)]): Unit = {
+  def graph[ID, L](vertices: Seq[(ID, L)], edges: Iterable[(ID, ID)]): Unit = {
     val indexMap = vertices.map{ case (id, label) => id }.zip(0 to vertices.size).toMap
     val graph = Graph(
       vertices.map{ case (id, label) => label.toString},
