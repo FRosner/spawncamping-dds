@@ -233,7 +233,7 @@ function showGraph(graph) {
         .enter().append('circle')
         .attr('class', 'node');
 
-    force.on('end', function() {
+    force.on('tick', function() {
         node.attr('r', 5)
             .attr('cx', function(n) { return n.x; })
             .attr('cy', function(n) { return n.y; });
