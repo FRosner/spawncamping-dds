@@ -221,7 +221,7 @@ function showGraph(graph) {
         .size([width, height])
         .nodes(nodes)
         .links(links)
-        .linkDistance(Math.min(width, height)/7);
+        .linkDistance(Math.min(width, height)/6.5);
 
     var links = svg.selectAll('.link')
         .data(links)
