@@ -205,3 +205,44 @@ function showHistogram(bins) {
         .scale(y)
         .orient("left"));
 }
+
+function showGraph(graph) {
+	var width = window.innerWidth,
+        height = window.innerHeight;
+
+    var nodes = graph.vertices;
+    var links = graph.edges;
+
+    var svg = d3.select('#content').append('svg')
+        .attr('width', width)
+        .attr('height', height);
+
+    var force = d3.layout.force()
+        .size([width, height])
+        .nodes(nodes)
+        .links(links)
+        .linkDistance(Math.min(width, height)/7);
+
+    var link = svg.selectAll('.link')
+        .data(links)
+        .enter().append('line')
+        .attr('class', 'link');
+
+    var node = svg.selectAll('.node')
+        .data(nodes)
+        .enter().append('circle')
+        .attr('class', 'node');
+
+    force.on('end', function() {
+        node.attr('r', 5)
+            .attr('cx', function(n) { return n.x; })
+            .attr('cy', function(n) { return n.y; });
+
+        link.attr('x1', function(l) { return l.source.x; })
+            .attr('y1', function(l) { return l.source.y; })
+            .attr('x2', function(l) { return l.target.x; })
+            .attr('y2', function(l) { return l.target.y; });
+    });
+
+    force.start();
+}

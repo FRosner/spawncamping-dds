@@ -39,6 +39,8 @@ function checkForUpdate() {
                         showTable(servable.content)
                     } else if (servable.type == "histogram") {
                         showHistogram(servable.content);
+                    } else if (servable.type == "graph") {
+                        showGraph(servable.content);
                     } else {
                         console.log("Unrecognized response: " + response);
                     }
