@@ -22,7 +22,7 @@ object Index {
         <script src="/ui/lib/slickgrid/slick.grid.js"></script>
         <script src="/ui/lib/slickgrid/slick.pager.js"></script>
         <script src="/ui/lib/slickgrid/slick.dataview.js"></script>
-        <script src="/ui/lib/divgrid.js"></script>
+        <script src="/ui/lib/divgrid.min.js"></script>
       </head>
       <body>
         <div id="header">
