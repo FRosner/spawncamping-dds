@@ -87,6 +87,5 @@ This project is licensed under the Apache License Version 2.0. For details pleas
 | [C3.js](http://c3js.org/) | MIT |
 | [Parallel Coordinates](https://github.com/syntagmatic/parallel-coordinates) | Custom |
 | [jQuery](http://jquery.com/) | Custom (MITish) |
-| [Sylvester](https://github.com/jcoglan/sylvester) | MIT |
 | [Underscore.js](https://github.com/jashkenas/underscore) | MIT |
 | [SlickGrid](https://github.com/mleibman/SlickGrid) | MIT |
