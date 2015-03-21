@@ -8,8 +8,8 @@ import spray.json._
  * that are going to be used as a label. The edges are represented by pairs of integers (source, target) such
  * that the source and target corresponds to the index in the vertex sequence.
  *
- * @param vertices
- * @param edges
+ * @param vertices where each vertex has a label
+ * @param edges where each edge is a pair of source and target represented by the index in the vertex sequence
  */
 case class Graph(vertices: Seq[String], edges: Seq[(Int, Int)]) extends Servable {
 
@@ -17,7 +17,7 @@ case class Graph(vertices: Seq[String], edges: Seq[(Int, Int)]) extends Servable
 
   override protected def contentAsJson: JsValue = {
     JsObject(
-      ("vertices", JsArray(vertices.map(v => JsString(v)).toVector)),
+      ("vertices", JsArray(vertices.map(v => JsObject(("label", JsString(v)))).toVector)),
       ("edges", JsArray(edges.map{ case (src, target) => JsObject(
         ("source", JsNumber(src)),
         ("target", JsNumber(target))

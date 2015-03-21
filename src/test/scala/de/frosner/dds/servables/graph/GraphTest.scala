@@ -9,7 +9,7 @@ class GraphTest extends FlatSpec with Matchers {
     Graph(List("a", "b"), List((0, 0), (0, 1))).toJson shouldBe JsObject(
       ("type", JsString("graph")),
       ("content", JsObject(
-        ("vertices", JsArray(JsString("a"), JsString("b"))),
+        ("vertices", JsArray(JsObject(("label", JsString("a"))), JsObject(("label", JsString("b"))))),
         ("edges", JsArray(
           JsObject(("source", JsNumber(0)), ("target", JsNumber(0))),
           JsObject(("source", JsNumber(0)), ("target", JsNumber(1)))
