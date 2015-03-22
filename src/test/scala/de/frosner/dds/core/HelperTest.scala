@@ -3,6 +3,7 @@ package de.frosner.dds.core
 import java.io.{ByteArrayOutputStream, PrintStream}
 
 import org.scalatest.{FlatSpec, Matchers}
+import Helper.NEWLINE
 
 class HelperTest extends FlatSpec with Matchers {
   
@@ -58,7 +59,7 @@ class HelperTest extends FlatSpec with Matchers {
     val out = new PrintStream(result)
     val helper = Helper(new TestClass().getClass)
     helper.printAllMethods(out)
-    result.toString.split("%n", -1) shouldBe Array(
+    result.toString.split(NEWLINE, -1) shouldBe Array(
         s"\033[1ma\033[0m",
         "- help(): short help",
         "- xhelp(): short help",
@@ -74,7 +75,7 @@ class HelperTest extends FlatSpec with Matchers {
     val out = new PrintStream(result)
     val helper = Helper(new TestClass().getClass)
     helper.printMethods("help", out)
-    result.toString.split("%n", -1) shouldBe Array(
+    result.toString.split(NEWLINE, -1) shouldBe Array(
         s"\033[1mhelp()\033[0m",
         "long help",
         ""
@@ -102,7 +103,7 @@ class HelperTest extends FlatSpec with Matchers {
     val out = new PrintStream(result)
     val helper = Helper(new TestClass2().getClass)
     helper.printMethods("method", out)
-    result.toString.split("%n", -1) shouldBe Array(
+    result.toString.split(NEWLINE, -1) shouldBe Array(
       s"\033[1mmethod()\033[0m",
       "method without parameters",
       "",
