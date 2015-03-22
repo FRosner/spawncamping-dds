@@ -12,6 +12,7 @@ import java.io._
  */
 case class Helper[T](classWithHelp: Class[T]) {
 
+  import Helper.NEWLINE
   type Name = String
   type ShortDescription = String
   type LongDescription = String
@@ -45,11 +46,11 @@ case class Helper[T](classWithHelp: Class[T]) {
   def printAllMethods(out: PrintStream) = out.println(
     methods.map {
       case (category, methods) => {
-        s"\033[1m${category}\033[0m\n" + methods.map {
+        s"\033[1m${category}\033[0m${NEWLINE}" + methods.map {
           case (name, help) => "- " + getMethodSignature(name, help) + s": ${help.shortDescription}"
-        }.mkString("\n")
+        }.mkString(NEWLINE)
       }
-    }.mkString("\n\n")
+    }.mkString(NEWLINE+NEWLINE)
   )
 
   private def getMethodSignature(name: String, help: Help) = {
@@ -81,13 +82,17 @@ case class Helper[T](classWithHelp: Class[T]) {
         case (name, help) => getMethodSignature(name, help)
       }.map {
         methodWithHelp => getLongDescriptionPrintable(methodWithHelp, out)
-      }.mkString("\n\n")
+      }.mkString(NEWLINE+NEWLINE)
     )
   }
 
   private def getLongDescriptionPrintable(methodWithHelp: (String, Help), out: PrintStream) = {
     val (name, help) = methodWithHelp
-    s"\033[1m${getMethodSignature(name, help)}\033[0m\n" + help.longDescription
+    s"\033[1m${getMethodSignature(name, help)}\033[0m${NEWLINE}" + help.longDescription
   }
 
+}
+
+object Helper {
+  val NEWLINE = System.getProperty("line.separator")
 }
