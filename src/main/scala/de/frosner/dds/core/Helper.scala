@@ -45,11 +45,11 @@ case class Helper[T](classWithHelp: Class[T]) {
   def printAllMethods(out: PrintStream) = out.println(
     methods.map {
       case (category, methods) => {
-        s"\033[1m${category}\033[0m\n" + methods.map {
+        s"\033[1m${category}\033[0m%n" + methods.map {
           case (name, help) => "- " + getMethodSignature(name, help) + s": ${help.shortDescription}"
-        }.mkString("\n")
+        }.mkString("%n")
       }
-    }.mkString("\n\n")
+    }.mkString("%n%n")
   )
 
   private def getMethodSignature(name: String, help: Help) = {
@@ -81,13 +81,13 @@ case class Helper[T](classWithHelp: Class[T]) {
         case (name, help) => getMethodSignature(name, help)
       }.map {
         methodWithHelp => getLongDescriptionPrintable(methodWithHelp, out)
-      }.mkString("\n\n")
+      }.mkString("%n%n")
     )
   }
 
   private def getLongDescriptionPrintable(methodWithHelp: (String, Help), out: PrintStream) = {
     val (name, help) = methodWithHelp
-    s"\033[1m${getMethodSignature(name, help)}\033[0m\n" + help.longDescription
+    s"\033[1m${getMethodSignature(name, help)}\033[0m%n" + help.longDescription
   }
 
 }
