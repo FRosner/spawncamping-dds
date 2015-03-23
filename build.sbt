@@ -26,6 +26,8 @@ libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.4" % "test"
 
 libraryDependencies += "org.apache.spark" %% "spark-core" % "1.2.0" % "provided"
 
+libraryDependencies += "org.apache.spark" %% "spark-graphx" % "1.2.0" % "provided"
+
 libraryDependencies +=  "org.scalaj" %% "scalaj-http" % "1.1.4"
 
 libraryDependencies +=  "org.scalamock" %% "scalamock-scalatest-support" % "3.2.1" % "test"

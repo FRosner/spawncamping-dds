@@ -6,6 +6,7 @@ import de.frosner.dds.servables.graph.Graph
 import de.frosner.dds.servables.histogram.Histogram
 import de.frosner.dds.servables.tabular.Table
 import org.apache.spark.SparkContext._
+import org.apache.spark.graphx
 import org.apache.spark.rdd.RDD
 import org.apache.spark.util.StatCounter
 
@@ -359,6 +360,28 @@ object DDS {
   }
 
   @Help(
+    category = "RDD Analysis",
+    shortDescription = "Plots a sample of a graph",
+    longDescription = "Plots a sample of a graph layouted by the D3 force layout. The sample is calculated based on a" +
+      "vertex sample. All edges which do not have both source and destination in the vertex sample, will be discarded.",
+    parameters = "graph: Graph, (optional) sampleSize: Int"
+  )
+  def show[VD, ED](graph: graphx.Graph[VD, ED], sampleSize: Int): Unit = {
+    val vertexSample = graph.vertices.take(sampleSize).map{ case (id, attr) => id }.toSet
+    val sampledGraph = graph.subgraph(
+      edge => vertexSample.contains(edge.srcId) && vertexSample.contains(edge.dstId),
+      (vertexId, vertexAttr) => vertexSample.contains(vertexId)
+    )
+    DDS.graph(sampledGraph.vertices.collect.toSeq, sampledGraph.edges.collect.map(edge => (edge.srcId, edge.dstId)))
+  }
+
+  /*
+   * Need to manually define default argument sampleSize because of Scala language specs. See:
+   * http://stackoverflow.com/questions/4652095/why-does-the-scala-compiler-disallow-overloaded-methods-with-default-arguments
+   */
+  def show[VD, ED](graph: graphx.Graph[VD, ED]): Unit = show(graph, 20)
+
+    @Help(
     category = "RDD Analysis",
     shortDescription = "Shows some basic summary statistics of the given dataset",
     longDescription = "Shows some basic summary statistics of the given dataset.\n" +

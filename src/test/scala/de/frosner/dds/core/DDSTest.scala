@@ -6,7 +6,9 @@ import de.frosner.dds.servables.histogram.Histogram
 import de.frosner.dds.servables.tabular.Table
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
+import org.apache.spark.rdd.RDD
 import org.apache.spark.util.StatCounter
+import org.apache.spark.graphx
 import org.scalamock.scalatest.MockFactory
 import org.scalatest._
 
@@ -394,6 +396,46 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     val resultTable = mockedServer.lastServed.get.asInstanceOf[Table]
     resultTable.head.toList shouldBe List("sequence")
     resultTable.rows.toList shouldBe List(List(1), List(2), List(3))
+  }
+
+  "A correct graph" should "be printed when the full graph is taken" in {
+    DDS.start(mockedServer)
+    val vertices: RDD[(graphx.VertexId, String)] = sc.makeRDD(List((0L, "a"), (5L, "b"), (10L, "c")))
+    val edges: RDD[graphx.Edge[String]] = sc.makeRDD(List(graphx.Edge(0L, 5L, "a-b"), graphx.Edge(5L, 10L, "b-c")))
+    DDS.show(graphx.Graph(vertices, edges), 20)
+
+    val resultGraph = mockedServer.lastServed.get.asInstanceOf[Graph]
+    resultGraph.vertices.toSet shouldBe Set("a", "b", "c")
+    val vertexList = resultGraph.vertices.toList
+    resultGraph.edges.toSet shouldBe Set(
+      (vertexList.indexOf("a"), vertexList.indexOf("b")),
+      (vertexList.indexOf("b"), vertexList.indexOf("c"))
+    )
+  }
+
+  it should "be printed when a single vertex sample is taken" in {
+    DDS.start(mockedServer)
+    val vertices: RDD[(graphx.VertexId, String)] = sc.makeRDD(List((0L, "a"), (5L, "b"), (10L, "c")))
+    val edges: RDD[graphx.Edge[String]] = sc.makeRDD(List(graphx.Edge(0L, 5L, "a-b"), graphx.Edge(5L, 10L, "b-c")))
+    DDS.show(graphx.Graph(vertices, edges), 1)
+
+    val resultGraph = mockedServer.lastServed.get.asInstanceOf[Graph]
+    resultGraph.vertices.toSet shouldBe Set("a")
+    resultGraph.edges.toSet shouldBe Set.empty
+  }
+
+  it should "be printed when a bigger vertex sample is taken" in {
+    DDS.start(mockedServer)
+    val vertices: RDD[(graphx.VertexId, String)] = sc.makeRDD(List((0L, "a"), (10L, "b"), (5L, "c")))
+    val edges: RDD[graphx.Edge[String]] = sc.makeRDD(List(graphx.Edge(0L, 10L, "a-b"), graphx.Edge(5L, 10L, "c-b")))
+    DDS.show(graphx.Graph(vertices, edges), 2)
+
+    val resultGraph = mockedServer.lastServed.get.asInstanceOf[Graph]
+    resultGraph.vertices.toSet shouldBe Set("a", "b")
+    val vertexList = resultGraph.vertices.toList
+    resultGraph.edges.toSet shouldBe Set(
+      (vertexList.indexOf("a"), vertexList.indexOf("b"))
+    )
   }
 
   "Help" should "work" in {
