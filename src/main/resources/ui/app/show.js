@@ -1,12 +1,15 @@
 function showTable(table) {
 
-    function generatePCVis(root, id) {
+    function generateParallelCoordinatesDiv(root, id) {
         var div = document.createElement('div');
         div.setAttribute("id", id);
         div.setAttribute("class", 'parcoords');
         div.style.height = window.innerHeight/5*2
         root.appendChild(div);
-        var pager = document.createElement('div');
+    }
+
+    function generateGridDiv(root) {
+    	var pager = document.createElement('div');
         pager.setAttribute("id", 'pager');
         root.appendChild(pager);
         var grid = document.createElement('div');
@@ -15,7 +18,7 @@ function showTable(table) {
         root.appendChild(grid);
     }
 
-    generatePCVis(document.getElementById("content"), "pcvis")
+    var numColumns = Object.keys(table[0]).length;
 
 	// slickgrid needs each data element to have an id
 	var ids = table.map(function(row, i) {
@@ -31,16 +34,41 @@ function showTable(table) {
 		return dataObject
 	});
 
-	var parcoords = d3.parcoords() ("#pcvis")
-		.data(data)
-		.width(window.innerWidth)
-		.height(window.innerHeight/5*2)
-		.mode("queue")
-		.rate(60)
-		.hideAxis(["id"])
-		.render()
-		.reorderable()
-		.brushMode("1D-axes");
+    if (numColumns > 1) {
+    	generateParallelCoordinatesDiv(document.getElementById("content"), "pcvis")
+		var parcoords = d3.parcoords() ("#pcvis")
+			.data(data)
+			.width(window.innerWidth)
+			.height(window.innerHeight/5*2)
+			.mode("queue")
+			.rate(60)
+			.hideAxis(["id"])
+			.render()
+			.reorderable()
+			.brushMode("1D-axes");
+    } else {
+    	generateChartDiv(document.getElementById("content"), "chart")
+    	console.log(table);
+    	var chart = {
+		  data: {
+			json: table,
+			keys: {
+			  value: Object.keys(table[0])
+			},
+			type: "bar"
+		  }
+		};
+    	chart.size = {
+			width: window.innerWidth,
+			height: window.innerHeight/5*2 - 40 // -x to leave space for legends
+		};
+		chart.padding = {
+			right: 15
+		};
+		c3.generate(chart);
+    }
+
+	generateGridDiv(document.getElementById("content"));
 
 	// setting up grid
 	var column_keys = d3.keys(data[0]);
@@ -136,7 +164,7 @@ function showSingleChart(chart) {
     	height: window.innerHeight - 40 // -x to leave space for legends
     };
     chart.padding = {
-    	right: 15,
+    	right: 15
     };
     c3.generate(chart);
 }
