@@ -32,6 +32,7 @@ object Index {
         </div>
         <div id="content">
           <object data="/ui/img/watermark.svg" type="image/svg+xml" id="watermark" style="display: block; width: 50%; margin: 0 auto;"></object>
+          <script src="/ui/app/util.js"></script>
           <script src="/ui/app/main.js"></script>
           <script src="/ui/app/show.js"></script>
         </div>

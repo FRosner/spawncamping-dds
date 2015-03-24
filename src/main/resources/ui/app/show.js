@@ -1,12 +1,15 @@
 function showTable(table) {
 
-    function generatePCVis(root, id) {
+    function generateParallelCoordinatesDiv(root, id) {
         var div = document.createElement('div');
         div.setAttribute("id", id);
         div.setAttribute("class", 'parcoords');
         div.style.height = window.innerHeight/5*2
         root.appendChild(div);
-        var pager = document.createElement('div');
+    }
+
+    function generateGridDiv(root) {
+    	var pager = document.createElement('div');
         pager.setAttribute("id", 'pager');
         root.appendChild(pager);
         var grid = document.createElement('div');
@@ -15,7 +18,8 @@ function showTable(table) {
         root.appendChild(grid);
     }
 
-    generatePCVis(document.getElementById("content"), "pcvis")
+    var numColumns = Object.keys(table[0]).length;
+    var shouldDrawParcoords = numColumns > 1;
 
 	// slickgrid needs each data element to have an id
 	var ids = table.map(function(row, i) {
@@ -31,16 +35,71 @@ function showTable(table) {
 		return dataObject
 	});
 
-	var parcoords = d3.parcoords() ("#pcvis")
-		.data(data)
-		.width(window.innerWidth)
-		.height(window.innerHeight/5*2)
-		.mode("queue")
-		.rate(60)
-		.hideAxis(["id"])
-		.render()
-		.reorderable()
-		.brushMode("1D-axes");
+	var parcoords = {};
+    if (shouldDrawParcoords) {
+    	generateParallelCoordinatesDiv(document.getElementById("content"), "pcvis")
+		var parcoords = d3.parcoords() ("#pcvis")
+			.data(data)
+			.width(window.innerWidth)
+			.height(window.innerHeight/5*2)
+			.mode("queue")
+			.rate(60)
+			.hideAxis(["id"])
+			.render()
+			.reorderable()
+			.brushMode("1D-axes");
+    } else {
+    	var singleColumn = table.map(function(row) {
+    		return row[Object.keys(row)[0]];
+    	});
+    	if (isNumericArray(singleColumn)) {
+			var bins = d3.layout.histogram().bins(100)(singleColumn);
+			bins = bins.map(function(bin) {
+				return {
+					start: bin.x,
+					end: bin.x + bin.dx,
+					y: bin.y
+				};
+			});
+			showHistogram(bins,
+			    window.innerWidth,
+			    window.innerHeight/5*2,
+			    {top: 15, right: 30, bottom: 30, left: 50});
+    	} else {
+    		generateChartDiv(document.getElementById("content"), "chart");
+    		var singleColumnCounts = singleColumn.reduce(function(counts, value) { 
+				counts[value] = counts[value] ? counts[value] + 1 : 1;
+				return counts;
+			}, {});
+			var singleColumnCountsForC3 = Object.keys(singleColumnCounts).map(function(key) {
+				return { value:key, count:singleColumnCounts[key] };
+			});
+			var chart = {
+			  data: {
+				json: singleColumnCountsForC3,
+				keys: {
+					x: "value",
+					value: ["count"]
+				},
+				type: "bar"
+			  },
+			  axis: {
+				x: { type: "category" }
+			  }
+			};
+			chart.size = {
+				width: window.innerWidth,
+				height: window.innerHeight/5*2
+			};
+			chart.padding = {
+				right: 15,
+				top: 10
+			};
+			c3.generate(chart);	
+    	}
+    }
+
+	generateGridDiv(document.getElementById("content"));
 
 	// setting up grid
 	var column_keys = d3.keys(data[0]);
@@ -96,23 +155,24 @@ function showTable(table) {
 		}
 	});
 
-	// highlight row in chart
-	grid.onMouseEnter.subscribe(function(e,args) {
-		var i = grid.getCellFromEvent(e).row;
-		var d = parcoords.brushed() || data;
-		parcoords.highlight([d[i]]);
-	});
-	grid.onMouseLeave.subscribe(function(e,args) {
-		parcoords.unhighlight();
-	});
+	if (shouldDrawParcoords) {
+		// highlight row in chart
+		grid.onMouseEnter.subscribe(function(e,args) {
+			var i = grid.getCellFromEvent(e).row;
+			var d = parcoords.brushed() || data;
+			parcoords.highlight([d[i]]);
+		});
+		grid.onMouseLeave.subscribe(function(e,args) {
+			parcoords.unhighlight();
+		});
+		// update grid on brush
+		parcoords.on("brush", function(d) {
+			gridUpdate(d);
+		});
+	}
 
 	// fill grid with data
 	gridUpdate(data);
-
-	// update grid on brush
-	parcoords.on("brush", function(d) {
-		gridUpdate(d);
-	});
 
 	function gridUpdate(data) {
 		dataView.beginUpdate();
@@ -136,18 +196,17 @@ function showSingleChart(chart) {
     	height: window.innerHeight - 40 // -x to leave space for legends
     };
     chart.padding = {
-    	right: 15,
+    	right: 15
     };
     c3.generate(chart);
 }
 
-function showHistogram(bins) {
+function showHistogram(bins, histWidth, histHeight, margin) {
     var chartDiv = generateChartDiv(document.getElementById("content"), "chart");
     chartDiv.className = "c3";
 
-    var margin = {top: 30, right: 60, bottom: 60, left: 60},
-        width = window.innerWidth - margin.left - margin.right,
-        height = window.innerHeight - margin.top - margin.bottom;
+    var width = histWidth - margin.left - margin.right,
+        height = histHeight - margin.top - margin.bottom;
 
     var svg = d3.select("#chart").append("svg")
         .attr("width", width + margin.left + margin.right)
