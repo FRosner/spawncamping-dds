@@ -75,10 +75,11 @@ function showTable(table) {
 		};
     	chart.size = {
 			width: window.innerWidth,
-			height: window.innerHeight/5*2 - 40 // -x to leave space for legends
+			height: window.innerHeight/5*2
 		};
 		chart.padding = {
-			right: 15
+			right: 15,
+			top: 10
 		};
 		c3.generate(chart);
     }
