@@ -38,7 +38,7 @@ function checkForUpdate() {
                     } else if (servable.type == "table") {
                         showTable(servable.content)
                     } else if (servable.type == "histogram") {
-                        showHistogram(servable.content);
+                        showHistogram(servable.content, window.innerWidth, window.innerHeight);
                     } else if (servable.type == "graph") {
                         showGraph(servable.content);
                     } else {

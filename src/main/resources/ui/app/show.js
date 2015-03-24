@@ -49,39 +49,51 @@ function showTable(table) {
 			.reorderable()
 			.brushMode("1D-axes");
     } else {
-    	generateChartDiv(document.getElementById("content"), "chart")
     	var singleColumn = table.map(function(row) {
     		return row[Object.keys(row)[0]];
     	});
-    	var singleColumnCounts = singleColumn.reduce(function(counts, value) { 
-    		counts[value] = counts[value] ? counts[value] + 1 : 1;
-    		return counts;
-    	}, {});
-    	var singleColumnCountsForC3 = Object.keys(singleColumnCounts).map(function(key) {
-    		return { value:key, count:singleColumnCounts[key] };
-    	});
-    	var chart = {
-		  data: {
-			json: singleColumnCountsForC3,
-			keys: {
-				x: "value",
-				value: ["count"]
-			},
-			type: "bar"
-		  },
-		  axis: {
-		  	x: { type: "category" }
-		  }
-		};
-    	chart.size = {
-			width: window.innerWidth,
-			height: window.innerHeight/5*2
-		};
-		chart.padding = {
-			right: 15,
-			top: 10
-		};
-		c3.generate(chart);
+    	if (isNumericArray(singleColumn)) {
+			var bins = d3.layout.histogram()(singleColumn);
+			bins = bins.map(function(bin) {
+				return {
+					start: bin.x,
+					end: bin.x + bin.dx,
+					y: bin.y
+				};
+			});
+			showHistogram(bins, window.innerWidth, window.innerHeight/5*2);
+    	} else {
+    		generateChartDiv(document.getElementById("content"), "chart");
+    		var singleColumnCounts = singleColumn.reduce(function(counts, value) { 
+				counts[value] = counts[value] ? counts[value] + 1 : 1;
+				return counts;
+			}, {});
+			var singleColumnCountsForC3 = Object.keys(singleColumnCounts).map(function(key) {
+				return { value:key, count:singleColumnCounts[key] };
+			});
+			var chart = {
+			  data: {
+				json: singleColumnCountsForC3,
+				keys: {
+					x: "value",
+					value: ["count"]
+				},
+				type: "bar"
+			  },
+			  axis: {
+				x: { type: "category" }
+			  }
+			};
+			chart.size = {
+				width: window.innerWidth,
+				height: window.innerHeight/5*2
+			};
+			chart.padding = {
+				right: 15,
+				top: 10
+			};
+			c3.generate(chart);	
+    	}
     }
 
 	generateGridDiv(document.getElementById("content"));
@@ -186,13 +198,13 @@ function showSingleChart(chart) {
     c3.generate(chart);
 }
 
-function showHistogram(bins) {
+function showHistogram(bins, histWidth, histHeight) {
     var chartDiv = generateChartDiv(document.getElementById("content"), "chart");
     chartDiv.className = "c3";
 
     var margin = {top: 30, right: 60, bottom: 60, left: 60},
-        width = window.innerWidth - margin.left - margin.right,
-        height = window.innerHeight - margin.top - margin.bottom;
+        width = histWidth - margin.left - margin.right,
+        height = histHeight - margin.top - margin.bottom;
 
     var svg = d3.select("#chart").append("svg")
         .attr("width", width + margin.left + margin.right)
