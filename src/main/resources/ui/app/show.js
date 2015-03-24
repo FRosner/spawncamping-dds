@@ -53,7 +53,7 @@ function showTable(table) {
     		return row[Object.keys(row)[0]];
     	});
     	if (isNumericArray(singleColumn)) {
-			var bins = d3.layout.histogram()(singleColumn);
+			var bins = d3.layout.histogram().bins(100)(singleColumn);
 			bins = bins.map(function(bin) {
 				return {
 					start: bin.x,
