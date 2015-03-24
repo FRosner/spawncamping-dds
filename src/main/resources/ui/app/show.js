@@ -48,14 +48,27 @@ function showTable(table) {
 			.brushMode("1D-axes");
     } else {
     	generateChartDiv(document.getElementById("content"), "chart")
-    	console.log(table);
+    	var singleColumn = table.map(function(row) {
+    		return row[Object.keys(row)[0]];
+    	});
+    	var singleColumnCounts = singleColumn.reduce(function(counts, value) { 
+    		counts[value] = counts[value] ? counts[value] + 1 : 1;
+    		return counts;
+    	}, {});
+    	var singleColumnCountsForC3 = Object.keys(singleColumnCounts).map(function(key) {
+    		return { value:key, count:singleColumnCounts[key] };
+    	});
     	var chart = {
 		  data: {
-			json: table,
+			json: singleColumnCountsForC3,
 			keys: {
-			  value: Object.keys(table[0])
+				x: "value",
+				value: ["count"]
 			},
 			type: "bar"
+		  },
+		  axis: {
+		  	x: { type: "category" }
 		  }
 		};
     	chart.size = {
