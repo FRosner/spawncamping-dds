@@ -388,6 +388,16 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     resultTable.rows.toList shouldBe List(List("a", 1), List("b", 2))
   }
 
+  it should "be printed from a sequence of Options" in {
+    DDS.start(mockedServer)
+    val sequence = List(Option(5), None)
+    DDS.show(sequence)
+
+    val resultTable = mockedServer.lastServed.get.asInstanceOf[Table]
+    resultTable.head.toList shouldBe List("sequence")
+    resultTable.rows.toList shouldBe List(List(Option(5)), List(None))
+  }
+
   "A table" should "print only as many rows as specified" in {
     DDS.start(mockedServer)
     val rdd = sc.makeRDD(List(1,2,3,4,5))

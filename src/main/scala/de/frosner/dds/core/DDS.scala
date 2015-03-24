@@ -334,7 +334,7 @@ object DDS {
     if (sequence.length == 0) {
       println("Sequence is empty!")
     } else {
-      val result = if (vType <:< typeOf[Product]) {
+      val result = if (vType <:< typeOf[Product] && !(vType <:< typeOf[Option[_]])) {
         def getMembers[T: TypeTag] = typeOf[T].members.sorted.collect {
           case m: MethodSymbol if m.isCaseAccessor => m
         }.toList
