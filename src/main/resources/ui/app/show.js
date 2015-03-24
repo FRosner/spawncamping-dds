@@ -19,6 +19,7 @@ function showTable(table) {
     }
 
     var numColumns = Object.keys(table[0]).length;
+    var shouldDrawParcoords = numColumns > 1;
 
 	// slickgrid needs each data element to have an id
 	var ids = table.map(function(row, i) {
@@ -34,7 +35,8 @@ function showTable(table) {
 		return dataObject
 	});
 
-    if (numColumns > 1) {
+	var parcoords = {};
+    if (shouldDrawParcoords) {
     	generateParallelCoordinatesDiv(document.getElementById("content"), "pcvis")
 		var parcoords = d3.parcoords() ("#pcvis")
 			.data(data)
@@ -137,23 +139,24 @@ function showTable(table) {
 		}
 	});
 
-	// highlight row in chart
-	grid.onMouseEnter.subscribe(function(e,args) {
-		var i = grid.getCellFromEvent(e).row;
-		var d = parcoords.brushed() || data;
-		parcoords.highlight([d[i]]);
-	});
-	grid.onMouseLeave.subscribe(function(e,args) {
-		parcoords.unhighlight();
-	});
+	if (shouldDrawParcoords) {
+		// highlight row in chart
+		grid.onMouseEnter.subscribe(function(e,args) {
+			var i = grid.getCellFromEvent(e).row;
+			var d = parcoords.brushed() || data;
+			parcoords.highlight([d[i]]);
+		});
+		grid.onMouseLeave.subscribe(function(e,args) {
+			parcoords.unhighlight();
+		});
+		// update grid on brush
+		parcoords.on("brush", function(d) {
+			gridUpdate(d);
+		});
+	}
 
 	// fill grid with data
 	gridUpdate(data);
-
-	// update grid on brush
-	parcoords.on("brush", function(d) {
-		gridUpdate(d);
-	});
 
 	function gridUpdate(data) {
 		dataView.beginUpdate();
