@@ -48,6 +48,7 @@ function showTable(tableAndTypes) {
 			.data(data)
 			.dimensions(Object.keys(types))
 			.types(types)
+			.alpha(0.3)
 			.width(window.innerWidth)
 			.height(window.innerHeight/5*2)
 			.mode("queue")
