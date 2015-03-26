@@ -263,7 +263,7 @@ object DDS {
       "The number of buckets parameter is optional having the default value of 10.",
     parameters = "values: RDD[NumericValue], (optional) numBuckets: Int"
   )
-  def histogram[N: ClassTag](values: RDD[N], numBuckets: Int = 10)(implicit num: Numeric[N]): Unit = {
+  def histogram[N: ClassTag](values: RDD[N], numBuckets: Int = 100)(implicit num: Numeric[N]): Unit = {
     val (buckets, frequencies) = values.map(v => num.toDouble(v)).histogram(numBuckets)
     histogram(buckets, frequencies)
   }
