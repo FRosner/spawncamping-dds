@@ -20,11 +20,6 @@ function clearContent() {
     document.getElementById("content").innerHTML = "";
 }
 
-function doAndRedoOnResize(f) {
-    f();
-    window.onresize = f;
-}
-
 function checkForUpdate() {
     $.ajax({
         url: "/chart/update",

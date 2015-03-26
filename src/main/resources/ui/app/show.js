@@ -61,7 +61,7 @@ function showTable(tableAndTypes) {
     	var singleColumn = table.map(function(row) {
     		return row[Object.keys(row)[0]];
     	});
-    	if (isNumericArray(singleColumn)) {
+    	if (types[Object.keys(types)[0]] == "number") {
 			var bins = d3.layout.histogram().bins(100)(singleColumn);
 			bins = bins.map(function(bin) {
 				return {
