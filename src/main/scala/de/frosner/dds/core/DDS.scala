@@ -355,7 +355,7 @@ object DDS {
       "of the data. The second argument is optional and determines the sample size.",
     parameters = "rdd: RDD[T], (optional) sampleSize: Int"
   )
-  def show[V](rdd: RDD[V], sampleSize: Int = 20)(implicit tag: TypeTag[V]): Unit = {
+  def show[V](rdd: RDD[V], sampleSize: Int = 200)(implicit tag: TypeTag[V]): Unit = {
     show(rdd.take(sampleSize))(tag)
   }
 
