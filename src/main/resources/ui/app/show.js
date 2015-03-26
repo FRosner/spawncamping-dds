@@ -1,4 +1,10 @@
-function showTable(table) {
+function showTable(tableAndTypes) {
+
+	var table = tableAndTypes.rows;
+	var types = {};
+	for (columnName in tableAndTypes.types) {
+		types[columnName + " "] = tableAndTypes.types[columnName];	
+	}
 
     function generateParallelCoordinatesDiv(root, id) {
         var div = document.createElement('div');
@@ -40,6 +46,8 @@ function showTable(table) {
     	generateParallelCoordinatesDiv(document.getElementById("content"), "pcvis")
 		var parcoords = d3.parcoords() ("#pcvis")
 			.data(data)
+			.dimensions(Object.keys(types))
+			.types(types)
 			.width(window.innerWidth)
 			.height(window.innerHeight/5*2)
 			.mode("queue")

@@ -1,6 +1,7 @@
 package de.frosner.dds.servables.tabular
 
 import de.frosner.dds.core.Servable
+import de.frosner.dds.servables.tabular.Table._
 import org.apache.spark.util.StatCounter
 import spray.json._
 
@@ -8,31 +9,56 @@ case class Table(head: Seq[String], rows: Seq[Seq[Any]]) extends Servable {
 
   val servableType = "table"
 
-  def contentAsJson: JsArray = {
-    val jsRows = rows.map(row =>
+  private lazy val namesValuesTypes = rows.map(row =>
+    head.zip(row).map{ case (columnName, value) => {
+      val (jsValue, jsType) = value match {
+        case None => (JsNull, NULL_TYPE)
+        case Some(int: Int) => (JsNumber(int), NUMERIC_TYPE)
+        case int: Int => (JsNumber(int), NUMERIC_TYPE)
+        case Some(double: Double) => (JsNumber(double), NUMERIC_TYPE)
+        case double: Double => (JsNumber(double), NUMERIC_TYPE)
+        case Some(long: Long) => (JsNumber(long), NUMERIC_TYPE)
+        case long: Long => (JsNumber(long), NUMERIC_TYPE)
+        case Some(default) => (JsString(default.toString), DISCRETE_TYPE)
+        case default => (JsString(default.toString), DISCRETE_TYPE)
+      }
+      (columnName, jsValue, jsType)
+    }}
+  )
+
+  def contentAsJson: JsValue = {
+    val jsRows = namesValuesTypes.map( row =>
       JsObject(OrderedMap[String, JsValue](
-        head.zip(row).map{ case (columnName, value) => {
-          val jsValue = value match {
-            case None => JsNull
-            case Some(int: Int) => JsNumber(int)
-            case int: Int => JsNumber(int)
-            case Some(double: Double) => JsNumber(double)
-            case double: Double => JsNumber(double)
-            case Some(long: Long) => JsNumber(long)
-            case long: Long => JsNumber(long)
-            case Some(default) => JsString(default.toString)
-            case default => JsString(default.toString)
-          }
-          (columnName, jsValue)
-        }}
+        row.map{ case (columnName, jsValue, jsType) => (columnName, jsValue) }
       ))
     )
-    JsArray(jsRows.toVector)
+    val jsTypes = namesValuesTypes.transpose.map( column => {
+      val typeCounts = column.groupBy{ case (name, jsValue, jsType) => jsType }.mapValues(_.length)
+      val (name, _, _) = column.head
+      (name, JsString(
+        if (typeCounts.contains(DISCRETE_TYPE))
+          DISCRETE_TYPE
+        else if (typeCounts.contains(NUMERIC_TYPE))
+          NUMERIC_TYPE
+        else
+          DISCRETE_TYPE // treat all null values as discrete
+      ))
+    })
+    JsObject(
+      ("types", JsObject(jsTypes.toMap)),
+      ("rows", JsArray(jsRows.toVector))
+    )
   }
 
 }
 
 object Table {
+
+  val DISCRETE_TYPE = "string"
+
+  val NUMERIC_TYPE = "number"
+
+  val NULL_TYPE = "null"
 
   def fromStatCounter(stat: StatCounter): Table = fromStatCounters(List("data"), List(stat))
 
