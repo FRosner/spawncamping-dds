@@ -5,6 +5,7 @@ import de.frosner.dds.servables.c3._
 import de.frosner.dds.servables.graph.Graph
 import de.frosner.dds.servables.histogram.Histogram
 import de.frosner.dds.servables.tabular.Table
+import org.apache.log4j.Logger
 import org.apache.spark.SparkContext._
 import org.apache.spark.graphx
 import org.apache.spark.rdd.RDD
@@ -24,6 +25,8 @@ import scala.reflect.runtime.universe._
  */
 object DDS {
 
+  private val logger = Logger.getLogger("DDS")
+
   private val helper = Helper(this.getClass)
 
   private var servable: Option[Servable] = Option.empty
@@ -32,6 +35,7 @@ object DDS {
   private var serverNumber = 1
 
   private[core] def start(server: Server): Unit = {
+    logger.debug(s"Attempting to start $server")
     if (this.server.isDefined) {
       println("Server already started! Type 'help()' to see a list of available commands.")
     } else {
@@ -70,6 +74,7 @@ object DDS {
     longDescription = "Stops the DDS Web UI. You can restart it again by calling start()."
   )
   def stop() = {
+    logger.debug(s"Attempting to stop $server")
     if (!server.isDefined) {
       println("No server there to stop! Type 'start()' to start one.")
     } else {
@@ -98,6 +103,7 @@ object DDS {
   }
 
   private def serve(servable: Servable) = {
+    logger.debug(s"Attempting to serve $servable to $server")
     if (server.isDefined) {
       server.get.serve(servable)
     } else {
