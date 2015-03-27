@@ -89,7 +89,7 @@ case class SprayServer(name: String,
 object SprayServer {
 
   val DEFAULT_INTERFACE = "localhost"
-  val DEFAULT_PORT = 8080
+  val DEFAULT_PORT = 23080
 
   /**
    * Create a server instance bound to default port and interface, and open a browser window once the server is started.
