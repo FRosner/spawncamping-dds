@@ -5,5 +5,7 @@ scala:
 script:
   - sbt build
 addons:
-  artifacts: true
+  artifacts:
+    paths:
+    - ./build.sbt
   debug: true
