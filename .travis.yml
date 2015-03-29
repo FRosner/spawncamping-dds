@@ -7,5 +7,5 @@ script:
 addons:
   artifacts:
     paths:
-    - ./build.sbt
+    - $(ls ./target/scala-*/spawncamping-* | tr "\n" ":")
   debug: true
