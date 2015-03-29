@@ -7,3 +7,4 @@ script:
   - sbt build
 addons:
   artifacts: true
+  debug: true
