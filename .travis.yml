@@ -3,5 +3,5 @@ scala:
   - 2.10.4
   - 2.11.2
 script:
-  - test
-  - build
+  - sbt test
+  - sbt build
