@@ -5,3 +5,5 @@ scala:
 script:
   - sbt test
   - sbt build
+addons:
+  artifacts: true
