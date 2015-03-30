@@ -57,7 +57,7 @@ assemblyJarName in assembly := finalArtifactName.value
 val dontPublishTask = TaskKey[Unit]("dont-publish-to-s3", "Don't publish branch SNAPSHOT to S3.")
 
 dontPublishTask <<= (streams) map { (s) => {
-    s.log.info(s"Not publishing artifact to S3 (on branch $currentBranch)")
+    s.log.info(s"""Not publishing artifact to S3 (on branch $currentBranch / ${System.getenv("TRAVIS_BRANCH")})""")
   }
 }
 
