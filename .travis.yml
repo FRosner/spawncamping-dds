@@ -1,6 +1,6 @@
 language: scala
 scala:
    - 2.10.4
-   - 2.11.2
+   - 2.11.4
 script:
-  - sbt test build publish-master-snapshot
+  - sbt ++$TRAVIS_SCALA_VERSION test build publish-master-snapshot
