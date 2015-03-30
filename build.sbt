@@ -16,7 +16,7 @@ lazy val currentBranch = ("git status -sb" !!).split("\\n")(0).stripPrefix("## "
 
 val isMasterBranch = settingKey[Boolean]("currentBranch is master")
 
-isMasterBranch := currentBranch == "master"
+isMasterBranch := currentBranch == "master" || System.getenv("TRAVIS_BRANCH") == "master"
 
 lazy val finalArtifactName = settingKey[String]("Name of the final artifact.")
 
