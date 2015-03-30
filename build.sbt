@@ -1,3 +1,5 @@
+import S3._
+
 organization  := "de.frosner"
 
 version       := "1.3.0-SNAPSHOT"
@@ -5,6 +7,20 @@ version       := "1.3.0-SNAPSHOT"
 name          := "spawncamping-dds"
 
 scalaVersion  := "2.11.4"
+
+lazy val shortScalaVersion = settingKey[String]("Scala major and minor version.")
+
+shortScalaVersion := scalaVersion.value.split("\\.").take(2).mkString(".")
+
+lazy val currentBranch = ("git status -sb" !!).split("\\n")(0).stripPrefix("## ")
+
+val isMasterBranch = settingKey[Boolean]("currentBranch is master")
+
+isMasterBranch := currentBranch == "master"
+
+lazy val finalArtifactName = settingKey[String]("Name of the final artifact.")
+
+finalArtifactName := s"${name.value}-${version.value}_${shortScalaVersion.value}.jar"
 
 crossScalaVersions := Seq("2.10.4", scalaVersion.value)
 
@@ -36,7 +52,29 @@ test in assembly := {}
 
 assemblyOption in assembly := (assemblyOption in assembly).value.copy(includeScala = false)
 
-assemblyJarName in assembly := name.value + "-" + version.value + "_" + scalaVersion.value + ".jar"
+assemblyJarName in assembly := finalArtifactName.value
+
+val dontPublishTask = TaskKey[Unit]("dont-publish-to-s3", "Don't publish branch SNAPSHOT to S3.")
+
+dontPublishTask <<= (streams) map { (s) => {
+    s.log.info(s"Not publishing artifact to S3 (on branch $currentBranch)")
+  }
+}
+
+val publishOrDontPublishTask = TaskKey[Unit]("publish-master-snapshot", "Publish depending on the current branch.")
+
+publishOrDontPublishTask := Def.taskDyn({
+  if(isMasterBranch.value) S3.upload.toTask
+  else dontPublishTask.toTask
+}).value
+
+s3Settings
+
+mappings in upload := Seq((new java.io.File(s"${System.getProperty("user.dir")}/target/scala-${shortScalaVersion.value}/${finalArtifactName.value}"),finalArtifactName.value))
+
+host in upload := "spawncamping-dds-snapshots.s3.amazonaws.com"
+
+credentials += Credentials("Amazon S3", "spawncamping-dds-snapshots.s3.amazonaws.com", System.getenv("ARTIFACTS_KEY"), System.getenv("ARTIFACTS_SECRET"))
 
 fork in Compile := true
 
