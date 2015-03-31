@@ -57,7 +57,7 @@ See the [User Guide](https://github.com/FRosner/spawncamping-dds/wiki/User-Guide
 
 ### Get Data-Driven Spark
 
-You can either grab the [latest release artifact](https://github.com/FRosner/spawncamping-dds/releases) or build from source (`sbt build`). Data-Driven Spark is currently developed and built against Spark 1.2, but can be run against other compatible/minor releases. It can be cross built against Scala version 2.10 and 2.11, depending on which version was used to build your Spark.
+You can either grab the [latest release artifact](https://github.com/FRosner/spawncamping-dds/releases), use the most recent [SNAPSHOT](http://spawncamping-dds-snapshots.s3-website-us-east-1.amazonaws.com/) or build from source (`sbt build`). Data-Driven Spark is currently developed and built against Spark 1.2, but can be run against other compatible/minor releases. It can be cross built against Scala version 2.10 and 2.11, depending on which version was used to build your Spark.
 
 ### Contribution
 
