@@ -188,4 +188,18 @@ class TableTest extends FlatSpec with Matchers {
     )
   }
 
+  "Column types of a table" should "have the same order that the rows have" in {
+    val table = Table(
+      (0 to 20).map("t-" + _),
+      List(
+        0 to 20,
+        20 to 40,
+        40 to 60
+      )
+    )
+    val tableJson = table.contentAsJson
+    tableJson.asJsObject.fields("types").asJsObject.fields.iterator.toList shouldBe
+      (0 to 20).map("t-" + _).zip(List.fill(21)(JsString("number"))).toList
+  }
+
 }

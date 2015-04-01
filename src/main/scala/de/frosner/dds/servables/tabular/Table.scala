@@ -45,7 +45,7 @@ case class Table(head: Seq[String], rows: Seq[Seq[Any]]) extends Servable {
       ))
     })
     JsObject(
-      ("types", JsObject(jsTypes.toMap)),
+      ("types", JsObject(OrderedMap(jsTypes))),
       ("rows", JsArray(jsRows.toVector))
     )
   }
