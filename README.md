@@ -36,13 +36,13 @@ when working on the cluster with the Spark REPL. It does not offer a fully flexi
       Transaction("Milos", "Monday", 73.24),
       Transaction("Rick", "Wednesday", 9.99)
     ))
-    
+
     // look at a nice overview of transactions
     show(transactions)
 
     // view distribution of transaction amount
     histogram(transactions.map(_.amount), buckets = List(0,50,100,200))
-    
+
     // compare summed amount of your customers
     groupAndPie(transactions.map(t => (t.customer, t.amount)))(_ + _)
     ```
@@ -88,3 +88,5 @@ This project is licensed under the Apache License Version 2.0. For details pleas
 | [Parallel Coordinates](https://github.com/syntagmatic/parallel-coordinates) | Custom |
 | [jQuery](http://jquery.com/) | Custom (MITish) |
 | [SlickGrid](https://github.com/mleibman/SlickGrid) | MIT |
+| [Chroma.js](https://github.com/gka/chroma.js) | BSD |
+| [Underscore.js](http://underscorejs.org/) | MIT |

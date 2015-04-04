@@ -3,7 +3,7 @@ function showTable(tableAndTypes) {
 	var table = tableAndTypes.rows;
 	var types = {};
 	for (columnName in tableAndTypes.types) {
-		types[columnName + " "] = tableAndTypes.types[columnName];	
+		types[columnName + " "] = tableAndTypes.types[columnName];
 	}
 
     function generateParallelCoordinatesDiv(root, id) {
@@ -48,7 +48,9 @@ function showTable(tableAndTypes) {
 			.data(data)
 			.dimensions(Object.keys(types))
 			.types(types)
+			.color("#1f77b4")
 			.alpha(0.3)
+			.margin({top:30, left:0, right:0, bottom:10})
 			.width(window.innerWidth)
 			.height(window.innerHeight/5*2)
 			.mode("queue")
@@ -56,7 +58,84 @@ function showTable(tableAndTypes) {
 			.hideAxis(["id"])
 			.render()
 			.reorderable()
-			.brushMode("1D-axes");
+			.brushMode("1D-axes")
+			.interactive();
+
+		// Define a gradient for the color selector
+		var gradient = d3.selectAll("svg").append("svg:defs")
+			.append("svg:linearGradient")
+			.attr("id", "gradient")
+			.attr("x1", "0%")
+			.attr("y1", "0%")
+			.attr("x2", "100%")
+			.attr("y2", "0%")
+			.attr("spreadMethod", "pad");
+		gradient.append("svg:stop")
+			.attr("offset", "0%")
+			.attr("stop-color", "#ffff00")
+			.attr("stop-opacity", 1);
+		gradient.append("svg:stop")
+			.attr("offset", "100%")
+			.attr("stop-color", "#ff5500")
+			.attr("stop-opacity", 1);
+
+		// click circle to activate coloring
+		parcoords.svg.selectAll(".dimension").selectAll(".axis")
+			.append("circle")
+			.attr("r", 4)
+			.attr("class", "colorSelector")
+			.attr("transform", "translate(0,-25)")
+			.attr("text-anchor", "middle")
+			.on("click", changeColor)
+			.append("svg:title")
+			.text("Color data based on this dimension");
+
+		document.coloringEnabled = false;
+
+		function changeColor(dimension) {
+			var dimensions = parcoords.svg.selectAll(".dimension");
+			dimensions.selectAll("circle")
+				.attr("class", "colorSelector");
+
+			if (!document.coloringEnabled || document.lastColoredDimension != dimension) {
+				dimensions.filter(function(d) { return d == dimension; })
+					.selectAll("circle")
+					.attr("class", "colorSelector-selected");
+				document.coloredDimension = dimension;
+				var values = data.map(function(row) {
+					return row[dimension];
+				});
+				var scale;
+				if (types[dimension] == "string") {
+					var uniqValues = _.uniq(values).reduce(function(uniqIndexes, value, index) {
+						uniqIndexes[value] = index;
+						return uniqIndexes;
+					}, {});
+					var domain = [0, Object.keys(uniqValues).length - 1];
+					var chromaScale = chroma.scale('Set1').domain(domain);
+					scale = function(v) {
+						return chromaScale(uniqValues[v]);
+					};
+				} else {
+					var domain = [Math.min.apply(null, values), Math.max.apply(null, values)];
+					var chromaScale = chroma.scale(['orange', 'maroon']).domain(domain);
+					scale = function(v) {
+						return chromaScale(v);
+					};
+				}
+
+				parcoords.color(function(d) {
+					// color depending on selected dimension
+					var value = d[dimension];
+					return scale(value);
+				}).render()
+				document.coloringEnabled = true;
+				document.lastColoredDimension = dimension;
+			} else {
+				parcoords.color("#1f77b4");
+				document.coloringEnabled = false;
+			}
+		}
     } else {
     	var singleColumn = table.map(function(row) {
     		return row[Object.keys(row)[0]];
@@ -76,7 +155,7 @@ function showTable(tableAndTypes) {
 			    {top: 15, right: 30, bottom: 30, left: 50});
     	} else {
     		generateChartDiv(document.getElementById("content"), "chart");
-    		var singleColumnCounts = singleColumn.reduce(function(counts, value) { 
+    		var singleColumnCounts = singleColumn.reduce(function(counts, value) {
 				counts[value] = counts[value] ? counts[value] + 1 : 1;
 				return counts;
 			}, {});
@@ -104,7 +183,7 @@ function showTable(tableAndTypes) {
 				right: 15,
 				top: 10
 			};
-			c3.generate(chart);	
+			c3.generate(chart);
     	}
     }
 
