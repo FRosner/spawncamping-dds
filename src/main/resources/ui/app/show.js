@@ -3,7 +3,7 @@ function showTable(tableAndTypes) {
 	var table = tableAndTypes.rows;
 	var types = {};
 	for (columnName in tableAndTypes.types) {
-		types[columnName + " "] = tableAndTypes.types[columnName];	
+		types[columnName + " "] = tableAndTypes.types[columnName];
 	}
 
     function generateParallelCoordinatesDiv(root, id) {
@@ -56,7 +56,57 @@ function showTable(tableAndTypes) {
 			.hideAxis(["id"])
 			.render()
 			.reorderable()
-			.brushMode("1D-axes");
+			.brushMode("1D-axes")
+			.interactive();
+
+		// click label to activate coloring
+		parcoords.svg.selectAll(".dimension")
+			.on("click", changeColor)
+			.selectAll(".label")
+			.style("font-size", "14px");
+		document.coloringEnabled = false;
+
+		function changeColor(dimension) {
+			var dimensions = parcoords.svg.selectAll(".dimension");
+			dimensions.style("font-weight", "normal");
+
+			if (!document.coloringEnabled || document.lastColoredDimension != dimension) {
+				dimensions.filter(function(d) { return d == dimension; })
+					.style("font-weight", "bold");
+				document.coloredDimension = dimension;
+				var values = data.map(function(row) {
+					return row[dimension];
+				});
+				var scale;
+				if (types[dimension] == "string") {
+					var uniqValues = _.uniq(values).reduce(function(uniqIndexes, value, index) {
+						uniqIndexes[value] = index;
+						return uniqIndexes;
+					}, {});
+					var domain = [0, Object.keys(uniqValues).length - 1];
+					var chromaScale = chroma.scale('Set1').domain(domain);
+					scale = function(v) {
+						return chromaScale(uniqValues[v]);
+					};
+				} else {
+					var domain = [Math.min.apply(null, values), Math.max.apply(null, values)];
+					var chromaScale = chroma.scale(['orange', 'maroon']).domain(domain);
+					scale = function(v) {
+						return chromaScale(v);
+					};
+				}
+
+				parcoords.color(function(d) {
+					// color depending on selected dimension
+					var value = d[dimension];
+					return scale(value);
+				}).render()
+				document.coloringEnabled = true;
+				document.lastColoredDimension = dimension;
+			} else {
+				document.coloringEnabled = false;
+			}
+		}
     } else {
     	var singleColumn = table.map(function(row) {
     		return row[Object.keys(row)[0]];
@@ -76,7 +126,7 @@ function showTable(tableAndTypes) {
 			    {top: 15, right: 30, bottom: 30, left: 50});
     	} else {
     		generateChartDiv(document.getElementById("content"), "chart");
-    		var singleColumnCounts = singleColumn.reduce(function(counts, value) { 
+    		var singleColumnCounts = singleColumn.reduce(function(counts, value) {
 				counts[value] = counts[value] ? counts[value] + 1 : 1;
 				return counts;
 			}, {});
@@ -104,7 +154,7 @@ function showTable(tableAndTypes) {
 				right: 15,
 				top: 10
 			};
-			c3.generate(chart);	
+			c3.generate(chart);
     	}
     }
 
