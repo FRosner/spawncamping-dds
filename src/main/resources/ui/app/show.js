@@ -12,6 +12,9 @@ function showTable(tableAndTypes) {
         div.setAttribute("class", 'parcoords');
         div.style.height = window.innerHeight/5*2
         root.appendChild(div);
+        var hideLabelButton = document.createElement('div');
+        hideLabelButton.setAttribute("id", "hideLabelButton");
+        document.getElementById("header").appendChild(hideLabelButton);
     }
 
     function generateGridDiv(root) {
@@ -89,7 +92,32 @@ function showTable(tableAndTypes) {
 			.on("click", changeColor)
 			.append("svg:title")
 			.text("Color data based on this dimension");
-
+		
+		var labels = parcoords.svg.selectAll(".tick").selectAll("text");
+		var button = document.getElementById("hideLabelButton");
+		document.getElementById("hideLabelButton").onclick = function() {
+			if (document.tickLabelsHidden) {
+				labels.attr("visibility", "visible");
+				button.setAttribute("class", "unhidden");
+				button.setAttribute("title", "Hide Ticks Labels");
+				document.tickLabelsHidden = false;	
+			} else {
+				labels.attr("visibility", "hidden");
+				button.setAttribute("class", "hidden");
+				button.setAttribute("title", "Show Ticks Labels");
+				document.tickLabelsHidden = true;
+			}
+		};
+		if (!document.tickLabelsHidden) {
+			labels.attr("visibility", "visible");
+			button.setAttribute("class", "unhidden");
+			button.setAttribute("title", "Hide Ticks Labels");
+		} else {
+			labels.attr("visibility", "hidden");
+			button.setAttribute("class", "hidden");
+			button.setAttribute("title", "Show Ticks Labels");
+		}
+		
 		document.coloringEnabled = false;
 
 		function changeColor(dimension) {
