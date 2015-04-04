@@ -12,6 +12,11 @@ function showTable(tableAndTypes) {
         div.setAttribute("class", 'parcoords');
         div.style.height = window.innerHeight/5*2
         root.appendChild(div);
+        var hideLabelButton = document.createElement('div');
+        hideLabelButton.setAttribute("id", "hideLabelButton");
+        hideLabelButton.setAttribute("class", "unhidden");
+        hideLabelButton.setAttribute("title", "Hide Ticks Labels");
+        document.getElementById("header").appendChild(hideLabelButton);
     }
 
     function generateGridDiv(root) {

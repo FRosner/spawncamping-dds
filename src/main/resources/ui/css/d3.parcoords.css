@@ -59,3 +59,25 @@
 .colorSelector-selected {
 	fill: url(#gradient);
 }
+
+#hideLabelButton {
+  margin-top:1px;
+  margin-right:5px;
+  cursor:pointer;
+  float:right;
+  width:14px;
+  height:14px;
+  background-image:url("/ui/img/letters.png");
+}
+
+#hideLabelButton.hidden {
+  background-position:14px;
+}
+
+#hideLabelButton.unhidden {
+  background-position:0px;
+}
+
+#hideLabelButton.unhidden:hover {
+  background-position:14px;
+}
