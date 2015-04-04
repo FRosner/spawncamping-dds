@@ -86,7 +86,9 @@ function showTable(tableAndTypes) {
 			.attr("class", "colorSelector")
 			.attr("transform", "translate(0,-25)")
 			.attr("text-anchor", "middle")
-			.on("click", changeColor);
+			.on("click", changeColor)
+			.append("svg:title")
+			.text("Color data based on this dimension");
 
 		document.coloringEnabled = false;
 
