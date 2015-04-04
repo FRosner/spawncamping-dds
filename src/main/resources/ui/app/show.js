@@ -14,10 +14,7 @@ function showTable(tableAndTypes) {
         root.appendChild(div);
         var hideLabelButton = document.createElement('div');
         hideLabelButton.setAttribute("id", "hideLabelButton");
-        hideLabelButton.setAttribute("class", "unhidden");
-        hideLabelButton.setAttribute("title", "Hide Ticks Labels");
         document.getElementById("header").appendChild(hideLabelButton);
-        document.tickLabelsHidden = false;
     }
 
     function generateGridDiv(root) {
@@ -96,9 +93,9 @@ function showTable(tableAndTypes) {
 			.append("svg:title")
 			.text("Color data based on this dimension");
 		
+		var labels = parcoords.svg.selectAll(".tick").selectAll("text");
+		var button = document.getElementById("hideLabelButton");
 		document.getElementById("hideLabelButton").onclick = function() {
-			var labels = parcoords.svg.selectAll(".tick").selectAll("text");
-			var button = document.getElementById("hideLabelButton");
 			if (document.tickLabelsHidden) {
 				labels.attr("visibility", "visible");
 				button.setAttribute("class", "unhidden");
@@ -111,6 +108,15 @@ function showTable(tableAndTypes) {
 				document.tickLabelsHidden = true;
 			}
 		};
+		if (!document.tickLabelsHidden) {
+			labels.attr("visibility", "visible");
+			button.setAttribute("class", "unhidden");
+			button.setAttribute("title", "Hide Ticks Labels");
+		} else {
+			labels.attr("visibility", "hidden");
+			button.setAttribute("class", "hidden");
+			button.setAttribute("title", "Show Ticks Labels");
+		}
 		
 		document.coloringEnabled = false;
 
