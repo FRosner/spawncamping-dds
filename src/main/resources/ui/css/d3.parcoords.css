@@ -46,9 +46,16 @@
 	user-select: none;
 }
 
-.colorSelector {
-	  fill: #ccc;
+.colorSelector, .colorSelector-selected {
     stroke: #777;
     stroke-width: 1px;
     cursor: pointer;
+}
+
+.colorSelector {
+	fill: #ccc;
+}
+
+.colorSelector-selected {
+	fill: url(#gradient);
 }

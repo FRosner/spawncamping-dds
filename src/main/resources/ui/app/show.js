@@ -61,6 +61,24 @@ function showTable(tableAndTypes) {
 			.brushMode("1D-axes")
 			.interactive();
 
+		// Define a gradient for the color selector
+		var gradient = d3.selectAll("svg").append("svg:defs")
+			.append("svg:linearGradient")
+			.attr("id", "gradient")
+			.attr("x1", "0%")
+			.attr("y1", "0%")
+			.attr("x2", "100%")
+			.attr("y2", "0%")
+			.attr("spreadMethod", "pad");
+		gradient.append("svg:stop")
+			.attr("offset", "0%")
+			.attr("stop-color", "#ffff00")
+			.attr("stop-opacity", 1);
+		gradient.append("svg:stop")
+			.attr("offset", "100%")
+			.attr("stop-color", "#ff5500")
+			.attr("stop-opacity", 1);
+
 		// click circle to activate coloring
 		parcoords.svg.selectAll(".dimension").selectAll(".axis")
 			.append("circle")
@@ -74,11 +92,13 @@ function showTable(tableAndTypes) {
 
 		function changeColor(dimension) {
 			var dimensions = parcoords.svg.selectAll(".dimension");
-			dimensions.style("font-weight", "normal");
+			dimensions.selectAll("circle")
+				.attr("class", "colorSelector");
 
 			if (!document.coloringEnabled || document.lastColoredDimension != dimension) {
 				dimensions.filter(function(d) { return d == dimension; })
-					.style("font-weight", "bold");
+					.selectAll("circle")
+					.attr("class", "colorSelector-selected");
 				document.coloredDimension = dimension;
 				var values = data.map(function(row) {
 					return row[dimension];
