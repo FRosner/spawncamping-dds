@@ -48,6 +48,7 @@ function showTable(tableAndTypes) {
 			.data(data)
 			.dimensions(Object.keys(types))
 			.types(types)
+			.color("#1f77b4")
 			.alpha(0.3)
 			.width(window.innerWidth)
 			.height(window.innerHeight/5*2)
@@ -104,6 +105,7 @@ function showTable(tableAndTypes) {
 				document.coloringEnabled = true;
 				document.lastColoredDimension = dimension;
 			} else {
+				parcoords.color("#1f77b4");
 				document.coloringEnabled = false;
 			}
 		}
