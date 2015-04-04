@@ -50,6 +50,7 @@ function showTable(tableAndTypes) {
 			.types(types)
 			.color("#1f77b4")
 			.alpha(0.3)
+			.margin({top:30, left:0, right:0, bottom:10})
 			.width(window.innerWidth)
 			.height(window.innerHeight/5*2)
 			.mode("queue")
@@ -60,11 +61,15 @@ function showTable(tableAndTypes) {
 			.brushMode("1D-axes")
 			.interactive();
 
-		// click label to activate coloring
-		parcoords.svg.selectAll(".dimension")
-			.on("click", changeColor)
-			.selectAll(".label")
-			.style("font-size", "14px");
+		// click circle to activate coloring
+		parcoords.svg.selectAll(".dimension").selectAll(".axis")
+			.append("circle")
+			.attr("r", 4)
+			.attr("class", "colorSelector")
+			.attr("transform", "translate(0,-25)")
+			.attr("text-anchor", "middle")
+			.on("click", changeColor);
+
 		document.coloringEnabled = false;
 
 		function changeColor(dimension) {
