@@ -82,44 +82,6 @@ function showTable(tableAndTypes) {
 			.attr("stop-color", "#ff5500")
 			.attr("stop-opacity", 1);
 
-		// click circle to activate coloring
-		parcoords.svg.selectAll(".dimension").selectAll(".axis")
-			.append("circle")
-			.attr("r", 4)
-			.attr("class", "colorSelector")
-			.attr("transform", "translate(0,-25)")
-			.attr("text-anchor", "middle")
-			.on("click", changeColor)
-			.append("svg:title")
-			.text("Color data based on this dimension");
-		
-		var labels = parcoords.svg.selectAll(".tick").selectAll("text");
-		var button = document.getElementById("hideLabelButton");
-		document.getElementById("hideLabelButton").onclick = function() {
-			if (document.tickLabelsHidden) {
-				labels.attr("visibility", "visible");
-				button.setAttribute("class", "unhidden");
-				button.setAttribute("title", "Hide Ticks Labels");
-				document.tickLabelsHidden = false;	
-			} else {
-				labels.attr("visibility", "hidden");
-				button.setAttribute("class", "hidden");
-				button.setAttribute("title", "Show Ticks Labels");
-				document.tickLabelsHidden = true;
-			}
-		};
-		if (!document.tickLabelsHidden) {
-			labels.attr("visibility", "visible");
-			button.setAttribute("class", "unhidden");
-			button.setAttribute("title", "Hide Ticks Labels");
-		} else {
-			labels.attr("visibility", "hidden");
-			button.setAttribute("class", "hidden");
-			button.setAttribute("title", "Show Ticks Labels");
-		}
-		
-		document.coloringEnabled = false;
-
 		function changeColor(dimension) {
 			var dimensions = parcoords.svg.selectAll(".dimension");
 			dimensions.selectAll("circle")
@@ -164,6 +126,44 @@ function showTable(tableAndTypes) {
 				document.coloringEnabled = false;
 			}
 		}
+
+		// click circle to activate coloring
+		parcoords.svg.selectAll(".dimension").selectAll(".axis")
+			.append("circle")
+			.attr("r", 4)
+			.attr("class", "colorSelector")
+			.attr("transform", "translate(0,-25)")
+			.attr("text-anchor", "middle")
+			.on("click", changeColor)
+			.append("svg:title")
+			.text("Color data based on this dimension");
+		
+		var labels = parcoords.svg.selectAll(".tick").selectAll("text");
+		var button = document.getElementById("hideLabelButton");
+		document.getElementById("hideLabelButton").onclick = function() {
+			if (document.tickLabelsHidden) {
+				labels.attr("visibility", "visible");
+				button.setAttribute("class", "unhidden");
+				button.setAttribute("title", "Hide Ticks Labels");
+				document.tickLabelsHidden = false;	
+			} else {
+				labels.attr("visibility", "hidden");
+				button.setAttribute("class", "hidden");
+				button.setAttribute("title", "Show Ticks Labels");
+				document.tickLabelsHidden = true;
+			}
+		};
+		if (!document.tickLabelsHidden) {
+			labels.attr("visibility", "visible");
+			button.setAttribute("class", "unhidden");
+			button.setAttribute("title", "Hide Ticks Labels");
+		} else {
+			labels.attr("visibility", "hidden");
+			button.setAttribute("class", "hidden");
+			button.setAttribute("title", "Show Ticks Labels");
+		}
+		
+		document.coloringEnabled = false;
     } else {
     	var singleColumn = table.map(function(row) {
     		return row[Object.keys(row)[0]];
