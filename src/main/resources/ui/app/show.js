@@ -430,3 +430,67 @@ function showGraph(graph) {
 
     force.start();
 }
+
+function showScatter2D(points) {
+	var chartDiv = generateChartDiv(document.getElementById("content"), "chart");
+    chartDiv.className = "c3";
+
+	var margin = {top: 20, right: 15, bottom: 60, left: 60}
+      , width = window.innerWidth - margin.left - margin.right
+      , height = window.innerHeight - margin.top - margin.bottom;
+    
+    var minX = d3.min(points, function(d) { return d.x; });
+    var maxX = d3.max(points, function(d) { return d.x; });
+    var dX = maxX - minX;
+    var x = d3.scale.linear()
+              .domain([minX - dX * 0.01, maxX + dX * 0.01])
+              .range([ 0, width ]);
+    
+    var minY = d3.min(points, function(d) { return d.y; });
+    var maxY = d3.max(points, function(d) { return d.y; });
+    var dY = maxY - minY;
+    var y = d3.scale.linear()
+    	      .domain([minY - dY * 0.02, maxY + dY * 0.02])
+    	      .range([ height, 0 ]);
+ 
+    var chart = d3.select("#chart")
+	.append('svg:svg')
+	.attr('width', width + margin.right + margin.left)
+	.attr('height', height + margin.top + margin.bottom)
+	.attr('class', 'c3')
+
+    var main = chart.append('g')
+	.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
+	.attr('width', width)
+	.attr('height', height)
+	.attr('class', 'main')   
+        
+    // draw the x axis
+    var xAxis = d3.svg.axis()
+	.scale(x)
+	.orient('bottom');
+
+    main.append('g')
+	.attr('transform', 'translate(0,' + height + ')')
+	.attr('class', 'x axis')
+	.call(xAxis);
+
+    // draw the y axis
+    var yAxis = d3.svg.axis()
+	.scale(y)
+	.orient('left');
+
+    main.append('g')
+	.attr('transform', 'translate(0,0)')
+	.attr('class', 'y axis')
+	.call(yAxis);
+
+    var g = main.append("svg:g"); 
+    
+    g.selectAll("scatter-dots")
+      .data(points)
+      .enter().append("svg:circle")
+          .attr("cx", function (d) { return x(d.x); } )
+          .attr("cy", function (d) { return y(d.y); } )
+          .attr("r", 3);
+}
