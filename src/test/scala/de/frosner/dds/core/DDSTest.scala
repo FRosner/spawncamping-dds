@@ -3,6 +3,7 @@ package de.frosner.dds.core
 import de.frosner.dds.servables.c3._
 import de.frosner.dds.servables.graph.Graph
 import de.frosner.dds.servables.histogram.Histogram
+import de.frosner.dds.servables.scatter.Points2D
 import de.frosner.dds.servables.tabular.Table
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
@@ -446,6 +447,24 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     resultGraph.edges.toSet shouldBe Set(
       (vertexList.indexOf("a"), vertexList.indexOf("b"))
     )
+  }
+
+  "A correct scatterplot" should "be constructed from numeric values" in {
+    DDS.start(mockedServer)
+    val points = List((1,2), (3,4))
+    DDS.scatter(points)
+
+    val resultPoints = mockedServer.lastServed.get.asInstanceOf[Points2D[Int, Int]]
+    resultPoints.points.toList shouldBe List((1, 2), (3, 4))
+  }
+
+  it should "be constructed from nominal values" in {
+    DDS.start(mockedServer)
+    val points = List(("a",2), ("b",4))
+    DDS.scatter(points)
+
+    val resultPoints = mockedServer.lastServed.get.asInstanceOf[Points2D[Int, Int]]
+    resultPoints.points.toList shouldBe List(("a", 2), ("b", 4))
   }
 
   "Help" should "work" in {

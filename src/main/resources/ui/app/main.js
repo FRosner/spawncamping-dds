@@ -47,6 +47,8 @@ function checkForUpdate() {
                             {top: 30, right: 60, bottom: 60, left: 60});
                     } else if (servable.type == "graph") {
                         showGraph(servable.content);
+                    } else if (servable.type == "points-2d") {
+                        showScatter2D(servable.content);
                     } else {
                         console.log("Unrecognized response: " + response);
                     }

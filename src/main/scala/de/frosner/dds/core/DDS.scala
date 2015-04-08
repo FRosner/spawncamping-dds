@@ -4,6 +4,7 @@ import de.frosner.dds.servables.c3.ChartTypeEnum.ChartType
 import de.frosner.dds.servables.c3._
 import de.frosner.dds.servables.graph.Graph
 import de.frosner.dds.servables.histogram.Histogram
+import de.frosner.dds.servables.scatter.Points2D
 import de.frosner.dds.servables.tabular.Table
 import org.apache.log4j.Logger
 import org.apache.spark.SparkContext._
@@ -144,6 +145,17 @@ object DDS {
       edges.map{ case (sourceId, targetId) => (indexMap(sourceId), indexMap(targetId))}
     )
     serve(graph)
+  }
+
+  @Help(
+    category = "Generic Plots",
+    shortDescription = "Plots a scatter plot",
+    longDescription = "Plots a scatter plot of the given points. A point is represented as a pair of X and Y coordinates." +
+      "Works with both, numeric or nominal values and will plot the axes accordingly.",
+    parameters = "values: Seq[(Value, Value)]"
+  )
+  def scatter[N1, N2](values: Seq[(N1, N2)])(implicit num1: Numeric[N1] = null, num2: Numeric[N2] = null) = {
+    serve(Points2D(values)(num1, num2))
   }
 
   @Help(
