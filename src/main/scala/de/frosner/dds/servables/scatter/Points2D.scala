@@ -1,18 +1,24 @@
 package de.frosner.dds.servables.scatter
 
 import de.frosner.dds.core.Servable
-import de.frosner.dds.servables.tabular.OrderedMap
-import spray.json.{JsNumber, JsObject, JsArray}
+import de.frosner.dds.servables.tabular.{Table, OrderedMap}
+import spray.json.{JsString, JsNumber, JsObject, JsArray}
 
-case class Points2D(points: Seq[(Double, Double)]) extends Servable {
+case class Points2D[XT, YT](points: Seq[(XT, YT)])(implicit numX: Numeric[XT] = null, numY: Numeric[YT] = null) extends Servable {
 
   override val servableType: String = "points-2d"
 
-  def contentAsJson = JsArray(
-    points.map{ case (x, y) => JsObject(OrderedMap(List(
-      ("x", JsNumber(x)),
-      ("y", JsNumber(y))
-    )))}.toVector
+  def contentAsJson = JsObject(
+    ("points", JsArray(
+        points.map{ case (x, y) => JsObject(OrderedMap(List(
+          ("x", if (numX != null) JsNumber(numX.toDouble(x)) else JsString(x.toString)),
+          ("y", if (numY != null) JsNumber(numY.toDouble(y)) else JsString(y.toString))
+        )))}.toVector
+    )),
+    ("types", JsObject(
+      ("x", JsString(if (numX != null) Table.NUMERIC_TYPE else Table.DISCRETE_TYPE)),
+      ("y", JsString(if (numY != null) Table.NUMERIC_TYPE else Table.DISCRETE_TYPE))
+    ))
   )
 
 }

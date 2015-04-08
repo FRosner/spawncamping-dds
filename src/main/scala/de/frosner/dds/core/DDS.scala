@@ -150,11 +150,12 @@ object DDS {
   @Help(
     category = "Generic Plots",
     shortDescription = "Plots a scatter plot",
-    longDescription = "Plots a scatter plot of the given points. A point is represented as a pair of X and Y coordinates.",
-    parameters = "values: Seq[(NumericValue, NumericValue)]"
+    longDescription = "Plots a scatter plot of the given points. A point is represented as a pair of X and Y coordinates." +
+      "Works with both, numeric or nominal values and will plot the axes accordingly.",
+    parameters = "values: Seq[(Value, Value)]"
   )
-  def scatter[N1, N2](values: Seq[(N1, N2)])(implicit num1: Numeric[N1], num2: Numeric[N2]) = {
-    serve(Points2D(values.map{ case (x, y) => (num1.toDouble(x), num2.toDouble(y))}))
+  def scatter[N1, N2](values: Seq[(N1, N2)])(implicit num1: Numeric[N1] = null, num2: Numeric[N2] = null) = {
+    serve(Points2D(values)(num1, num2))
   }
 
   @Help(

@@ -449,13 +449,22 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     )
   }
 
-  "A correct scatterplot" should "be printed" in {
+  "A correct scatterplot" should "be constructed from numeric values" in {
     DDS.start(mockedServer)
     val points = List((1,2), (3,4))
     DDS.scatter(points)
 
-    val resultPoints = mockedServer.lastServed.get.asInstanceOf[Points2D]
-    resultPoints.points.toList shouldBe List((1.0, 2.0), (3.0, 4.0))
+    val resultPoints = mockedServer.lastServed.get.asInstanceOf[Points2D[Int, Int]]
+    resultPoints.points.toList shouldBe List((1, 2), (3, 4))
+  }
+
+  it should "be constructed from nominal values" in {
+    DDS.start(mockedServer)
+    val points = List(("a",2), ("b",4))
+    DDS.scatter(points)
+
+    val resultPoints = mockedServer.lastServed.get.asInstanceOf[Points2D[Int, Int]]
+    resultPoints.points.toList shouldBe List(("a", 2), ("b", 4))
   }
 
   "Help" should "work" in {
