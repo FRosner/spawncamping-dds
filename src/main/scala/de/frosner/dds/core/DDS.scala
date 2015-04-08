@@ -4,6 +4,7 @@ import de.frosner.dds.servables.c3.ChartTypeEnum.ChartType
 import de.frosner.dds.servables.c3._
 import de.frosner.dds.servables.graph.Graph
 import de.frosner.dds.servables.histogram.Histogram
+import de.frosner.dds.servables.matrix.Matrix2D
 import de.frosner.dds.servables.scatter.Points2D
 import de.frosner.dds.servables.tabular.Table
 import org.apache.log4j.Logger
@@ -156,6 +157,25 @@ object DDS {
   )
   def scatter[N1, N2](values: Seq[(N1, N2)])(implicit num1: Numeric[N1] = null, num2: Numeric[N2] = null) = {
     serve(Points2D(values)(num1, num2))
+  }
+
+  @Help(
+    category = "Generic Plots",
+    shortDescription = "Plots a heat map",
+    longDescription = "Plots the given matrix as a heat map. values(i)(j) corresponds to the element in the ith row" +
+      " and the jth column. If no row or column names are specified, the rows or columns will just have incerementing" +
+      " numbers as labels.",
+    parameters = "values: Seq[Seq[NumericValue]], (optional) rowNames: Seq[String], (optional) colNames: Seq[String]"
+  )
+  def heatmap[N](values: Seq[Seq[N]], rowNames: Seq[String] = null, colNames: Seq[String] = null)
+                (implicit num: Numeric[N]): Unit = {
+    if (values.size == 0 || values.head.size == 0) {
+      println("Can't show empty heatmap!")
+    } else {
+      val actualRowNames: Seq[String] = if (rowNames != null) rowNames else (1 to values.size).map(_.toString)
+      val actualColNames: Seq[String] = if (colNames != null) colNames else (1 to values.head.size).map(_.toString)
+      serve(Matrix2D(values.map(_.map(entry => num.toDouble(entry))), actualRowNames, actualColNames))
+    }
   }
 
   @Help(

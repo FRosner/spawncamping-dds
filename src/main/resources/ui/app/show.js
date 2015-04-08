@@ -522,3 +522,7 @@ function showScatter2D(pointsWithTypes) {
           })
           .attr("r", 3);
 }
+
+function showMatrix(matrixAndNames) {
+	console.log(matrixAndNames);
+}

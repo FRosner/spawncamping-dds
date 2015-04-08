@@ -49,6 +49,8 @@ function checkForUpdate() {
                         showGraph(servable.content);
                     } else if (servable.type == "points-2d") {
                         showScatter2D(servable.content);
+                    } else if (servable.type == "matrix") {
+                        showMatrix(servable.content);
                     } else {
                         console.log("Unrecognized response: " + response);
                     }
