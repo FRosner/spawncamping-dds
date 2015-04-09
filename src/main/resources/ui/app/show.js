@@ -51,6 +51,7 @@ function showTable(tableAndTypes) {
 			.data(data)
 			.dimensions(Object.keys(types))
 			.types(types)
+			.reorderable()
 			.color("#1f77b4")
 			.alpha(0.3)
 			.margin({top:30, left:0, right:0, bottom:10})
@@ -59,10 +60,10 @@ function showTable(tableAndTypes) {
 			.mode("queue")
 			.rate(60)
 			.hideAxis(["id"])
-			.render()
-			.reorderable()
-			.brushMode("1D-axes")
 			.interactive()
+			.render()
+			.brushMode("1D-axes")
+            .commonNomScale()
             .render();
 
 		// Define a gradient for the color selector
