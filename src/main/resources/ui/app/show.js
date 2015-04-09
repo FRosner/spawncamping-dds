@@ -525,4 +525,78 @@ function showScatter2D(pointsWithTypes) {
 
 function showMatrix(matrixAndNames) {
 	console.log(matrixAndNames);
+
+	var matrix = flatMap(matrixAndNames.entries, function(row, i) { 
+		return row.map(function(entry, j) {
+			return {
+				x: j,
+				y: i,
+				z: entry
+			};
+		}); 
+	});
+	console.log(matrix);
+	var rowNames = matrixAndNames.rowNames;
+	var colNames = matrixAndNames.colNames;
+
+	var chartDiv = generateChartDiv(document.getElementById("content"), "chart");
+    chartDiv.className = "c3";
+
+	var margin = {top: 20, right: 15, bottom: 60, left: 60}
+      , width = window.innerWidth - margin.left - margin.right
+      , height = window.innerHeight - margin.top - margin.bottom;
+    
+	var x = d3.scale.ordinal()
+		.domain(colNames)
+		.rangeBands([0, width]);
+
+	var y = d3.scale.ordinal()
+		.domain(rowNames)
+		.rangeBands([height, 0]);
+
+	var chart = d3.select("#chart")
+		.append('svg:svg')
+		.attr('width', width + margin.right + margin.left)
+		.attr('height', height + margin.top + margin.bottom)
+		.attr('class', 'c3')
+
+    var main = chart.append('g')
+		.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
+		.attr('width', width)
+		.attr('height', height)
+		.attr('class', 'main')   
+        
+    var xAxis = d3.svg.axis()
+		.scale(x)
+		.orient('bottom');
+
+    main.append('g')
+		.attr('transform', 'translate(0,' + height + ')')
+		.attr('class', 'x axis')
+		.call(xAxis);
+
+    // draw the y axis
+    var yAxis = d3.svg.axis()
+		.scale(y)
+		.orient('left');
+
+    main.append('g')
+		.attr('transform', 'translate(0,0)')
+		.attr('class', 'y axis')
+		.call(yAxis);
+
+    var g = main.append("svg:g");
+        
+    g.selectAll("matrix-rects")
+      	.data(matrix)
+		.enter().append("rect")
+			.attr("class", "cell")
+			.attr("x", function (p) { 
+				return x(colNames[p.x]);
+          	})
+          	.attr("y", function (p) { 
+          		return y(rowNames[p.y]);
+          	})
+			.attr("width", x.rangeBand())
+			.attr("height", y.rangeBand());
 }
