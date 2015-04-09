@@ -596,13 +596,13 @@ function showMatrix(matrixAndNames) {
 		.enter().append("rect")
 			.attr("class", "cell")
 			.attr("x", function (p) { 
-				return x(colNames[p.x]);
+				return x(colNames[p.x]) + 1;
           	})
           	.attr("y", function (p) { 
           		return y(rowNames[p.y]);
           	})
-			.attr("width", x.rangeBand())
-			.attr("height", y.rangeBand())
+			.attr("width", x.rangeBand() - 1)
+			.attr("height", y.rangeBand() - 1)
 			.attr("fill", function(value) {return z(value.z)})
 			.attr("class", "matrix-cell")
 			.append("svg:title")
