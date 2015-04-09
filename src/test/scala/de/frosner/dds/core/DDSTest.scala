@@ -3,6 +3,7 @@ package de.frosner.dds.core
 import de.frosner.dds.servables.c3._
 import de.frosner.dds.servables.graph.Graph
 import de.frosner.dds.servables.histogram.Histogram
+import de.frosner.dds.servables.matrix.Matrix2D
 import de.frosner.dds.servables.scatter.Points2D
 import de.frosner.dds.servables.tabular.Table
 import org.apache.spark.SparkContext
@@ -465,6 +466,26 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
 
     val resultPoints = mockedServer.lastServed.get.asInstanceOf[Points2D[Int, Int]]
     resultPoints.points.toList shouldBe List(("a", 2), ("b", 4))
+  }
+
+  "A correct heatmap" should "be served with default row and column names" in {
+    DDS.start(mockedServer)
+    DDS.heatmap(List(List(1,2), List(3, 4)))
+
+    val resultMatrix = mockedServer.lastServed.get.asInstanceOf[Matrix2D]
+    resultMatrix.entries shouldBe List(List(1,2), List(3,4))
+    resultMatrix.rowNames.toList shouldBe List("1", "2")
+    resultMatrix.colNames.toList shouldBe List("1", "2")
+  }
+
+  it should "be served with with given row and column names" in {
+    DDS.start(mockedServer)
+    DDS.heatmap(List(List(1,2), List(3, 4)), rowNames = List("a", "b"), colNames = List("c", "d"))
+
+    val resultMatrix = mockedServer.lastServed.get.asInstanceOf[Matrix2D]
+    resultMatrix.entries shouldBe List(List(1,2), List(3,4))
+    resultMatrix.rowNames.toList shouldBe List("a", "b")
+    resultMatrix.colNames.toList shouldBe List("c", "d")
   }
 
   "Help" should "work" in {
