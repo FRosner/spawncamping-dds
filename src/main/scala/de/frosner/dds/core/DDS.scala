@@ -419,7 +419,7 @@ object DDS {
    */
   def show[VD, ED](graph: graphx.Graph[VD, ED]): Unit = show(graph, 20)
 
-    @Help(
+  @Help(
     category = "RDD Analysis",
     shortDescription = "Shows some basic summary statistics of the given dataset",
     longDescription = "Shows some basic summary statistics of the given dataset.\n" +
