@@ -62,7 +62,8 @@ function showTable(tableAndTypes) {
 			.render()
 			.reorderable()
 			.brushMode("1D-axes")
-			.interactive();
+			.interactive()
+            .render();
 
 		// Define a gradient for the color selector
 		var gradient = d3.selectAll("svg").append("svg:defs")
