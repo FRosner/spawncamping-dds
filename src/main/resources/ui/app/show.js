@@ -579,7 +579,6 @@ function showMatrix(matrixAndNames) {
 		.attr('class', 'x axis')
 		.call(xAxis);
 
-    // draw the y axis
     var yAxis = d3.svg.axis()
 		.scale(y)
 		.orient('left');
