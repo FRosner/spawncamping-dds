@@ -11,7 +11,7 @@ object Index {
         <link href="/ui/css/graph.css" rel="stylesheet" type="text/css"></link>
         <link href="/ui/css/d3.parcoords.css" rel="stylesheet" type="text/css"></link>
         <script src="/ui/lib/d3.v3.min.js" charset="utf-8"></script>
-        <script src="/ui/lib/d3.parcoords.min.js" charset="utf-8"></script>
+        <script src="/ui/lib/d3.parcoords.m.js" charset="utf-8"></script>
         <script src="/ui/lib/c3.min.js"></script>
         <script src="/ui/lib/jquery-1.7.min.js"></script>
         <script src="/ui/lib/chroma.min.js"></script>
