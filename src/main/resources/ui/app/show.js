@@ -524,8 +524,6 @@ function showScatter2D(pointsWithTypes) {
 }
 
 function showMatrix(matrixAndNames) {
-	console.log(matrixAndNames);
-
 	var matrix = flatMap(matrixAndNames.entries, function(row, i) { 
 		return row.map(function(entry, j) {
 			return {
@@ -535,7 +533,6 @@ function showMatrix(matrixAndNames) {
 			};
 		}); 
 	});
-	console.log(matrix);
 	var rowNames = matrixAndNames.rowNames;
 	var colNames = matrixAndNames.colNames;
 
@@ -553,6 +550,13 @@ function showMatrix(matrixAndNames) {
 	var y = d3.scale.ordinal()
 		.domain(rowNames)
 		.rangeBands([height, 0]);
+
+	var zValues = matrix.map(function(v) {return v.z});
+	var zDomain = [
+		Math.min.apply(null, zValues),
+		Math.max.apply(null, zValues)
+	];
+	var z = chroma.scale("YlOrRd").domain(zDomain);
 
 	var chart = d3.select("#chart")
 		.append('svg:svg')
@@ -598,5 +602,9 @@ function showMatrix(matrixAndNames) {
           		return y(rowNames[p.y]);
           	})
 			.attr("width", x.rangeBand())
-			.attr("height", y.rangeBand());
+			.attr("height", y.rangeBand())
+			.attr("fill", function(value) {return z(value.z)})
+			.attr("class", "matrix-cell")
+			.append("svg:title")
+			.text(function(value) {return value.z});
 }
