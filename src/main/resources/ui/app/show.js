@@ -510,14 +510,14 @@ function showScatter2D(pointsWithTypes) {
           	if (types.x == "number") {
           		return x(p.x)
           	} else {
-          		return x(p.x) + x.rangeBand() / 2;
+          		return x(p.x) + (x.rangeBand() / 2) + (x.rangeBand() * (Math.random(1) - 0.5) * 0.4);
           	}
           })
           .attr("cy", function (p) {
           	if (types.y == "number") {
           		return y(p.y)
           	} else {
-          		return y(p.y) + y.rangeBand() / 2;
+          		return y(p.y) + (y.rangeBand() / 2) + (y.rangeBand() * (Math.random(1) - 0.5) * 0.4);
           	}
           })
           .attr("r", 3);
