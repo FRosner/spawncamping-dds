@@ -19,6 +19,7 @@ $(document).ready(toggleUpdating);
 function clearContent() {
     document.getElementById("content").innerHTML = "";
     removeElementIfExists("hideLabelButton");
+    removeElementIfExists("enableJitterButton");
 }
 
 function removeElementIfExists(elementId) {
