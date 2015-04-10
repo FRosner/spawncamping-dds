@@ -18,6 +18,8 @@ import org.scalamock.scalatest.MockFactory
 import org.scalatest._
 
 class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfterEach with BeforeAndAfterAll {
+
+  val epsilon = 0.000001
   
   class MockedServer extends Server {
     var lastServed: Option[Servable] = Option.empty
@@ -556,6 +558,25 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     resultMatrix.entries shouldBe List(List(1,2), List(3,4))
     resultMatrix.rowNames.toList shouldBe List("a", "b")
     resultMatrix.colNames.toList shouldBe List("c", "d")
+  }
+
+  "A correct correlation heatmap" should "be served from an RDD with two integer columns" in {
+    DDS.start(mockedServer)
+    val rdd = sc.makeRDD(List(Row(1, 3), Row(2, 2), Row(3, 1)))
+    val schemaRdd = sql.applySchema(rdd, StructType(List(
+      StructField("first", IntegerType, false),
+      StructField("second", IntegerType, false)
+    )))
+    DDS.correlation(schemaRdd)
+
+    val resultMatrix = mockedServer.lastServed.get.asInstanceOf[Matrix2D]
+    resultMatrix.colNames.toList shouldBe List("first", "second")
+    resultMatrix.rowNames.toList shouldBe List("first", "second")
+    val corrMatrix = resultMatrix.entries.toSeq.map(_.toSeq)
+    corrMatrix(0)(0) should be (1d +- epsilon)
+    corrMatrix(0)(1) should be (-1d +- epsilon)
+    corrMatrix(1)(0) should be (-1d +- epsilon)
+    corrMatrix(1)(1) should be (1d +- epsilon)
   }
 
   "Help" should "work" in {

@@ -1,5 +1,6 @@
 package de.frosner.dds.core
 
+import de.frosner.dds.analytics.CorrelationAggregator
 import de.frosner.dds.servables.c3.ChartTypeEnum.ChartType
 import de.frosner.dds.servables.c3._
 import de.frosner.dds.servables.graph.Graph
@@ -13,8 +14,12 @@ import org.apache.spark.graphx
 import org.apache.spark.graphx.VertexId
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{Row, SchemaRDD}
+import org.apache.spark.sql._
+
 import org.apache.spark.util.StatCounter
 
+import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
 
@@ -464,6 +469,58 @@ object DDS {
 
   @Help(
     category = "Spark Core",
+    shortDescription = "",
+    longDescription = "",
+    parameters = "rdd: SchemaRDD"
+  )
+  // TODO what to do with null values?
+  def correlation(rdd: SchemaRDD) = {
+    def showError = println("Correlation only supported for RDDs with multiple double columns.")
+    val schema = rdd.schema
+    val fields = schema.fields
+    if (fields.size >= 2) {
+      val numericalFields = fields.zipWithIndex.filter{ case (field, idx) => {
+        val dataType = field.dataType
+        dataType == DoubleType || dataType == FloatType || dataType == IntegerType || dataType == LongType
+      }}
+      val numericalFieldIndexes = numericalFields.map{ case (field, idx) => idx }.toSet
+      if (numericalFields.size >= 2) {
+        val corrAgg = rdd.aggregate(new CorrelationAggregator((numericalFields.size))) (
+          (agg, row) => {
+            val numericalCells = row.zipWithIndex.filter{ case (element, idx) => numericalFieldIndexes.contains(idx) }
+            val numericalValues = numericalCells.zip(numericalFields).map {
+              case ((element, elementIdx), (elementType, typeIdx)) => {
+                require(elementIdx == typeIdx, s"Element index ($elementIdx) did not equal type index ($typeIdx)")
+                val dataType = elementType.dataType
+                if (dataType == DoubleType) element.asInstanceOf[Double]
+                else if (dataType == FloatType) element.asInstanceOf[Float].toDouble
+                else if (dataType == IntegerType) element.asInstanceOf[Int].toDouble
+                else if (dataType == LongType) element.asInstanceOf[Long].toDouble
+                else element.toString.toDouble // fall back, should not happen
+              }
+            }
+            agg.iterate(numericalValues)
+          },
+          (agg1, agg2) => agg1.merge(agg2)
+        )
+        var corrMatrix: mutable.Seq[mutable.Seq[Double]] = new ArrayBuffer(corrAgg.numColumns) ++
+          List.fill(corrAgg.numColumns)(new ArrayBuffer[Double](corrAgg.numColumns) ++
+            List.fill(corrAgg.numColumns)(0d))
+        for (((i, j), corr) <- corrAgg.pearsonCorrelations) {
+          corrMatrix(i)(j) = corr
+        }
+        val fieldNames = numericalFields.map{ case (field, idx) => field.name }
+        heatmap(corrMatrix, fieldNames, fieldNames)
+      } else {
+        showError
+      }
+    } else {
+      showError
+    }
+  }
+
+  @Help(
+    category = "RDD Analysis",
     shortDescription = "Shows some basic summary statistics of the given dataset",
     longDescription = "Shows some basic summary statistics of the given dataset.\n" +
       "Statistics for numeric values are: count, sum, min, max, mean, stdev, variance\n" +

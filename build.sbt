@@ -46,9 +46,9 @@ libraryDependencies += "org.apache.spark" %% "spark-graphx" % "1.2.0" % "provide
 
 libraryDependencies += "org.apache.spark" %% "spark-sql" % "1.2.0" % "provided"
 
-libraryDependencies +=  "org.scalaj" %% "scalaj-http" % "1.1.4"
+libraryDependencies += "org.scalaj" %% "scalaj-http" % "1.1.4"
 
-libraryDependencies +=  "org.scalamock" %% "scalamock-scalatest-support" % "3.2.1" % "test"
+libraryDependencies += "org.scalamock" %% "scalamock-scalatest-support" % "3.2.1" % "test"
 
 test in assembly := {}
 
