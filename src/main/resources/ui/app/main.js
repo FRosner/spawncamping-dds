@@ -19,13 +19,12 @@ $(document).ready(toggleUpdating);
 function clearContent() {
     document.getElementById("content").innerHTML = "";
     removeElementIfExists("hideLabelButton");
-    removeElementIfExists("enableJitterButton");
 }
 
 function removeElementIfExists(elementId) {
     var element = document.getElementById(elementId);
     if (element != null) {
-        element.parentNode.removeChild(element);    
+        element.parentNode.removeChild(element);
     }
 }
 
@@ -51,7 +50,11 @@ function checkForUpdate() {
                     } else if (servable.type == "points-2d") {
                         showScatter2D(servable.content);
                     } else if (servable.type == "matrix") {
-                        showMatrix(servable.content);
+                        new Matrix()
+                            .header("header")
+                            .content("content")
+                            .margin({top: 20, right: 15, bottom: 60, left: 60})
+                            .draw(servable.content);
                     } else {
                         console.log("Unrecognized response: " + response);
                     }
