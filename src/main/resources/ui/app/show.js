@@ -1,3 +1,62 @@
+/**
+ * Base prototype for visualizations of DDS. Each visualization can use two parts of the DOM:
+ *   1. Header to add navigation and configuration elements like buttons or sliders
+ *   2. Content to add SVG and canvas elements for the visualization itself
+ *
+ * Parameters:
+ *   - headerId (String): ID of DOM element to use as header; w/o '#'
+ *   - contentId (String): ID of DOM element to use for drawing; w/o '#'
+ *   - margin (Object): Margins to add between content div borders and drawing;
+ *                      Needs to have Integer values for margin.top, margin.bottom, margin.left and margin.right;
+ *                      If no margin is specified, default values of 0 will be used for all four dimensions
+ */
+function Visualization(headerId, contentId, margin) {
+	if (headerId == null) console.error("Required parameter headerId is not defined.");
+	if (contentId == null) console.error("Required parameter contentId is not defined.");
+
+	this._header = document.getElementById(headerId);
+	this.header = function(newHeaderId) {
+		if (newHeaderId != null) {
+			this._header = document.getElementById(newHeaderId);
+			return this;
+		} else {
+			return this._header;
+		}
+	}
+
+	this._content = document.getElementById(contentId);
+	this.content = function(newContentId) {
+		if (newContentId != null) {
+			this._content = document.getElementById(newContentId);
+			return this;
+		} else {
+			return this._content;
+		}
+	}
+
+	function addDefaultMargins(givenMargins) {
+		var defaults = {top: 0, bottom: 0, left: 0, right: 0};
+		if (givenMargins == null) {
+			return defaults;
+		}
+		for (marginType in defaults) {
+			if (!givenMargins[marginType]) {
+				givenMargins[marginType] = defaults[marginType];
+			}
+		}
+		return givenMargins;
+	}
+	this._margin = addDefaultMargins(margin);
+	this.margin = function(newMargin) {
+		if (newMargin != null) {
+			this._margin = addDefaultMargins(newMargin);
+			return this;
+		} else {
+			return this._margin;
+		}
+	}
+}
+
 function showTable(tableAndTypes) {
 
 	var table = tableAndTypes.rows;
