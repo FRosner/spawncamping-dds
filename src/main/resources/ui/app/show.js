@@ -53,7 +53,7 @@ function showTable(tableAndTypes) {
 			.types(types)
 			.color("#1f77b4")
 			.alpha(0.3)
-			.margin({top:30, left:0, right:0, bottom:10})
+			.margin({top:40, left:0, right:0, bottom:10})
 			.width(window.innerWidth)
 			.height(window.innerHeight/5*2)
 			.mode("queue")
@@ -137,7 +137,7 @@ function showTable(tableAndTypes) {
 			.on("click", changeColor)
 			.append("svg:title")
 			.text("Color data based on this dimension");
-		
+
 		var labels = parcoords.svg.selectAll(".tick").selectAll("text");
 		var button = document.getElementById("hideLabelButton");
 		document.getElementById("hideLabelButton").onclick = function() {
@@ -145,7 +145,7 @@ function showTable(tableAndTypes) {
 				labels.attr("visibility", "visible");
 				button.setAttribute("class", "unhidden");
 				button.setAttribute("title", "Hide Ticks Labels");
-				document.tickLabelsHidden = false;	
+				document.tickLabelsHidden = false;
 			} else {
 				labels.attr("visibility", "hidden");
 				button.setAttribute("class", "hidden");
@@ -162,7 +162,7 @@ function showTable(tableAndTypes) {
 			button.setAttribute("class", "hidden");
 			button.setAttribute("title", "Show Ticks Labels");
 		}
-		
+
 		document.coloringEnabled = false;
     } else {
     	var singleColumn = table.map(function(row) {
@@ -441,7 +441,7 @@ function showScatter2D(pointsWithTypes) {
 	var margin = {top: 20, right: 15, bottom: 60, left: 60}
       , width = window.innerWidth - margin.left - margin.right
       , height = window.innerHeight - margin.top - margin.bottom;
-    
+
 	var x;
 	if (types.x == "number") {
 		var minX = d3.min(points, function(p) { return p.x; });
@@ -480,8 +480,8 @@ function showScatter2D(pointsWithTypes) {
 		.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
 		.attr('width', width)
 		.attr('height', height)
-		.attr('class', 'main')   
-        
+		.attr('class', 'main')
+
     var xAxis = d3.svg.axis()
 		.scale(x)
 		.orient('bottom');
@@ -502,18 +502,18 @@ function showScatter2D(pointsWithTypes) {
 		.call(yAxis);
 
     var g = main.append("svg:g");
-        
+
     g.selectAll("scatter-dots")
       .data(points)
       .enter().append("svg:circle")
-          .attr("cx", function (p) { 
+          .attr("cx", function (p) {
           	if (types.x == "number") {
           		return x(p.x)
           	} else {
           		return x(p.x) + x.rangeBand() / 2;
           	}
           })
-          .attr("cy", function (p) { 
+          .attr("cy", function (p) {
           	if (types.y == "number") {
           		return y(p.y)
           	} else {
@@ -524,14 +524,14 @@ function showScatter2D(pointsWithTypes) {
 }
 
 function showMatrix(matrixAndNames) {
-	var matrix = flatMap(matrixAndNames.entries, function(row, i) { 
+	var matrix = flatMap(matrixAndNames.entries, function(row, i) {
 		return row.map(function(entry, j) {
 			return {
 				x: j,
 				y: i,
 				z: entry
 			};
-		}); 
+		});
 	});
 	var rowNames = matrixAndNames.rowNames;
 	var colNames = matrixAndNames.colNames;
@@ -542,7 +542,7 @@ function showMatrix(matrixAndNames) {
 	var margin = {top: 20, right: 15, bottom: 60, left: 60}
       , width = window.innerWidth - margin.left - margin.right
       , height = window.innerHeight - margin.top - margin.bottom;
-    
+
 	var x = d3.scale.ordinal()
 		.domain(colNames)
 		.rangeBands([0, width]);
@@ -568,8 +568,8 @@ function showMatrix(matrixAndNames) {
 		.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
 		.attr('width', width)
 		.attr('height', height)
-		.attr('class', 'main')   
-        
+		.attr('class', 'main')
+
     var xAxis = d3.svg.axis()
 		.scale(x)
 		.orient('bottom');
@@ -589,15 +589,15 @@ function showMatrix(matrixAndNames) {
 		.call(yAxis);
 
     var g = main.append("svg:g");
-        
+
     g.selectAll("matrix-rects")
       	.data(matrix)
 		.enter().append("rect")
 			.attr("class", "cell")
-			.attr("x", function (p) { 
+			.attr("x", function (p) {
 				return x(colNames[p.x]) + 1;
           	})
-          	.attr("y", function (p) { 
+          	.attr("y", function (p) {
           		return y(rowNames[p.y]);
           	})
 			.attr("width", x.rangeBand() - 1)
