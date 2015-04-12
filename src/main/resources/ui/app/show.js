@@ -46,6 +46,11 @@ Visualization.prototype.margin = function(newMargin) {
 		return this._margin;
 	}
 }
+Visualization.prototype.verify = function() {
+	if (this._header == null) { console.error("Header element not specified."); }
+	if (this._content == null) { console.error("Content element not specified."); }
+	if (this._margin == null) { console.error("Margin element not specified."); }
+}
 Visualization.prototype.draw = function() {
 	console.error("Draw method needs to be overriden when using the Visualization prototype.");
 }
@@ -55,6 +60,7 @@ Matrix.prototype = new Visualization();
 Matrix.prototype.constructor = Visualization;
 Matrix.prototype.parent = Visualization.prototype;
 Matrix.prototype.draw = function(matrixAndNames) {
+	this.verify();
 	var matrix = flatMap(matrixAndNames.entries, function(row, i) {
 		return row.map(function(entry, j) {
 			return {
