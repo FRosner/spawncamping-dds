@@ -106,7 +106,7 @@ Matrix.prototype._draw = function(matrixAndNames) {
 	var rowNames = matrixAndNames.rowNames;
 	var colNames = matrixAndNames.colNames;
 
-	this._chartDiv = generateChartDiv(this._content, "chart");
+	this._chartDiv = generateDiv(this._content, "chart");
     this._chartDiv.className = "c3";
 
 	var margin = this._margin;
@@ -191,7 +191,7 @@ Scatter2D.prototype._draw = function(pointsWithTypes) {
 		var points = pointsWithTypes.points;
 		var types = pointsWithTypes.types;
 
-		scatterVis._chartDiv = generateChartDiv(document.getElementById("content"), "chart");
+		scatterVis._chartDiv = generateDiv(document.getElementById("content"), "chart");
 		scatterVis._chartDiv.className = "c3";
 
 		var margin = scatterVis._margin;
@@ -495,7 +495,7 @@ function showTable(tableAndTypes) {
 			    window.innerHeight/5*2,
 			    {top: 15, right: 30, bottom: 30, left: 50});
     	} else {
-    		generateChartDiv(document.getElementById("content"), "chart");
+    		generateDiv(document.getElementById("content"), "chart");
     		var singleColumnCounts = singleColumn.reduce(function(counts, value) {
 				counts[value] = counts[value] ? counts[value] + 1 : 1;
 				return counts;
@@ -611,15 +611,8 @@ function showTable(tableAndTypes) {
 
 }
 
-function generateChartDiv(root, id) {
-    var div = document.createElement('div');
-    div.setAttribute("id", id);
-    root.appendChild(div);
-    return div;
-}
-
 function showSingleChart(chart) {
-    generateChartDiv(document.getElementById("content"), "chart");
+    generateDiv(document.getElementById("content"), "chart");
     chart.size = {
     	width: window.innerWidth,
     	height: window.innerHeight - 40 // -x to leave space for legends
@@ -631,7 +624,7 @@ function showSingleChart(chart) {
 }
 
 function showHistogram(bins, histWidth, histHeight, margin) {
-    var chartDiv = generateChartDiv(document.getElementById("content"), "chart");
+    var chartDiv = generateDiv(document.getElementById("content"), "chart");
     chartDiv.className = "c3";
 
     var width = histWidth - margin.left - margin.right,

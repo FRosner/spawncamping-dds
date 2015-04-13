@@ -16,3 +16,10 @@ function removeElementIfExists(element) {
 function removeElementByIdIfExists(elementId) {
     removeElementIfExists(document.getElementById(elementId));
 }
+
+function generateDiv(root, id) {
+    var div = document.createElement('div');
+    div.setAttribute("id", id);
+    root.appendChild(div);
+    return div;
+}
