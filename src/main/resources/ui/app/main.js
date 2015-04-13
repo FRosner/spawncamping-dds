@@ -41,7 +41,12 @@ function checkForUpdate() {
                     } else if (servable.type == "graph") {
                         showGraph(servable.content);
                     } else if (servable.type == "points-2d") {
-                        showScatter2D(servable.content);
+                        new Scatter2D()
+                            .header("header")
+                            .content("content")
+                            .margin({top: 20, right: 15, bottom: 60, left: 60})
+                            .data(servable.content)
+                            .draw();
                     } else if (servable.type == "matrix") {
                         new Matrix()
                             .header("header")
