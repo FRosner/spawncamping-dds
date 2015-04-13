@@ -46,21 +46,33 @@ Visualization.prototype.margin = function(newMargin) {
 		return this._margin;
 	}
 }
+Visualization.prototype.data = function(newData) {
+	if (newData != null) {
+		this._data = newData;
+		return this;
+	} else {
+		return this._data;
+	}
+}
 Visualization.prototype.verify = function() {
 	if (this._header == null) { console.error("Header element not specified."); }
 	if (this._content == null) { console.error("Content element not specified."); }
-	if (this._margin == null) { console.error("Margin element not specified."); }
+	if (this._margin == null) { console.error("Margin not specified."); }
+	if (this._data == null) { console.error("Data not specified."); }
+}
+Visualization.prototype._draw = function() {
+	console.error("Protected _draw method needs to be overriden when using the Visualization prototype.");
 }
 Visualization.prototype.draw = function() {
-	console.error("Draw method needs to be overriden when using the Visualization prototype.");
+	this.verify();
+	this._draw(this._data);
 }
 
 function Matrix() {}
 Matrix.prototype = new Visualization();
 Matrix.prototype.constructor = Visualization;
 Matrix.prototype.parent = Visualization.prototype;
-Matrix.prototype.draw = function(matrixAndNames) {
-	this.verify();
+Matrix.prototype._draw = function(matrixAndNames) {
 	var matrix = flatMap(matrixAndNames.entries, function(row, i) {
 		return row.map(function(entry, j) {
 			return {

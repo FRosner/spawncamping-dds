@@ -54,7 +54,8 @@ function checkForUpdate() {
                             .header("header")
                             .content("content")
                             .margin({top: 20, right: 15, bottom: 60, left: 60})
-                            .draw(servable.content);
+                            .data(servable.content)
+                            .draw();
                     } else {
                         console.log("Unrecognized response: " + response);
                     }
