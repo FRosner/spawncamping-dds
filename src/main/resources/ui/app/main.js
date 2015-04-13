@@ -18,14 +18,7 @@ $(document).ready(toggleUpdating);
 
 function clearContent() {
     document.getElementById("content").innerHTML = "";
-    removeElementIfExists("hideLabelButton");
-}
-
-function removeElementIfExists(elementId) {
-    var element = document.getElementById(elementId);
-    if (element != null) {
-        element.parentNode.removeChild(element);
-    }
+    removeElementByIdIfExists("hideLabelButton");
 }
 
 function checkForUpdate() {
