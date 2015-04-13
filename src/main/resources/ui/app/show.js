@@ -12,6 +12,11 @@
  *                     Needs to have Integer values for margin.top, margin.bottom, margin.left and margin.right;
  *                     If no margin is specified, default values of 0 will be used for all four dimensions
  *   - margin(): Get margins
+ *   - data(Object): Set data object to be used when drawing
+ *   - data(): Get data
+ *   - draw(): Draw the current visualization
+ *   - _draw(): Subclass implementation of drawing method (NEEDS TO BE OVERRIDDEN)
+ *   - _verify(): Checks whether the visualization has been initialized correctly
  */
 function Visualization() {
 	this._defaultMargin = {top: 0, bottom: 0, left: 0, right: 0};
@@ -54,7 +59,7 @@ Visualization.prototype.data = function(newData) {
 		return this._data;
 	}
 }
-Visualization.prototype.verify = function() {
+Visualization.prototype._verify = function() {
 	if (this._header == null) { console.error("Header element not specified."); }
 	if (this._content == null) { console.error("Content element not specified."); }
 	if (this._margin == null) { console.error("Margin not specified."); }
@@ -64,7 +69,7 @@ Visualization.prototype._draw = function() {
 	console.error("Protected _draw method needs to be overriden when using the Visualization prototype.");
 }
 Visualization.prototype.draw = function() {
-	this.verify();
+	this._verify();
 	this._draw(this._data);
 }
 
@@ -85,12 +90,12 @@ Matrix.prototype._draw = function(matrixAndNames) {
 	var rowNames = matrixAndNames.rowNames;
 	var colNames = matrixAndNames.colNames;
 
-	var chartDiv = generateChartDiv(document.getElementById("content"), "chart");
+	var chartDiv = generateChartDiv(this._content, "chart");
     chartDiv.className = "c3";
 
-	var margin = {top: 20, right: 15, bottom: 60, left: 60}
-      , width = window.innerWidth - margin.left - margin.right
-      , height = window.innerHeight - margin.top - margin.bottom;
+	var margin = this._margin;
+    var width = window.innerWidth - margin.left - margin.right;
+    var height = window.innerHeight - margin.top - margin.bottom;
 
 	var x = d3.scale.ordinal()
 		.domain(colNames)
