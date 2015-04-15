@@ -36,7 +36,13 @@ object Index {
           <object data="/ui/img/watermark.svg" type="image/svg+xml" id="watermark" style="display: block; width: 50%; margin: 0 auto;"></object>
           <script src="/ui/app/util.js"></script>
           <script src="/ui/app/main.js"></script>
-          <script src="/ui/app/show.js"></script>
+          <script src="/ui/app/Visualization.js"></script>
+          <script src="/ui/app/Matrix.js"></script>
+          <script src="/ui/app/Scatter2D.js"></script>
+          <script src="/ui/app/Table.js"></script>
+          <script src="/ui/app/C3Chart.js"></script>
+          <script src="/ui/app/Histogram.js"></script>
+          <script src="/ui/app/Graph.js"></script>
         </div>
       </body>
     </html>
