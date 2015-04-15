@@ -28,7 +28,7 @@ function checkForUpdate() {
                         new C3Chart()
                             .header("header")
                             .content("content")
-                            .margin({right: 15})
+                            .margin({top: 15, right: 15, left: 60})
                             .data(servable.content)
                             .draw();
                     } else if (servable.type == "table") {
