@@ -8,8 +8,8 @@ C3Chart.prototype.parent = Visualization.prototype;
 C3Chart.prototype._draw = function(chart) {
     this._chartDiv = generateDiv(document.getElementById("content"), "chart");
     chart.size = {
-        width: window.innerWidth,
-        height: window.innerHeight - 40 // -x to leave space for legends
+        width: this._width,
+        height: this._height - 40 // -x to leave space for legends
     };
     chart.padding = this._margin;
     c3.generate(chart);

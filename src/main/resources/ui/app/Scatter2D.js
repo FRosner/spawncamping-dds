@@ -14,8 +14,8 @@ Scatter2D.prototype._draw = function(pointsWithTypes) {
 		scatterVis._chartDiv.className = "c3";
 
 		var margin = scatterVis._margin;
-		var width = window.innerWidth - margin.left - margin.right;
-		var height = window.innerHeight - margin.top - margin.bottom;
+		var width = scatterVis._width - margin.left - margin.right;
+		var height = scatterVis._height - margin.top - margin.bottom;
 
 		var x;
 		if (types.x == "number") {

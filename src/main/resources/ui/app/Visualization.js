@@ -21,6 +21,12 @@
  *                     If no margin is specified, default values of 0 will be used for all four dimensions
  *   - margin(): Get margins
  *
+ *   - height(Number): Set height of the visualization
+ *   - height(): Get height of the visualization
+ *
+ *   - width(Number): Set width of the visualization
+ *   - width(): Get width of the visualization
+ *
  *   - data(Object): Set data object to be used when drawing
  *   - data(): Get data
  *
@@ -34,6 +40,10 @@
 function Visualization() {
 	this._defaultMargin = {top: 0, bottom: 0, left: 0, right: 0};
 	this._margin = this._defaultMargin;
+	this._defaultWidth = 800;
+	this._defaultHeight = 450;
+	this._width = this._defaultWidth;
+	this._height = this._defaultHeight;
 }
 
 // TODO put width and height also as parameters
@@ -70,6 +80,24 @@ Visualization.prototype.margin = function(newMargin) {
 	}
 }
 
+Visualization.prototype.width = function(newWidth) {
+	if (newWidth != null) {
+		this._width = newWidth;
+		return this;
+	} else {
+		return this._width;
+	}
+}
+
+Visualization.prototype.height = function(newHeight) {
+	if (newHeight != null) {
+		this._height = newHeight;
+		return this;
+	} else {
+		return this._height;
+	}
+}
+
 Visualization.prototype.data = function(newData) {
 	if (newData != null) {
 		this._data = newData;
@@ -83,6 +111,8 @@ Visualization.prototype._verify = function() {
 	if (this._header == null) { console.error("Header element not specified."); }
 	if (this._content == null) { console.error("Content element not specified."); }
 	if (this._margin == null) { console.error("Margin not specified."); }
+	if (this._width == null) { console.error("Width not specified."); }
+	if (this._height == null) { console.error("Height not specified."); }
 	if (this._data == null) { console.error("Data not specified."); }
 }
 

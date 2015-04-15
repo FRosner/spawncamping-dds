@@ -7,8 +7,8 @@ Graph.prototype.constructor = Visualization;
 Graph.prototype.parent = Visualization.prototype;
 
 Graph.prototype._draw = function(graph) {
-    var width = window.innerWidth,
-        height = window.innerHeight;
+    var width = this._width,
+        height = this._height;
 
     var nodes = graph.vertices;
     var links = graph.edges;

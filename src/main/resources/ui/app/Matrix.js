@@ -21,8 +21,8 @@ Matrix.prototype._draw = function(matrixAndNames) {
     this._chartDiv.className = "c3";
 
 	var margin = this._margin;
-    var width = window.innerWidth - margin.left - margin.right;
-    var height = window.innerHeight - margin.top - margin.bottom;
+    var width = this._width - margin.left - margin.right;
+    var height = this._height - margin.top - margin.bottom;
 
 	var x = d3.scale.ordinal()
 		.domain(colNames)

@@ -29,6 +29,8 @@ function checkForUpdate() {
                             .header("header")
                             .content("content")
                             .margin({top: 15, right: 15, left: 60})
+                            .width(window.innerWidth)
+                            .height(window.innerHeight)
                             .data(servable.content)
                             .draw();
                     } else if (servable.type == "table") {
@@ -36,22 +38,25 @@ function checkForUpdate() {
                             .header("header")
                             .content("content")
                             .margin({top: 30, right: 0, bottom: 0, left: 0})
+                            .width(window.innerWidth)
+                            .height(window.innerHeight)
                             .data(servable.content)
                             .draw();
                     } else if (servable.type == "histogram") {
-                        var hist = new Histogram()
+                        new Histogram()
                             .header("header")
                             .content("content")
                             .margin({top: 30, right: 60, bottom: 60, left: 60})
-                            .data(servable.content);
-                        // TODO set width and height in general visualization
-                        hist._width = window.innerWidth;
-                        hist._height = window.innerHeight;
-                        hist.draw();
+                            .width(window.innerWidth)
+                            .height(window.innerHeight)
+                            .data(servable.content)
+                            .draw();
                     } else if (servable.type == "graph") {
                         new Graph()
                             .header("header")
                             .content("content")
+                            .width(window.innerWidth)
+                            .height(window.innerHeight)
                             .data(servable.content)
                             .draw();
                     } else if (servable.type == "points-2d") {
@@ -59,6 +64,8 @@ function checkForUpdate() {
                             .header("header")
                             .content("content")
                             .margin({top: 20, right: 15, bottom: 60, left: 60})
+                            .width(window.innerWidth)
+                            .height(window.innerHeight)
                             .data(servable.content)
                             .draw();
                     } else if (servable.type == "matrix") {
@@ -66,6 +73,8 @@ function checkForUpdate() {
                             .header("header")
                             .content("content")
                             .margin({top: 20, right: 15, bottom: 60, left: 60})
+                            .width(window.innerWidth)
+                            .height(window.innerHeight)
                             .data(servable.content)
                             .draw();
                     } else {

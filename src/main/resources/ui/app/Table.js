@@ -33,7 +33,7 @@ Table.prototype._draw = function(tableAndTypes) {
         this._parcoordsDiv = document.createElement('div');
         this._parcoordsDiv.setAttribute("id", "pcvis");
         this._parcoordsDiv.setAttribute("class", 'parcoords');
-        this._parcoordsDiv.style.height = window.innerHeight/5*2
+        this._parcoordsDiv.style.height = this._height/5*2
         this._content.appendChild(this._parcoordsDiv);
         this._hideLabelButton = document.createElement('div');
         this._hideLabelButton.setAttribute("id", "hideLabelButton");
@@ -45,8 +45,8 @@ Table.prototype._draw = function(tableAndTypes) {
       			.color("#1f77b4")
       			.alpha(0.3)
       			.margin({top:this._margin.top, left:this._margin.left, right:this._margin.right, bottom:10})
-      			.width(window.innerWidth)
-      			.height(window.innerHeight/5*2)
+      			.width(this._width)
+      			.height(this._height/5*2)
       			.mode("queue")
       			.rate(60)
       			.hideAxis(["id"])
@@ -171,10 +171,10 @@ Table.prototype._draw = function(tableAndTypes) {
       			    .header("header")
       			    .content("content")
       			    .margin({top: 15, right: 30, bottom: 30, left: 50})
-      			    .data(bins);
-      			hist._width = window.innerWidth;
-      			hist._height = window.innerHeight/5*2;
-      			hist.draw();
+                .width(window.innerWidth)
+                .height(window.innerHeight/5*2)
+      			    .data(bins)
+                .draw();
       	} else {
         		generateDiv(this._content, "chart");
         		var singleColumnCounts = singleColumn.reduce(function(counts, value) {
@@ -198,8 +198,8 @@ Table.prototype._draw = function(tableAndTypes) {
         			  }
       			};
       			chart.size = {
-      				  width: window.innerWidth,
-      				  height: window.innerHeight/5*2
+      				  width: this._width,
+      				  height: this._height/5*2
       			};
       			chart.padding = {
       				  right: 15,
@@ -214,7 +214,7 @@ Table.prototype._draw = function(tableAndTypes) {
     this._content.appendChild(pager);
     var grid = document.createElement('div');
     grid.setAttribute("id", 'grid');
-    grid.style.height = window.innerHeight/5*3 - 20
+    grid.style.height = this._height/5*3 - 20
     this._content.appendChild(grid);
 
   	// setting up grid
