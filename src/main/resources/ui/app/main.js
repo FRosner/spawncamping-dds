@@ -21,9 +21,9 @@ function checkForUpdate() {
         url: "/chart/update",
         success: function(response) {
             if (response != "{}") {
-                document.getElementById("content").innerHTML = "";
                 var servable = JSON.parse(response);
                 doAndRedoOnResize(function() {
+                    document.getElementById("content").innerHTML = "";
                     if (servable.type == "chart") {
                         new C3Chart()
                             .header("header")
