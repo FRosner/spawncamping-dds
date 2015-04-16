@@ -16,18 +16,6 @@ function toggleUpdating() {
 
 $(document).ready(toggleUpdating);
 
-function clearContent() {
-    document.getElementById("content").innerHTML = "";
-    removeElementIfExists("hideLabelButton");
-}
-
-function removeElementIfExists(elementId) {
-    var element = document.getElementById(elementId);
-    if (element != null) {
-        element.parentNode.removeChild(element);    
-    }
-}
-
 function checkForUpdate() {
     $.ajax({
         url: "/chart/update",
@@ -35,22 +23,63 @@ function checkForUpdate() {
             if (response != "{}") {
                 var servable = JSON.parse(response);
                 doAndRedoOnResize(function() {
-                    clearContent();
+                    if (document.lastServed) {
+                        document.lastServed.clear();
+                    }
+                    document.getElementById("content").innerHTML = "";
                     if (servable.type == "chart") {
-                        showSingleChart(servable.content)
+                        document.lastServed = new C3Chart()
+                            .header("header")
+                            .content("content")
+                            .margin({top: 15, right: 15, left: 60})
+                            .width(window.innerWidth)
+                            .height(window.innerHeight)
+                            .data(servable.content)
+                            .draw();
                     } else if (servable.type == "table") {
-                        showTable(servable.content)
+                        document.lastServed = new Table()
+                            .header("header")
+                            .content("content")
+                            .margin({top: 30, right: 0, bottom: 0, left: 0})
+                            .width(window.innerWidth)
+                            .height(window.innerHeight)
+                            .data(servable.content)
+                            .draw();
                     } else if (servable.type == "histogram") {
-                        showHistogram(servable.content,
-                            window.innerWidth,
-                            window.innerHeight,
-                            {top: 30, right: 60, bottom: 60, left: 60});
+                        document.lastServed = new Histogram()
+                            .header("header")
+                            .content("content")
+                            .margin({top: 30, right: 60, bottom: 60, left: 60})
+                            .width(window.innerWidth)
+                            .height(window.innerHeight)
+                            .data(servable.content)
+                            .draw();
                     } else if (servable.type == "graph") {
-                        showGraph(servable.content);
+                        document.lastServed = new Graph()
+                            .header("header")
+                            .content("content")
+                            .width(window.innerWidth)
+                            .height(window.innerHeight)
+                            .data(servable.content)
+                            .draw();
                     } else if (servable.type == "points-2d") {
-                        showScatter2D(servable.content);
+                        document.lastServed = new Scatter2D()
+                            .header("header")
+                            .content("content")
+                            .margin({top: 20, right: 15, bottom: 60, left: 60})
+                            .width(window.innerWidth)
+                            .height(window.innerHeight)
+                            .data(servable.content)
+                            .draw();
                     } else if (servable.type == "matrix") {
-                        showMatrix(servable.content);
+                        document.lastServed = new Matrix()
+                            .header("header")
+                            .content("content")
+                            .margin({top: 20, right: 15, bottom: 60, left: 60})
+                            .width(window.innerWidth)
+                            .height(window.innerHeight)
+                            .data(servable.content)
+                            .draw();
                     } else {
                         console.log("Unrecognized response: " + response);
                     }
