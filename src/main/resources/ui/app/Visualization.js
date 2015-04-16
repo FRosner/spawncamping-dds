@@ -123,6 +123,7 @@ Visualization.prototype._draw = function() {
 Visualization.prototype.draw = function() {
 	this._verify();
 	this._draw(this._data);
+	return this;
 }
 
 Visualization.prototype.clear = function() {

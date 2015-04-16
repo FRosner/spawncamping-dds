@@ -10,7 +10,7 @@ Scatter2D.prototype._draw = function(pointsWithTypes) {
 		var points = pointsWithTypes.points;
 		var types = pointsWithTypes.types;
 
-		scatterVis._chartDiv = generateDiv(document.getElementById("content"), "chart");
+		scatterVis._chartDiv = generateDiv(scatterVis._content, "chart");
 		scatterVis._chartDiv.className = "c3";
 
 		var margin = scatterVis._margin;
@@ -101,7 +101,7 @@ Scatter2D.prototype._draw = function(pointsWithTypes) {
 
 	var enableJitterButton = document.createElement('div');
     enableJitterButton.setAttribute("id", "enableJitterButton");
-    document.getElementById("header").appendChild(enableJitterButton);
+    this._header.appendChild(enableJitterButton);
 	enableJitterButton.onclick = function() {
 		if (document.jitterEnabled) {
 			document.jitterEnabled = false;

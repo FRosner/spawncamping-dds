@@ -9,7 +9,12 @@ function flatMap(seq, f) {
 
 function removeElementIfExists(element) {
     if (element != null) {
-        element.parentNode.removeChild(element);
+        var parent = element.parentNode;
+        if (parent == null) {
+            console.warn("Trying to remove " + element.tagName + " (" + element.id + ") but parent node does not exist anymore.");
+        } else {
+            parent.removeChild(element);
+        }
     }
 }
 

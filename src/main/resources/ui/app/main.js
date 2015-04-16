@@ -23,9 +23,12 @@ function checkForUpdate() {
             if (response != "{}") {
                 var servable = JSON.parse(response);
                 doAndRedoOnResize(function() {
+                    if (document.lastServed) {
+                        document.lastServed.clear();
+                    }
                     document.getElementById("content").innerHTML = "";
                     if (servable.type == "chart") {
-                        new C3Chart()
+                        document.lastServed = new C3Chart()
                             .header("header")
                             .content("content")
                             .margin({top: 15, right: 15, left: 60})
@@ -34,7 +37,7 @@ function checkForUpdate() {
                             .data(servable.content)
                             .draw();
                     } else if (servable.type == "table") {
-                        new Table()
+                        document.lastServed = new Table()
                             .header("header")
                             .content("content")
                             .margin({top: 30, right: 0, bottom: 0, left: 0})
@@ -43,7 +46,7 @@ function checkForUpdate() {
                             .data(servable.content)
                             .draw();
                     } else if (servable.type == "histogram") {
-                        new Histogram()
+                        document.lastServed = new Histogram()
                             .header("header")
                             .content("content")
                             .margin({top: 30, right: 60, bottom: 60, left: 60})
@@ -52,7 +55,7 @@ function checkForUpdate() {
                             .data(servable.content)
                             .draw();
                     } else if (servable.type == "graph") {
-                        new Graph()
+                        document.lastServed = new Graph()
                             .header("header")
                             .content("content")
                             .width(window.innerWidth)
@@ -60,7 +63,7 @@ function checkForUpdate() {
                             .data(servable.content)
                             .draw();
                     } else if (servable.type == "points-2d") {
-                        new Scatter2D()
+                        document.lastServed = new Scatter2D()
                             .header("header")
                             .content("content")
                             .margin({top: 20, right: 15, bottom: 60, left: 60})
@@ -69,7 +72,7 @@ function checkForUpdate() {
                             .data(servable.content)
                             .draw();
                     } else if (servable.type == "matrix") {
-                        new Matrix()
+                        document.lastServed = new Matrix()
                             .header("header")
                             .content("content")
                             .margin({top: 20, right: 15, bottom: 60, left: 60})
