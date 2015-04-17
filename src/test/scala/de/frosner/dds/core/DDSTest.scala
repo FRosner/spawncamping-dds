@@ -512,8 +512,7 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     DDS.start(mockedServer)
     val vertices: RDD[(graphx.VertexId, String)] = sc.makeRDD(List((0L, "a"), (10L, "a"), (5L, "c")))
     val edges: RDD[graphx.Edge[String]] = sc.makeRDD(List(graphx.Edge(5L, 10L, "c-a")))
-    val vertexPredicate: ((VertexId, String)) => Boolean = { case (id, label) => label == "a" }
-    DDS.show(graphx.Graph(vertices, edges), 3, vertexPredicate)
+    DDS.show(graphx.Graph(vertices, edges), 3, (id: VertexId, label: String) => label == "a")
 
     val resultGraph = mockedServer.lastServed.get.asInstanceOf[Graph]
     resultGraph.vertices.toList shouldBe List("a", "a")

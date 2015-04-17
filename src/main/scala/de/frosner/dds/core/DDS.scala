@@ -437,8 +437,10 @@ object DDS {
   )
   def show[VD, ED](graph: graphx.Graph[VD, ED],
                    sampleSize: Int,
-                   vertexFilter: ((VertexId, VD)) => Boolean): Unit = {
-    val vertexSample = graph.vertices.filter(vertexFilter).take(sampleSize).map{ case (id, attr) => id }.toSet
+                   vertexFilter: (VertexId, VD) => Boolean): Unit = {
+    val vertexSample = graph.vertices.filter{
+      case (id, attr) => vertexFilter(id, attr)
+    }.take(sampleSize).map{ case (id, attr) => id }.toSet
     val sampledGraph = graph.subgraph(
       edge => vertexSample.contains(edge.srcId) && vertexSample.contains(edge.dstId),
       (vertexId, vertexAttr) => vertexSample.contains(vertexId)
@@ -451,13 +453,13 @@ object DDS {
    * http://stackoverflow.com/questions/4652095/why-does-the-scala-compiler-disallow-overloaded-methods-with-default-arguments
    */
 
-  private def acceptAllVertices[VD]: ((VertexId, VD)) => Boolean = { case (id, attr) => true }
+  private def acceptAllVertices[VD]: (VertexId, VD) => Boolean = (id: VertexId, attr: VD) => true
   private val defaultGraphVertexSampleSize = 20
   def show[VD, ED](graph: graphx.Graph[VD, ED]): Unit =
     show(graph, defaultGraphVertexSampleSize, acceptAllVertices)
   def show[VD, ED](graph: graphx.Graph[VD, ED], sampleSize: Int): Unit =
     show(graph, sampleSize, acceptAllVertices)
-  def show[VD, ED](graph: graphx.Graph[VD, ED], vertexFilter: ((VertexId, VD)) => Boolean): Unit =
+  def show[VD, ED](graph: graphx.Graph[VD, ED], vertexFilter: (VertexId, VD) => Boolean): Unit =
     show(graph, defaultGraphVertexSampleSize, vertexFilter)
 
   @Help(
@@ -511,5 +513,3 @@ object DDS {
   }
 
 }
-
-
