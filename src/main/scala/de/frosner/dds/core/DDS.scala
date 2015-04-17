@@ -10,6 +10,7 @@ import de.frosner.dds.servables.tabular.Table
 import org.apache.log4j.Logger
 import org.apache.spark.SparkContext._
 import org.apache.spark.graphx
+import org.apache.spark.graphx.VertexId
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{Row, SchemaRDD}
 import org.apache.spark.util.StatCounter
@@ -407,7 +408,7 @@ object DDS {
           case (index, nullableField) => index
         }.toSet
         val values = schemaRdd.take(sampleSize).map(row =>
-          (0 to row.size).zip(row).map{ case (index, element) =>
+          (0 to row.size).zip(row).map { case (index, element) =>
             if (nullableColumns.contains(index))
               Option(element)
             else
@@ -430,11 +431,14 @@ object DDS {
     category = "RDD Analysis",
     shortDescription = "Plots a sample of a graph",
     longDescription = "Plots a sample of a graph layouted by the D3 force layout. The sample is calculated based on a" +
-      " vertex sample. All edges which do not have both source and destination in the vertex sample, will be discarded.",
-    parameters = "graph: Graph, (optional) sampleSize: Int"
+      " vertex sample. All edges which do not have both source and destination in the vertex sample, will be discarded. " +
+      "You can also specify a vertex filter to apply before taking the sample.",
+    parameters = "graph: Graph, (optional) sampleSize: Int, (optional) vertexFilter: ((VertexId, VD)) => Boolean"
   )
-  def show[VD, ED](graph: graphx.Graph[VD, ED], sampleSize: Int): Unit = {
-    val vertexSample = graph.vertices.take(sampleSize).map{ case (id, attr) => id }.toSet
+  def show[VD, ED](graph: graphx.Graph[VD, ED],
+                   sampleSize: Int,
+                   vertexFilter: ((VertexId, VD)) => Boolean): Unit = {
+    val vertexSample = graph.vertices.filter(vertexFilter).take(sampleSize).map{ case (id, attr) => id }.toSet
     val sampledGraph = graph.subgraph(
       edge => vertexSample.contains(edge.srcId) && vertexSample.contains(edge.dstId),
       (vertexId, vertexAttr) => vertexSample.contains(vertexId)
@@ -446,7 +450,15 @@ object DDS {
    * Need to manually define default argument sampleSize because of Scala language specs. See:
    * http://stackoverflow.com/questions/4652095/why-does-the-scala-compiler-disallow-overloaded-methods-with-default-arguments
    */
-  def show[VD, ED](graph: graphx.Graph[VD, ED]): Unit = show(graph, 20)
+
+  private def acceptAllVertices[VD]: ((VertexId, VD)) => Boolean = { case (id, attr) => true }
+  private val defaultGraphVertexSampleSize = 20
+  def show[VD, ED](graph: graphx.Graph[VD, ED]): Unit =
+    show(graph, defaultGraphVertexSampleSize, acceptAllVertices)
+  def show[VD, ED](graph: graphx.Graph[VD, ED], sampleSize: Int): Unit =
+    show(graph, sampleSize, acceptAllVertices)
+  def show[VD, ED](graph: graphx.Graph[VD, ED], vertexFilter: ((VertexId, VD)) => Boolean): Unit =
+    show(graph, defaultGraphVertexSampleSize, vertexFilter)
 
   @Help(
     category = "RDD Analysis",

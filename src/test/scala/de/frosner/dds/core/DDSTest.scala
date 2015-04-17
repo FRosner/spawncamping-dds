@@ -6,6 +6,7 @@ import de.frosner.dds.servables.histogram.Histogram
 import de.frosner.dds.servables.matrix.Matrix2D
 import de.frosner.dds.servables.scatter.Points2D
 import de.frosner.dds.servables.tabular.Table
+import org.apache.spark.graphx._
 import org.apache.spark.{SparkConf, SparkContext, graphx}
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
@@ -505,6 +506,19 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     resultGraph.edges.toSet shouldBe Set(
       (vertexList.indexOf("a"), vertexList.indexOf("b"))
     )
+  }
+
+  it should "be printed when a vertex sample is taken and a filter is specified" in {
+    DDS.start(mockedServer)
+    val vertices: RDD[(graphx.VertexId, String)] = sc.makeRDD(List((0L, "a"), (10L, "a"), (5L, "c")))
+    val edges: RDD[graphx.Edge[String]] = sc.makeRDD(List(graphx.Edge(5L, 10L, "c-a")))
+    val vertexPredicate: ((VertexId, String)) => Boolean = { case (id, label) => label == "a" }
+    DDS.show(graphx.Graph(vertices, edges), 3, vertexPredicate)
+
+    val resultGraph = mockedServer.lastServed.get.asInstanceOf[Graph]
+    resultGraph.vertices.toList shouldBe List("a", "a")
+    val vertexList = resultGraph.vertices.toList
+    resultGraph.edges.toSet shouldBe Set.empty
   }
 
   "A correct scatterplot" should "be constructed from numeric values" in {
