@@ -6,11 +6,13 @@ import de.frosner.dds.servables.histogram.Histogram
 import de.frosner.dds.servables.matrix.Matrix2D
 import de.frosner.dds.servables.scatter.Points2D
 import de.frosner.dds.servables.tabular.Table
-import org.apache.spark.SparkContext
+import org.apache.spark.{SparkConf, SparkContext, graphx}
 import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.catalyst.types._
+import org.apache.spark.sql.test.TestSQLContext
 import org.apache.spark.util.StatCounter
-import org.apache.spark.graphx
+import org.apache.spark.sql.{SQLContext, Row}
 import org.scalamock.scalatest.MockFactory
 import org.scalatest._
 
@@ -25,7 +27,17 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
 
   private var stubbedServer: Server = _
   private var mockedServer: MockedServer = _
-  private val sc: SparkContext = new SparkContext("local", this.getClass.toString)
+  private var sc: SparkContext = _
+  private var sql: SQLContext = _
+
+  override def beforeAll() = {
+    val conf = new SparkConf()
+      .setMaster("local")
+      .setAppName(this.getClass.toString)
+      .set("spark.driver.allowMultipleContexts", "true")
+    sc = new SparkContext(conf)
+    sql = new SQLContext(sc)
+  }
 
   override def afterAll() = {
     sc.stop()
@@ -368,6 +380,41 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     val resultTable = mockedServer.lastServed.get.asInstanceOf[Table]
     resultTable.head.toList shouldBe List("sequence")
     resultTable.rows.toList shouldBe List(List(List("a", 1)), List(List("b", 2)))
+  }
+
+  it should "be printed from SchemaRDD w/o nullable columns" in {
+    DDS.start(mockedServer)
+    val rdd = sc.parallelize(List(Row(1, "5", 5d), Row(3, "g", 5d)))
+    val schemaRdd = sql.applySchema(rdd, StructType(List(
+      StructField("first", IntegerType, false),
+      StructField("second", StringType, false),
+      StructField("third", DoubleType, false)
+    )))
+    DDS.show(schemaRdd)
+    val resultTable = mockedServer.lastServed.get.asInstanceOf[Table]
+    resultTable.head.toList shouldBe List("first", "second", "third")
+    resultTable.rows.toList.map(_.toList) shouldBe List(List(1, "5", 5d), List(3, "g", 5d))
+  }
+
+  it should "be printed from SchemaRDD w/ nullable columns" in {
+    DDS.start(mockedServer)
+    val rdd = sc.parallelize(List(Row(null), Row(1)))
+    val schemaRdd = sql.applySchema(rdd, StructType(List(
+      StructField("first", IntegerType, true)
+    )))
+    DDS.show(schemaRdd)
+    val resultTable = mockedServer.lastServed.get.asInstanceOf[Table]
+    resultTable.head.toList shouldBe List("first")
+    resultTable.rows.toList.map(_.toList) shouldBe List(List(Option.empty[Int]), List(Option(1)))
+  }
+
+  it should "be printed from RDD[Row]" in {
+    DDS.start(mockedServer)
+    val rdd = sc.parallelize(List(Row(1, "a"), Row(2, "b")))
+    DDS.show(rdd)
+    val resultTable = mockedServer.lastServed.get.asInstanceOf[Table]
+    resultTable.head.toList shouldBe List("1", "2")
+    resultTable.rows.toList.map(_.toList) shouldBe List(List(1, "a"), List(2, "b"))
   }
 
   it should "be printed from a sequence of single values" in {

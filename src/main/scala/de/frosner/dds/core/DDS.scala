@@ -11,6 +11,7 @@ import org.apache.log4j.Logger
 import org.apache.spark.SparkContext._
 import org.apache.spark.graphx
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.{Row, SchemaRDD}
 import org.apache.spark.util.StatCounter
 
 import scala.reflect.ClassTag
@@ -394,7 +395,35 @@ object DDS {
     parameters = "rdd: RDD[T], (optional) sampleSize: Int"
   )
   def show[V](rdd: RDD[V], sampleSize: Int = 100)(implicit tag: TypeTag[V]): Unit = {
-    show(rdd.take(sampleSize))(tag)
+    val vType = tag.tpe
+    if (vType <:< typeOf[Row]) {
+      if (rdd.isInstanceOf[SchemaRDD]) {
+        // SchemaRDD
+        val schemaRdd = rdd.asInstanceOf[SchemaRDD]
+        val fields = schemaRdd.schema.fields
+        val nullableColumns = (0 to fields.size - 1).zip(fields).filter {
+          case (index, field) => field.nullable
+        }.map {
+          case (index, nullableField) => index
+        }.toSet
+        val values = schemaRdd.take(sampleSize).map(row =>
+          (0 to row.size).zip(row).map{ case (index, element) =>
+            if (nullableColumns.contains(index))
+              Option(element)
+            else
+              element
+          }
+        )
+        table(schemaRdd.schema.fieldNames, values)
+      } else {
+        // RDD of rows but w/o a schema
+        val values = rdd.take(sampleSize).map(_.asInstanceOf[Row])
+        table((1 to values.head.size).map(_.toString), values)
+      }
+    } else {
+      // Normal RDD
+      show(rdd.take(sampleSize))(tag)
+    }
   }
 
   @Help(
