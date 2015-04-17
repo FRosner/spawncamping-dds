@@ -433,7 +433,7 @@ object DDS {
     longDescription = "Plots a sample of a graph layouted by the D3 force layout. The sample is calculated based on a" +
       " vertex sample. All edges which do not have both source and destination in the vertex sample, will be discarded. " +
       "You can also specify a vertex filter to apply before taking the sample.",
-    parameters = "graph: Graph, (optional) sampleSize: Int, (optional) vertexFilter: ((VertexId, VD)) => Boolean"
+    parameters = "graph: Graph[VD, ED], (optional) sampleSize: Int, (optional) vertexFilter: (VertexId, VD) => Boolean"
   )
   def show[VD, ED](graph: graphx.Graph[VD, ED],
                    sampleSize: Int,
