@@ -136,7 +136,7 @@ object DDS {
   }
 
   @Help(
-    category = "Generic Plots",
+    category = "Scala",
     shortDescription = "Plots a graph",
     longDescription = "Plots a graph layouted by the D3 force layout.",
     parameters = "vertices: Seq[(VertexId, Label)], edges: Seq[(SourceVertexId, TargetVertexId)]"
@@ -151,7 +151,7 @@ object DDS {
   }
 
   @Help(
-    category = "Generic Plots",
+    category = "Scala",
     shortDescription = "Plots a scatter plot",
     longDescription = "Plots a scatter plot of the given points. A point is represented as a pair of X and Y coordinates." +
       "Works with both, numeric or nominal values and will plot the axes accordingly.",
@@ -162,7 +162,7 @@ object DDS {
   }
 
   @Help(
-    category = "Generic Plots",
+    category = "Scala",
     shortDescription = "Plots a heat map",
     longDescription = "Plots the given matrix as a heat map. values(i)(j) corresponds to the element in the ith row" +
       " and the jth column. If no row or column names are specified, the rows or columns will just have incerementing" +
@@ -181,7 +181,7 @@ object DDS {
   }
 
   @Help(
-    category = "Generic Plots",
+    category = "Scala",
     shortDescription = "Plots a histogram chart of already binned data",
     longDescription = "Plots a histogram chart visualizing the given bins and frequencies. " +
       "The bins are defined by their borders. To specify n bins, you need to pass n+1 borders and n frequencies." +
@@ -195,7 +195,7 @@ object DDS {
   }
 
   @Help(
-    category = "Generic Plots",
+    category = "Scala",
     shortDescription = "Plots a line chart",
     longDescription = "Plots a line chart visualizing the given value sequence.",
     parameters = "values: Seq[NumericValue]"
@@ -205,7 +205,7 @@ object DDS {
   }
 
   @Help(
-    category = "Generic Plots",
+    category = "Scala",
     shortDescription = "Plots a line chart with multiple lines",
     longDescription = "Plots a line chart with multiple lines. Each line corresponds to one of the value sequences " +
       "and is labeled according to the labels specified.",
@@ -217,7 +217,7 @@ object DDS {
   }
 
   @Help(
-    category = "Generic Plots",
+    category = "Scala",
     shortDescription = "Plots a bar chart with an indexed x-axis.",
     longDescription = "Plots a bar chart with an indexed x-axis visualizing the given value sequence.",
     parameters = "values: Seq[NumericValue]"
@@ -227,7 +227,7 @@ object DDS {
   }
 
   @Help(
-    category = "Generic Plots",
+    category = "Scala",
     shortDescription = "Plots a bar chart with a categorical x-axis.",
     longDescription = "Plots a bar chart with a categorical x-axis visualizing the given value sequence.",
     parameters = "values: Seq[NumericValue], categories: Seq[String]"
@@ -237,7 +237,7 @@ object DDS {
   }
 
   @Help(
-    category = "Generic Plots",
+    category = "Scala",
     shortDescription = "Plots a bar chart with an indexed x-axis and multiple bar colors",
     longDescription = "Plots a bar chart with an indexed x-axis and multiple bar colors. " +
       "Each color corresponds to one of the value sequences " +
@@ -250,7 +250,7 @@ object DDS {
   }
 
   @Help(
-    category = "Generic Plots",
+    category = "Scala",
     shortDescription = "Plots a bar chart with a categorical x-axis and multiple bar colors",
     longDescription = "Plots a bar chart with a categorical x-axis and multiple bar colors. " +
       "Each color corresponds to one of the value sequences " +
@@ -263,7 +263,7 @@ object DDS {
   }
 
   @Help(
-    category = "Generic Plots",
+    category = "Scala",
     shortDescription = "Plots a pie chart with the given value per group",
     longDescription = "Plots a pie chart with the given value per group. The input must contain each key only once.",
     parameters = "keyValuePairs: Iterable[(Key, NumericValue)]"
@@ -273,7 +273,7 @@ object DDS {
   }
 
   @Help(
-    category = "RDD Analysis",
+    category = "Spark Core",
     shortDescription = "Plots a bar chart with the counts of all distinct values in this RDD",
     longDescription = "Plots a bar chart with the counts of all distinct values in this RDD. This makes most sense for " +
       "non-numeric values that have a relatively low cardinality.",
@@ -286,7 +286,7 @@ object DDS {
   }
 
   @Help(
-    category = "RDD Analysis",
+    category = "Spark Core",
     shortDescription = "Plots a pie chart with the counts of all distinct values in this RDD",
     longDescription = "Plots a pie chart with the counts of all distinct values in this RDD. This makes most sense for " +
       "non-numeric values that have a relatively low cardinality.",
@@ -297,7 +297,7 @@ object DDS {
   }
 
   @Help(
-    category = "RDD Analysis",
+    category = "Spark Core",
     shortDescription = "Plots a histogram of a numerical RDD for the given number of buckets",
     longDescription = "Plots a histogram of a numerical RDD for the given number of buckets. " +
       "The number of buckets parameter is optional having the default value of 10.",
@@ -309,7 +309,7 @@ object DDS {
   }
 
   @Help(
-    category = "RDD Analysis",
+    category = "Spark Core",
     shortDescription = "Plots a histogram of a numerical RDD for the given buckets",
     longDescription = "Plots a histogram of a numerical RDD for the given buckets. " +
       "If the buckets do not include the complete range of possible values, some values will be missing in the histogram.",
@@ -322,7 +322,7 @@ object DDS {
   }
 
   @Help(
-    category = "RDD Analysis",
+    category = "Spark Core",
     shortDescription = "Plots a pie chart of the reduced values per group",
     longDescription = "Given the already grouped RDD, reduces the values in each group and compares the group using a pie chart.",
     parameters = "groupedValues: RDD[(Key, Iterable[NumericValue])]",
@@ -335,7 +335,7 @@ object DDS {
   }
 
   @Help(
-    category = "RDD Analysis",
+    category = "Spark Core",
     shortDescription = "Plots a pie chart of the reduced values per group",
     longDescription = "Groups the given pair RDD, reduces the values in each group and compares the group using a pie chart.",
     parameters = "toBeGroupedValues: RDD[(Key, NumericValue)]",
@@ -352,7 +352,7 @@ object DDS {
   }
 
   @Help(
-    category = "Generic Plots",
+    category = "Scala",
     shortDescription = "Displays data in tabular format",
     longDescription = "Displays the given rows as a table using the specified head. DDS also shows visualizations of the" +
       "data in the table.",
@@ -363,7 +363,7 @@ object DDS {
   }
 
   @Help(
-    category = "Generic Plots",
+    category = "Scala",
     shortDescription = "Shows a sequence",
     longDescription = "Shows a sequence. In addition to a tabular view DDS also shows visualizations" +
       "of the data.",
@@ -389,7 +389,7 @@ object DDS {
   }
 
   @Help(
-    category = "RDD Analysis",
+    category = "Spark Core",
     shortDescription = "Shows the first rows of an RDD",
     longDescription = "Shows the first rows of an RDD. In addition to a tabular view DDS also shows visualizations" +
       "of the data. The second argument is optional and determines the sample size.",
@@ -428,7 +428,7 @@ object DDS {
   }
 
   @Help(
-    category = "RDD Analysis",
+    category = "Spark GraphX",
     shortDescription = "Plots a sample of a graph",
     longDescription = "Plots a sample of a graph layouted by the D3 force layout. The sample is calculated based on a" +
       " vertex sample. All edges which do not have both source and destination in the vertex sample, will be discarded. " +
@@ -463,7 +463,7 @@ object DDS {
     show(graph, defaultGraphVertexSampleSize, vertexFilter)
 
   @Help(
-    category = "RDD Analysis",
+    category = "Spark Core",
     shortDescription = "Shows some basic summary statistics of the given dataset",
     longDescription = "Shows some basic summary statistics of the given dataset.\n" +
       "Statistics for numeric values are: count, sum, min, max, mean, stdev, variance\n" +
@@ -485,7 +485,7 @@ object DDS {
   }
 
   @Help(
-    category = "RDD Analysis",
+    category = "Spark Core",
     shortDescription = "Shows some basic summary statistics of the given groups",
     longDescription = "Shows some basic summary statistics of the given groups. " +
       "Statistics are: count, sum, min, max, mean, stdev, variance.",
@@ -502,7 +502,7 @@ object DDS {
   }
 
   @Help(
-    category = "RDD Analysis",
+    category = "Spark Core",
     shortDescription = "Shows some basic summary statistics of the given groups",
     longDescription = "Shows some basic summary statistics of the given groups. " +
       "Statistics are: count, sum, min, max, mean, stdev, variance.",
