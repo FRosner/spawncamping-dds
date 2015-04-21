@@ -579,6 +579,46 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     corrMatrix(1)(1) should be (1d +- epsilon)
   }
 
+  it should "be served from an RDD with two double columns" in {
+    DDS.start(mockedServer)
+    val rdd = sc.makeRDD(List(Row(1d, 3d), Row(2d, 2d), Row(3d, 1d)))
+    val schemaRdd = sql.applySchema(rdd, StructType(List(
+      StructField("first", DoubleType, false),
+      StructField("second", DoubleType, false)
+    )))
+    DDS.correlation(schemaRdd)
+
+    val resultMatrix = mockedServer.lastServed.get.asInstanceOf[Matrix2D]
+    resultMatrix.colNames.toList shouldBe List("first", "second")
+    resultMatrix.rowNames.toList shouldBe List("first", "second")
+    val corrMatrix = resultMatrix.entries.toSeq.map(_.toSeq)
+    corrMatrix(0)(0) should be (1d +- epsilon)
+    corrMatrix(0)(1) should be (-1d +- epsilon)
+    corrMatrix(1)(0) should be (-1d +- epsilon)
+    corrMatrix(1)(1) should be (1d +- epsilon)
+  }
+
+  it should "be served from an RDD containing some non-numerical columns" in {
+    DDS.start(mockedServer)
+    val rdd = sc.makeRDD(List(Row("a", 1d, true, 3), Row("b", 2d, false, 2), Row("c", 3d, true, 1)))
+    val schemaRdd = sql.applySchema(rdd, StructType(List(
+      StructField("first", StringType, false),
+      StructField("second", DoubleType, false),
+      StructField("third", BooleanType, false),
+      StructField("fourth", IntegerType, false)
+    )))
+    DDS.correlation(schemaRdd)
+
+    val resultMatrix = mockedServer.lastServed.get.asInstanceOf[Matrix2D]
+    resultMatrix.colNames.toList shouldBe List("second", "fourth")
+    resultMatrix.rowNames.toList shouldBe List("second", "fourth")
+    val corrMatrix = resultMatrix.entries.toSeq.map(_.toSeq)
+    corrMatrix(0)(0) should be (1d +- epsilon)
+    corrMatrix(0)(1) should be (-1d +- epsilon)
+    corrMatrix(1)(0) should be (-1d +- epsilon)
+    corrMatrix(1)(1) should be (1d +- epsilon)
+  }
+
   "Help" should "work" in {
     DDS.help()
     DDS.help("start")
