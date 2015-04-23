@@ -473,8 +473,6 @@ object DDS {
     longDescription = "",
     parameters = "rdd: SchemaRDD"
   )
-  // TODO ignore null values in the pairwise computation, so CorrelationAggregator needs to take Options of Double
-  // and ignore missings in the computation. Note however, that below null will be converted to 0, so I need to change that
   def correlation(rdd: SchemaRDD) = {
     def showError = println("Correlation only supported for RDDs with multiple double columns.")
     val schema = rdd.schema
