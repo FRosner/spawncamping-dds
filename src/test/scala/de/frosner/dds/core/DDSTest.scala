@@ -579,6 +579,18 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     corrMatrix(1)(1) should be (1d +- epsilon)
   }
 
+  it should "not be served from an RDD with not enough numerical columns" in {
+    DDS.start(mockedServer)
+    val rdd = sc.makeRDD(List(Row(1d, "c"), Row(2d, "a"), Row(3d, "b")))
+    val schemaRdd = sql.applySchema(rdd, StructType(List(
+      StructField("first", DoubleType, false),
+      StructField("second", StringType, false)
+    )))
+    DDS.correlation(schemaRdd)
+
+    mockedServer.lastServed.isEmpty shouldBe true
+  }
+
   it should "be served from an RDD with two double columns" in {
     DDS.start(mockedServer)
     val rdd = sc.makeRDD(List(Row(1d, 3d), Row(2d, 2d), Row(3d, 1d)))
