@@ -468,7 +468,7 @@ object DDS {
     show(graph, defaultGraphVertexSampleSize, vertexFilter)
 
   @Help(
-    category = "Spark Core",
+    category = "Spark Statistics",
     shortDescription = "",
     longDescription = "",
     parameters = "rdd: SchemaRDD"
@@ -521,7 +521,7 @@ object DDS {
   }
 
   @Help(
-    category = "RDD Analysis",
+    category = "Spark Statistics",
     shortDescription = "Shows some basic summary statistics of the given dataset",
     longDescription = "Shows some basic summary statistics of the given dataset.\n" +
       "Statistics for numeric values are: count, sum, min, max, mean, stdev, variance\n" +
@@ -543,7 +543,7 @@ object DDS {
   }
 
   @Help(
-    category = "Spark Core",
+    category = "Spark Statistics",
     shortDescription = "Shows some basic summary statistics of the given groups",
     longDescription = "Shows some basic summary statistics of the given groups. " +
       "Statistics are: count, sum, min, max, mean, stdev, variance.",
@@ -560,7 +560,7 @@ object DDS {
   }
 
   @Help(
-    category = "Spark Core",
+    category = "Spark Statistics",
     shortDescription = "Shows some basic summary statistics of the given groups",
     longDescription = "Shows some basic summary statistics of the given groups. " +
       "Statistics are: count, sum, min, max, mean, stdev, variance.",
