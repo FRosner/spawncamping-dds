@@ -469,18 +469,20 @@ object DDS {
 
   @Help(
     category = "Spark Statistics",
-    shortDescription = "",
-    longDescription = "",
+    shortDescription = "Computes pearson correlation between numerical columns",
+    longDescription = "Computes pearson correlation between numerical columns. There need to be at least two numerical," +
+      " non-nullable columns in the table. The columns must not be nullable.",
     parameters = "rdd: SchemaRDD"
   )
   def correlation(rdd: SchemaRDD) = {
-    def showError = println("Correlation only supported for RDDs with multiple double columns.")
+    def showError = println("Correlation only supported for RDDs with multiple non-nullable numerical columns.")
     val schema = rdd.schema
     val fields = schema.fields
     if (fields.size >= 2) {
       val numericalFields = fields.zipWithIndex.filter{ case (field, idx) => {
         val dataType = field.dataType
-        dataType == DoubleType || dataType == FloatType || dataType == IntegerType || dataType == LongType
+        (dataType == DoubleType || dataType == FloatType || dataType == IntegerType || dataType == LongType) &&
+          !field.nullable
       }}
       val numericalFieldIndexes = numericalFields.map{ case (field, idx) => idx }.toSet
       if (numericalFields.size >= 2) {
