@@ -519,18 +519,33 @@ object DDS {
       showError
     }
   }
+  
+  def median[N] (values: RDD[N])(implicit num: Numeric[N] = null): Double = {
+    val sorted = values.sortBy(identity).zipWithIndex().map{
+      case (v, idx) => (idx, v)
+    }
+    val count = sorted.count
+    val median: Double = if (count % 2 == 0) {
+      val r = count / 2
+      val l = r - 1
+      num.toDouble(num.plus(sorted.lookup(l).head, sorted.lookup(r).head))*0.5
+    }
+    else num.toDouble(sorted.lookup(count / 2).head)
+  }
 
-  @Help(
-    category = "Spark Statistics",
+    @Help(
+    category = "RDD Analysis",
     shortDescription = "Shows some basic summary statistics of the given dataset",
     longDescription = "Shows some basic summary statistics of the given dataset.\n" +
-      "Statistics for numeric values are: count, sum, min, max, mean, stdev, variance\n" +
+      "Statistics for numeric values are: count, sum, min, max, mean, median, stdev, variance\n" +
+      "Statistics for ordered values are: count, min, max, median" +
       "Statistics for nominal values are: mode, cardinality",
     parameters = "values: RDD[NumericValue]"
   )
   def summarize[N: ClassTag](values: RDD[N])(implicit num: Numeric[N] = null): Unit = {
     if (num != null) {
       table(Table.fromStatCounter(values.stats()))
+
     } else {
       val cardinality = values.distinct.count
       val valueCounts = values.map((_, 1)).reduceByKey(_ + _)
