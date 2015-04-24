@@ -519,18 +519,27 @@ object DDS {
       showError
     }
   }
-  
-  def median[N] (values: RDD[N])(implicit num: Numeric[N] = null): Double = {
+
+  @Help(
+  category = "RDDAnalysis",
+  shortDescription = "Calculates the median of a numeric dataset",
+  longDescription = "Calculates the median of a numeric dataset. \n"+
+    "CAUTION: this requires ordering the elements on each node and can be very resource intensive",
+  parameters = "values: RDD[NumericValue]"
+  )
+  def median[N: ClassTag] (values: RDD[N])(implicit num: Numeric[N] = null): Unit = {
     val sorted = values.sortBy(identity).zipWithIndex().map{
       case (v, idx) => (idx, v)
     }
     val count = sorted.count
-    val median: Double = if (count % 2 == 0) {
+    val median: Double =
+      if (count % 2 == 0) {
       val r = count / 2
       val l = r - 1
       num.toDouble(num.plus(sorted.lookup(l).head, sorted.lookup(r).head))*0.5
     }
     else num.toDouble(sorted.lookup(count / 2).head)
+    table(List("median"), List(List(median)))
   }
 
     @Help(
