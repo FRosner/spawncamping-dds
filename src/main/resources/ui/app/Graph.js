@@ -35,7 +35,8 @@ Graph.prototype._draw = function(graph) {
     var linkLabels = links.append('text')
       .text(function(l) { return l.label; })
     .attr('fill', 'black')
-    .attr("class", "edgeLabel");
+    .attr("class", "edgeLabel")
+    .attr("text-anchor", "middle");
 
     var nodes = svg.selectAll('.node')
         .data(nodes)
