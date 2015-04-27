@@ -27,17 +27,24 @@ Graph.prototype._draw = function(graph) {
 
     var links = svg.selectAll('.link')
         .data(links)
-        .enter().append('line')
+        .enter();
+
+    var linkLines = links.append('line')
         .attr('class', 'link');
+
+    var linkLabels = links.append('text')
+      .text(function(l) { return l.label; })
+    .attr('fill', 'black')
+    .attr("class", "edgeLabel");
 
     var nodes = svg.selectAll('.node')
         .data(nodes)
-        .enter()
+        .enter();
 
     var circles = nodes.append('circle')
         .attr('class', 'node');
 
-    var labels = nodes.append('text')
+    var nodeLabels = nodes.append('text')
       .text(function(n) { return n.label; })
     .attr('fill', 'black')
     .attr("class", "nodeLabel");
@@ -47,10 +54,25 @@ Graph.prototype._draw = function(graph) {
             .attr('cx', function(n) { return n.x; })
             .attr('cy', function(n) { return n.y; });
 
-        labels.attr('x', function(n) { return n.x+7; })
-            .attr('y', function(n) { return n.y-4; })
+        nodeLabels.attr('x', function(n) { return n.x+7; })
+            .attr('y', function(n) { return n.y-4; });
 
-        links.attr('x1', function(l) { return l.source.x; })
+        linkLabels.attr('x', function(l) {
+                if (l.target.x > l.source.x) {
+                    return l.source.x + (l.target.x - l.source.x) / 2;
+                } else {
+                    return l.target.x + (l.source.x - l.target.x) / 2;
+                }
+            })
+            .attr('y', function(l) {
+                if (l.target.y > l.source.y) {
+                    return l.source.y + (l.target.y - l.source.y) / 2;
+                } else {
+                    return l.target.y + (l.source.y - l.target.y) / 2;
+                }
+            });
+
+        linkLines.attr('x1', function(l) { return l.source.x; })
             .attr('y1', function(l) { return l.source.y; })
             .attr('x2', function(l) { return l.target.x; })
             .attr('y2', function(l) { return l.target.y; });
@@ -86,9 +108,38 @@ Graph.prototype._draw = function(graph) {
     this._header.appendChild(nodeButton);
     this._triggerNodeLabelsButton = nodeButton;
 
+    var edgeButton = document.createElement('div');
+    edgeButton.setAttribute("id", "triggerEdgeLabelsButton");
+    edgeButton.onclick = function() {
+      if (document.drawEdgeLabels === false) {
+        edgeButton.setAttribute("class", "visible");
+        edgeButton.setAttribute("title", "Hide edge labels");
+        document.drawEdgeLabels = true;
+        d3.selectAll(".edgeLabel").style("visibility", "visible");
+      } else {
+        edgeButton.setAttribute("class", "hidden");
+        edgeButton.setAttribute("title", "Draw edge labels");
+        document.drawEdgeLabels = false;
+        d3.selectAll(".edgeLabel").style("visibility", "hidden");
+      }
+    }
+    if (document.drawEdgeLabels === false) {
+      edgeButton.setAttribute("class", "hidden");
+      edgeButton.setAttribute("title", "Draw edge labels");
+      d3.selectAll(".edgeLabel").style("visibility", "hidden");
+    } else {
+      edgeButton.setAttribute("class", "visible");
+      edgeButton.setAttribute("title", "Hide edge labels");
+      d3.selectAll(".edgeLabel").style("visibility", "visible");
+      document.drawEdgeLabels = true;
+    }
+    this._header.appendChild(edgeButton);
+    this._triggerEdgeLabelsButton = edgeButton;
+
 }
 
 Graph.prototype.clear = function() {
 	removeElementIfExists(this._graphDiv);
-  removeElementIfExists(this._triggerNodeLabelsButton)
+  removeElementIfExists(this._triggerNodeLabelsButton);
+  removeElementIfExists(this._triggerEdgeLabelsButton);
 }

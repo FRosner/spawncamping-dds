@@ -11,16 +11,17 @@ import spray.json._
  * @param vertices where each vertex has a label
  * @param edges where each edge is a pair of source and target represented by the index in the vertex sequence
  */
-case class Graph(vertices: Seq[String], edges: Iterable[(Int, Int)]) extends Servable {
+case class Graph(vertices: Seq[String], edges: Iterable[(Int, Int, String)]) extends Servable {
 
   val servableType = "graph"
 
   override protected def contentAsJson: JsValue = {
     JsObject(
       ("vertices", JsArray(vertices.map(v => JsObject(("label", JsString(v)))).toVector)),
-      ("edges", JsArray(edges.map{ case (src, target) => JsObject(
+      ("edges", JsArray(edges.map{ case (src, target, label) => JsObject(
         ("source", JsNumber(src)),
-        ("target", JsNumber(target))
+        ("target", JsNumber(target)),
+        ("label", JsString(label))
       ) }.toVector))
     )
   }

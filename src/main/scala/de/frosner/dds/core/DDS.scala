@@ -144,13 +144,13 @@ object DDS {
     category = "Scala",
     shortDescription = "Plots a graph",
     longDescription = "Plots a graph layouted by the D3 force layout.",
-    parameters = "vertices: Seq[(VertexId, Label)], edges: Seq[(SourceVertexId, TargetVertexId)]"
+    parameters = "vertices: Seq[(VertexId, Label)], edges: Seq[(SourceVertexId, TargetVertexId, Label)]"
   )
-  def graph[ID, L](vertices: Seq[(ID, L)], edges: Iterable[(ID, ID)]): Unit = {
+  def graph[ID, VL, EL](vertices: Seq[(ID, VL)], edges: Iterable[(ID, ID, EL)]): Unit = {
     val indexMap = vertices.map{ case (id, label) => id }.zip(0 to vertices.size).toMap
     val graph = Graph(
       vertices.map{ case (id, label) => label.toString},
-      edges.map{ case (sourceId, targetId) => (indexMap(sourceId), indexMap(targetId))}
+      edges.map{ case (sourceId, targetId, label) => (indexMap(sourceId), indexMap(targetId), label.toString)}
     )
     serve(graph)
   }
@@ -450,7 +450,7 @@ object DDS {
       edge => vertexSample.contains(edge.srcId) && vertexSample.contains(edge.dstId),
       (vertexId, vertexAttr) => vertexSample.contains(vertexId)
     )
-    DDS.graph(sampledGraph.vertices.collect.toSeq, sampledGraph.edges.collect.map(edge => (edge.srcId, edge.dstId)))
+    DDS.graph(sampledGraph.vertices.collect.toSeq, sampledGraph.edges.collect.map(edge => (edge.srcId, edge.dstId, edge.attr)))
   }
 
   /*
