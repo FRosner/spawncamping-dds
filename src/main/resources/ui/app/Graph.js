@@ -39,7 +39,8 @@ Graph.prototype._draw = function(graph) {
 
     var labels = nodes.append('text')
       .text(function(n) { return n.label; })
-    .attr('fill', 'black');
+    .attr('fill', 'black')
+    .attr("class", "nodeLabel");
 
     force.on('tick', function() {
         circles.attr('r', 5)
@@ -56,8 +57,38 @@ Graph.prototype._draw = function(graph) {
     });
 
     force.start();
+
+    var nodeButton = document.createElement('div');
+    nodeButton.setAttribute("id", "triggerNodeLabelsButton");
+    nodeButton.onclick = function() {
+      if (document.drawNodeLabels === false) {
+        nodeButton.setAttribute("class", "visible");
+        nodeButton.setAttribute("title", "Hide node labels");
+        document.drawNodeLabels = true;
+        d3.selectAll(".nodeLabel").style("visibility", "visible");
+      } else {
+        nodeButton.setAttribute("class", "hidden");
+        nodeButton.setAttribute("title", "Draw node labels");
+        document.drawNodeLabels = false;
+        d3.selectAll(".nodeLabel").style("visibility", "hidden");
+      }
+    }
+    if (document.drawNodeLabels === false) {
+      nodeButton.setAttribute("class", "hidden");
+      nodeButton.setAttribute("title", "Draw node labels");
+      d3.selectAll(".nodeLabel").style("visibility", "hidden");
+    } else {
+      nodeButton.setAttribute("class", "visible");
+      nodeButton.setAttribute("title", "Hide node labels");
+      d3.selectAll(".nodeLabel").style("visibility", "visible");
+      document.drawNodeLabels = true;
+    }
+    this._header.appendChild(nodeButton);
+    this._triggerNodeLabelsButton = nodeButton;
+
 }
 
 Graph.prototype.clear = function() {
 	removeElementIfExists(this._graphDiv);
+  removeElementIfExists(this._triggerNodeLabelsButton)
 }
