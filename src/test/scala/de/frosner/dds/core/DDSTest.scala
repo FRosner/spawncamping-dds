@@ -194,11 +194,11 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
 
   it should "serve a correct graph" in {
     DDS.start(mockedServer)
-    DDS.graph(List((1, "label1"), (5, "label5")), List((1,1), (1,5)))
+    DDS.graph(List((1, "label1"), (5, "label5")), List((1,1,"a"), (1,5,"b")))
 
     val actualGraph = mockedServer.lastServed.get.asInstanceOf[Graph]
     actualGraph.vertices.toList shouldBe List("label1", "label5")
-    actualGraph.edges.toList shouldBe List((0, 0), (0, 1))
+    actualGraph.edges.toList shouldBe List((0, 0, "a"), (0, 1, "b"))
   }
 
   "A correct pie chart" should "be served from a single value RDD" in {
@@ -480,8 +480,8 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     resultGraph.vertices.toSet shouldBe Set("a", "b", "c")
     val vertexList = resultGraph.vertices.toList
     resultGraph.edges.toSet shouldBe Set(
-      (vertexList.indexOf("a"), vertexList.indexOf("b")),
-      (vertexList.indexOf("b"), vertexList.indexOf("c"))
+      (vertexList.indexOf("a"), vertexList.indexOf("b"), "a-b"),
+      (vertexList.indexOf("b"), vertexList.indexOf("c"), "b-c")
     )
   }
 
@@ -506,7 +506,7 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     resultGraph.vertices.toSet shouldBe Set("a", "b")
     val vertexList = resultGraph.vertices.toList
     resultGraph.edges.toSet shouldBe Set(
-      (vertexList.indexOf("a"), vertexList.indexOf("b"))
+      (vertexList.indexOf("a"), vertexList.indexOf("b"), "a-b")
     )
   }
 
