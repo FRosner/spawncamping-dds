@@ -533,14 +533,18 @@ object DDS {
       case (v, idx) => (idx, v)
     }
     val count = sorted.count
-    val median: Double = if (count % 2 == 0) {
-      val r = count / 2
-      val l = r - 1
-      num.toDouble(num.plus(sorted.lookup(l).head, sorted.lookup(r).head))*0.5
+    if (count > 0) {
+      val median: Double = if (count % 2 == 0) {
+        val r = count / 2
+        val l = r - 1
+        num.toDouble(num.plus(sorted.lookup(l).head, sorted.lookup(r).head)) * 0.5
+      } else {
+        num.toDouble(sorted.lookup(count / 2).head)
+      }
+      table(List("median"), List(List(median)))
     } else {
-      num.toDouble(sorted.lookup(count / 2).head)
+      println("Median is not defined on an empty RDD!")
     }
-    table(List("median"), List(List(median)))
   }
 
   @Help(
