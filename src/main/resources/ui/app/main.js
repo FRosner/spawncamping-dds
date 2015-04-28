@@ -26,7 +26,7 @@ function checkForUpdate() {
                     var contentId = "content";
                     var headerId = "header";
                     if (document.lastServed) {
-                        document.lastServed.clear();
+                        document.lastServed.clearHeader();
                     }
                     document.getElementById(contentId).innerHTML = "";
                     if (servable.type == "chart") {
