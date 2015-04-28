@@ -139,8 +139,7 @@ Graph.prototype._draw = function(graph) {
 
 }
 
-Graph.prototype.clear = function() {
-	removeElementIfExists(this._graphDiv);
+Graph.prototype.clearHeader = function() {
   removeElementIfExists(this._triggerNodeLabelsButton);
   removeElementIfExists(this._triggerEdgeLabelsButton);
 }

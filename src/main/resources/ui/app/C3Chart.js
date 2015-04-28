@@ -15,6 +15,5 @@ C3Chart.prototype._draw = function(chart) {
     c3.generate(chart);
 }
 
-C3Chart.prototype.clear = function() {
-    removeElementIfExists(this._chartDiv);
+C3Chart.prototype.clearHeader = function() {
 }

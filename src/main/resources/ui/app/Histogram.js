@@ -71,6 +71,5 @@ Histogram.prototype._draw = function(bins) {
         .orient("left"));
 }
 
-Histogram.prototype.clear = function() {
-	removeElementIfExists(this._chartDiv);
+Histogram.prototype.clearHeader = function() {
 }
