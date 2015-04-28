@@ -524,8 +524,8 @@ object DDS {
     category = "Spark Statistics",
     shortDescription = "Calculates the median of a numeric dataset",
     longDescription = "Calculates the median of a numeric dataset. " +
-      "As this operation requires ordering the elements in each partition plus a lookup operation, " +
-      "it is computationally expensive.",
+      "Note that this operation requires ordering of the elements in each partition plus lookup operations, " +
+      "which makes it rather expensive.",
     parameters = "values: RDD[NumericValue]"
   )
   def median[N: ClassTag](values: RDD[N])(implicit num: Numeric[N] = null): Unit = {
