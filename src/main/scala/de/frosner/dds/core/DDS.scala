@@ -554,7 +554,6 @@ object DDS {
   def summarize[N: ClassTag](values: RDD[N])(implicit num: Numeric[N] = null): Unit = {
     if (num != null) {
       table(Table.fromStatCounter(values.stats()))
-
     } else {
       val cardinality = values.distinct.count
       val valueCounts = values.map((_, 1)).reduceByKey(_ + _)
