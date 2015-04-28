@@ -528,18 +528,18 @@ object DDS {
       "it is computationally expensive.",
     parameters = "values: RDD[NumericValue]"
   )
-  def median[N: ClassTag] (values: RDD[N])(implicit num: Numeric[N] = null): Unit = {
+  def median[N: ClassTag](values: RDD[N])(implicit num: Numeric[N] = null): Unit = {
     val sorted = values.sortBy(identity).zipWithIndex().map{
       case (v, idx) => (idx, v)
     }
     val count = sorted.count
-    val median: Double =
-      if (count % 2 == 0) {
+    val median: Double = if (count % 2 == 0) {
       val r = count / 2
       val l = r - 1
       num.toDouble(num.plus(sorted.lookup(l).head, sorted.lookup(r).head))*0.5
+    } else {
+      num.toDouble(sorted.lookup(count / 2).head)
     }
-    else num.toDouble(sorted.lookup(count / 2).head)
     table(List("median"), List(List(median)))
   }
 
