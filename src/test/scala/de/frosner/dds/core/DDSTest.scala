@@ -320,6 +320,44 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     )
   }
 
+  "A correct median table" should "be served from an even-sized numerical RDD" in {
+    DDS.start(mockedServer)
+    val valueRDD = sc.makeRDD(List(1,2,3,4))
+    DDS.median(valueRDD)
+
+    val resultTable = mockedServer.lastServed.get.asInstanceOf[Table]
+    resultTable.head.toList shouldBe List("median")
+    resultTable.rows.toList shouldBe List(List(2.5))
+  }
+
+  it should "be served from an odd-sized numerical RDD" in {
+    DDS.start(mockedServer)
+    val valueRDD = sc.makeRDD(List(1,2,3.3,4,15))
+    DDS.median(valueRDD)
+
+    val resultTable = mockedServer.lastServed.get.asInstanceOf[Table]
+    resultTable.head.toList shouldBe List("median")
+    resultTable.rows.toList shouldBe List(List(3.3))
+  }
+
+  it should "be served from a single value numerical RDD" in {
+    DDS.start(mockedServer)
+    val valueRDD = sc.makeRDD(List(1))
+    DDS.median(valueRDD)
+
+    val resultTable = mockedServer.lastServed.get.asInstanceOf[Table]
+    resultTable.head.toList shouldBe List("median")
+    resultTable.rows.toList shouldBe List(List(1))
+  }
+
+  it should "not be served from an empty RDD" in {
+    DDS.start(mockedServer)
+    val valueRDD = sc.makeRDD(List.empty[Double])
+    DDS.median(valueRDD)
+
+    val resultTable = mockedServer.lastServed.isEmpty shouldBe true
+  }
+
   "A correct summary table from a single value RDD" should "be served for numeric values" in {
     DDS.start(mockedServer)
     val valueRdd = sc.makeRDD(List(1,2,3))
@@ -343,6 +381,14 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     resultTable.rows.toList shouldBe List(
       List("data", "b", 3)
     )
+  }
+
+  it should "not be served from an empty RDD" in {
+    DDS.start(mockedServer)
+    val valueRdd = sc.makeRDD(List.empty[String])
+    DDS.summarize(valueRdd)
+
+    val resultTable = mockedServer.lastServed.isEmpty shouldBe true
   }
 
   "A correct table" should "be printed from generic RDD of single values" in {

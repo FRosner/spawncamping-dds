@@ -522,6 +522,33 @@ object DDS {
 
   @Help(
     category = "Spark Statistics",
+    shortDescription = "Calculates the median of a numeric dataset",
+    longDescription = "Calculates the median of a numeric dataset. " +
+      "Note that this operation requires ordering of the elements in each partition plus lookup operations, " +
+      "which makes it rather expensive.",
+    parameters = "values: RDD[NumericValue]"
+  )
+  def median[N: ClassTag](values: RDD[N])(implicit num: Numeric[N] = null): Unit = {
+    val sorted = values.sortBy(identity).zipWithIndex().map{
+      case (v, idx) => (idx, v)
+    }
+    val count = sorted.count
+    if (count > 0) {
+      val median: Double = if (count % 2 == 0) {
+        val r = count / 2
+        val l = r - 1
+        num.toDouble(num.plus(sorted.lookup(l).head, sorted.lookup(r).head)) * 0.5
+      } else {
+        num.toDouble(sorted.lookup(count / 2).head)
+      }
+      table(List("median"), List(List(median)))
+    } else {
+      println("Median is not defined on an empty RDD!")
+    }
+  }
+
+  @Help(
+    category = "Spark Statistics",
     shortDescription = "Shows some basic summary statistics of the given dataset",
     longDescription = "Shows some basic summary statistics of the given dataset.\n" +
       "Statistics for numeric values are: count, sum, min, max, mean, stdev, variance\n" +
@@ -533,12 +560,16 @@ object DDS {
       table(Table.fromStatCounter(values.stats()))
     } else {
       val cardinality = values.distinct.count
-      val valueCounts = values.map((_, 1)).reduceByKey(_ + _)
-      val (mode, modeCount) = valueCounts.max()(Ordering.by{ case (value, count) => count })
-      table(
-        List("label", "mode", "cardinality"),
-        List(List("data", mode, cardinality))
-      )
+      if (cardinality > 0) {
+        val valueCounts = values.map((_, 1)).reduceByKey(_ + _)
+        val (mode, modeCount) = valueCounts.max()(Ordering.by { case (value, count) => count})
+        table(
+          List("label", "mode", "cardinality"),
+          List(List("data", mode, cardinality))
+        )
+      } else {
+        println("Summarize function requires a non-empty RDD!")
+      }
     }
   }
 
