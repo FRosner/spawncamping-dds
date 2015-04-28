@@ -383,6 +383,14 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     )
   }
 
+  it should "not be served from an empty RDD" in {
+    DDS.start(mockedServer)
+    val valueRdd = sc.makeRDD(List.empty[String])
+    DDS.summarize(valueRdd)
+
+    val resultTable = mockedServer.lastServed.isEmpty shouldBe true
+  }
+
   "A correct table" should "be printed from generic RDD of single values" in {
     DDS.start(mockedServer)
     val rdd = sc.makeRDD(List(1))

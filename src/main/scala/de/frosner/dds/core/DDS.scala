@@ -560,12 +560,16 @@ object DDS {
       table(Table.fromStatCounter(values.stats()))
     } else {
       val cardinality = values.distinct.count
-      val valueCounts = values.map((_, 1)).reduceByKey(_ + _)
-      val (mode, modeCount) = valueCounts.max()(Ordering.by{ case (value, count) => count })
-      table(
-        List("label", "mode", "cardinality"),
-        List(List("data", mode, cardinality))
-      )
+      if (cardinality > 0) {
+        val valueCounts = values.map((_, 1)).reduceByKey(_ + _)
+        val (mode, modeCount) = valueCounts.max()(Ordering.by { case (value, count) => count})
+        table(
+          List("label", "mode", "cardinality"),
+          List(List("data", mode, cardinality))
+        )
+      } else {
+        println("Summarize function requires a non-empty RDD!")
+      }
     }
   }
 
