@@ -23,14 +23,16 @@ function checkForUpdate() {
             if (response != "{}") {
                 var servable = JSON.parse(response);
                 doAndRedoOnResize(function() {
+                    var contentId = "content";
+                    var headerId = "header";
                     if (document.lastServed) {
                         document.lastServed.clear();
                     }
-                    document.getElementById("content").innerHTML = "";
+                    document.getElementById(contentId).innerHTML = "";
                     if (servable.type == "chart") {
                         document.lastServed = new C3Chart()
-                            .header("header")
-                            .content("content")
+                            .header(headerId)
+                            .content(contentId)
                             .margin({top: 15, right: 15, left: 60})
                             .width(window.innerWidth)
                             .height(window.innerHeight)
@@ -38,8 +40,8 @@ function checkForUpdate() {
                             .draw();
                     } else if (servable.type == "table") {
                         document.lastServed = new Table()
-                            .header("header")
-                            .content("content")
+                            .header(headerId)
+                            .content(contentId)
                             .margin({top: 30, right: 0, bottom: 0, left: 0})
                             .width(window.innerWidth)
                             .height(window.innerHeight)
@@ -47,8 +49,8 @@ function checkForUpdate() {
                             .draw();
                     } else if (servable.type == "histogram") {
                         document.lastServed = new Histogram()
-                            .header("header")
-                            .content("content")
+                            .header(headerId)
+                            .content(contentId)
                             .margin({top: 30, right: 60, bottom: 60, left: 60})
                             .width(window.innerWidth)
                             .height(window.innerHeight)
@@ -56,16 +58,16 @@ function checkForUpdate() {
                             .draw();
                     } else if (servable.type == "graph") {
                         document.lastServed = new Graph()
-                            .header("header")
-                            .content("content")
+                            .header(headerId)
+                            .content(contentId)
                             .width(window.innerWidth)
                             .height(window.innerHeight)
                             .data(servable.content)
                             .draw();
                     } else if (servable.type == "points-2d") {
                         document.lastServed = new Scatter2D()
-                            .header("header")
-                            .content("content")
+                            .header(headerId)
+                            .content(contentId)
                             .margin({top: 20, right: 15, bottom: 60, left: 60})
                             .width(window.innerWidth)
                             .height(window.innerHeight)
@@ -73,8 +75,8 @@ function checkForUpdate() {
                             .draw();
                     } else if (servable.type == "matrix") {
                         document.lastServed = new Matrix()
-                            .header("header")
-                            .content("content")
+                            .header(headerId)
+                            .content(contentId)
                             .margin({top: 20, right: 15, bottom: 60, left: 60})
                             .width(window.innerWidth)
                             .height(window.innerHeight)
