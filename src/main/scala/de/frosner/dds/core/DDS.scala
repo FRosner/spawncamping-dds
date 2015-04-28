@@ -542,12 +542,11 @@ object DDS {
     table(List("median"), List(List(median)))
   }
 
-    @Help(
-    category = "RDD Analysis",
+  @Help(
+    category = "Spark Statistics",
     shortDescription = "Shows some basic summary statistics of the given dataset",
     longDescription = "Shows some basic summary statistics of the given dataset.\n" +
-      "Statistics for numeric values are: count, sum, min, max, mean, median, stdev, variance\n" +
-      "Statistics for ordered values are: count, min, max, median" +
+      "Statistics for numeric values are: count, sum, min, max, mean, stdev, variance\n" +
       "Statistics for nominal values are: mode, cardinality",
     parameters = "values: RDD[NumericValue]"
   )
