@@ -296,8 +296,6 @@ Table.prototype._draw = function(tableAndTypes) {
   	};
 }
 
-Table.prototype.clear = function() {
-  // TODO only remove elements that have been added by the viz rather than clearing the whole content element
-	this._content.innerHTML = "";
+Table.prototype.clearHeader = function() {
 	removeElementIfExists(this._hideLabelButton);
 }

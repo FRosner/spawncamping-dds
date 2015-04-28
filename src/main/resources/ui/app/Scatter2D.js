@@ -126,7 +126,6 @@ Scatter2D.prototype._draw = function(pointsWithTypes) {
 	drawScatter();
 }
 
-Scatter2D.prototype.clear = function() {
-	removeElementIfExists(this._chartDiv);
+Scatter2D.prototype.clearHeader = function() {
 	removeElementIfExists(this._enableJitterButton);
 }

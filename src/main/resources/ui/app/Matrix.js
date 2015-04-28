@@ -89,6 +89,5 @@ Matrix.prototype._draw = function(matrixAndNames) {
 			.text(function(value) {return value.z});
 }
 
-Matrix.prototype.clear = function() {
-	removeElementIfExists(this._chartDiv);
+Matrix.prototype.clearHeader = function() {
 }
