@@ -42,7 +42,7 @@ function checkForUpdate() {
                         document.lastServed = new Table()
                             .header(headerId)
                             .content(contentId)
-                            .margin({top: 30, right: 0, bottom: 0, left: 0})
+                            .margin({top: 40, right: 0, bottom: 0, left: 0})
                             .width(window.innerWidth)
                             .height(window.innerHeight)
                             .data(servable.content)
