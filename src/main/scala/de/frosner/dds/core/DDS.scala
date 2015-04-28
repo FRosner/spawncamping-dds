@@ -521,11 +521,12 @@ object DDS {
   }
 
   @Help(
-  category = "RDDAnalysis",
-  shortDescription = "Calculates the median of a numeric dataset",
-  longDescription = "Calculates the median of a numeric dataset. \n"+
-    "CAUTION: this requires ordering the elements on each node and can be very resource intensive",
-  parameters = "values: RDD[NumericValue]"
+    category = "Spark Statistics",
+    shortDescription = "Calculates the median of a numeric dataset",
+    longDescription = "Calculates the median of a numeric dataset. " +
+      "As this operation requires ordering the elements in each partition plus a lookup operation, " +
+      "it is computationally expensive.",
+    parameters = "values: RDD[NumericValue]"
   )
   def median[N: ClassTag] (values: RDD[N])(implicit num: Numeric[N] = null): Unit = {
     val sorted = values.sortBy(identity).zipWithIndex().map{
