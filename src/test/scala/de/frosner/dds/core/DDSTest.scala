@@ -441,7 +441,7 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     )))
     DDS.show(schemaRdd)
     val resultTable = mockedServer.lastServed.get.asInstanceOf[Table]
-    resultTable.head.toList shouldBe List("first", "second", "third")
+    resultTable.head.toList shouldBe List("first [Integer]", "second [String]", "third [Double]")
     resultTable.rows.toList.map(_.toList) shouldBe List(List(1, "5", 5d), List(3, "g", 5d))
   }
 
@@ -453,7 +453,7 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     )))
     DDS.show(schemaRdd)
     val resultTable = mockedServer.lastServed.get.asInstanceOf[Table]
-    resultTable.head.toList shouldBe List("first")
+    resultTable.head.toList shouldBe List("first [Integer*]")
     resultTable.rows.toList.map(_.toList) shouldBe List(List(Option.empty[Int]), List(Option(1)))
   }
 
