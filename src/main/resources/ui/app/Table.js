@@ -231,7 +231,8 @@ Table.prototype._draw = function(tableAndTypes) {
   	var options = {
   			enableCellNavigation: true,
   			enableColumnReorder: false,
-  			multiColumnSort: false
+  			multiColumnSort: false,
+  			defaultColumnWidth: 140
   	};
 
   	var dataView = new Slick.Data.DataView();
