@@ -220,12 +220,16 @@ Table.prototype._draw = function(tableAndTypes) {
   	// setting up grid
   	var column_keys = d3.keys(data[0]);
   	var columns = column_keys.map(function(key,i) {
-  		  return {
+  		  var column = {
       			id: key,
       			name: key,
       			field: key,
       			sortable: true
+  		  };
+  		  if (key == "id") {
+  		      column.width = 40;
   		  }
+  		  return column;
   	});
 
   	var options = {
