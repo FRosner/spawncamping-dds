@@ -420,7 +420,10 @@ object DDS {
               element
           }
         )
-        table(schemaRdd.schema.fieldNames, values)
+        val fieldNames = schemaRdd.schema.fields.map(field => {
+          s"""${field.name} [${field.dataType.toString.replace("Type", "")}${if (field.nullable) "*" else ""}]"""
+        })
+        table(fieldNames, values)
       } else {
         // RDD of rows but w/o a schema
         val values = rdd.take(sampleSize).map(_.asInstanceOf[Row])
