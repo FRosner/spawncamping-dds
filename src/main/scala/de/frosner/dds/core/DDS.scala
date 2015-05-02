@@ -11,7 +11,7 @@ import de.frosner.dds.servables.tabular.Table
 import org.apache.log4j.Logger
 import org.apache.spark.SparkContext._
 import org.apache.spark.graphx
-import org.apache.spark.graphx.VertexId
+import org.apache.spark.graphx.{Edge, VertexId}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{Row, SchemaRDD}
 import org.apache.spark.sql._
@@ -437,15 +437,15 @@ object DDS {
 
   @Help(
     category = "Spark GraphX",
-    shortDescription = "Plots a sample of a graph",
+    shortDescription = "Plots a graph based on a vertex sample",
     longDescription = "Plots a sample of a graph layouted by the D3 force layout. The sample is calculated based on a" +
       " vertex sample. All edges which do not have both source and destination in the vertex sample, will be discarded. " +
       "You can also specify a vertex filter to apply before taking the sample.",
     parameters = "graph: Graph[VD, ED], (optional) sampleSize: Int, (optional) vertexFilter: (VertexId, VD) => Boolean"
   )
-  def show[VD, ED](graph: graphx.Graph[VD, ED],
-                   sampleSize: Int,
-                   vertexFilter: (VertexId, VD) => Boolean): Unit = {
+  def showVertexSample[VD, ED](graph: graphx.Graph[VD, ED],
+                               sampleSize: Int = 20,
+                               vertexFilter: (VertexId, VD) => Boolean = (id: VertexId, attr: VD) => true): Unit = {
     val vertexSample = graph.vertices.filter{
       case (id, attr) => vertexFilter(id, attr)
     }.take(sampleSize).map{ case (id, attr) => id }.toSet
@@ -456,19 +456,22 @@ object DDS {
     DDS.graph(sampledGraph.vertices.collect.toSeq, sampledGraph.edges.collect.map(edge => (edge.srcId, edge.dstId, edge.attr)))
   }
 
-  /*
-   * Need to manually define default argument sampleSize because of Scala language specs. See:
-   * http://stackoverflow.com/questions/4652095/why-does-the-scala-compiler-disallow-overloaded-methods-with-default-arguments
-   */
-
-  private def acceptAllVertices[VD]: (VertexId, VD) => Boolean = (id: VertexId, attr: VD) => true
-  private val defaultGraphVertexSampleSize = 20
-  def show[VD, ED](graph: graphx.Graph[VD, ED]): Unit =
-    show(graph, defaultGraphVertexSampleSize, acceptAllVertices)
-  def show[VD, ED](graph: graphx.Graph[VD, ED], sampleSize: Int): Unit =
-    show(graph, sampleSize, acceptAllVertices)
-  def show[VD, ED](graph: graphx.Graph[VD, ED], vertexFilter: (VertexId, VD) => Boolean): Unit =
-    show(graph, defaultGraphVertexSampleSize, vertexFilter)
+  @Help(
+    category = "Spark GraphX",
+    shortDescription = "Plots a graph based on an edge sample",
+    longDescription = "Plots a sample of a graph layouted by the D3 force layout. The sample is calculated based on an" +
+      " edge sample. All vertices not being either source or target of these edge are discarded." +
+      " You can also specify an edge filter before taking the sample.",
+    parameters = "graph: Graph[VD, ED], (optional) sampleSize: Int, (optional) edgeFilter: (Edge[ED]) => Boolean"
+  )
+  def showEdgeSample[VD, ED](graph: graphx.Graph[VD, ED],
+                             sampleSize: Int = 20,
+                             edgeFilter: (Edge[ED]) => Boolean = (edge: Edge[ED]) => true): Unit = {
+    val edgeSample = graph.edges.filter(edgeFilter).take(sampleSize)
+    val verticesToKeep = edgeSample.map(_.srcId).toSet ++ edgeSample.map(_.dstId).toSet
+    val vertexSample = graph.vertices.filter{ case (id, attr) => verticesToKeep.contains(id) }.collect
+    DDS.graph(vertexSample, edgeSample.map(edge => (edge.srcId, edge.dstId, edge.attr)))
+  }
 
   @Help(
     category = "Spark Statistics",

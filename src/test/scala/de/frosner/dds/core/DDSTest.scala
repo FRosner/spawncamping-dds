@@ -516,11 +516,11 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     resultTable.rows.toList shouldBe List(List(1), List(2), List(3))
   }
 
-  "A correct graph" should "be printed when the full graph is taken" in {
+  "A correct vertex sampled graph" should "be printed when the full graph is taken" in {
     DDS.start(mockedServer)
     val vertices: RDD[(graphx.VertexId, String)] = sc.makeRDD(List((0L, "a"), (5L, "b"), (10L, "c")))
     val edges: RDD[graphx.Edge[String]] = sc.makeRDD(List(graphx.Edge(0L, 5L, "a-b"), graphx.Edge(5L, 10L, "b-c")))
-    DDS.show(graphx.Graph(vertices, edges), 20)
+    DDS.showVertexSample(graphx.Graph(vertices, edges), 20)
 
     val resultGraph = mockedServer.lastServed.get.asInstanceOf[Graph]
     resultGraph.vertices.toSet shouldBe Set("a", "b", "c")
@@ -531,11 +531,11 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     )
   }
 
-  it should "be printed when a single vertex sample is taken" in {
+  it should "be printed when a single vertex is taken" in {
     DDS.start(mockedServer)
     val vertices: RDD[(graphx.VertexId, String)] = sc.makeRDD(List((0L, "a"), (5L, "b"), (10L, "c")))
     val edges: RDD[graphx.Edge[String]] = sc.makeRDD(List(graphx.Edge(0L, 5L, "a-b"), graphx.Edge(5L, 10L, "b-c")))
-    DDS.show(graphx.Graph(vertices, edges), 1)
+    DDS.showVertexSample(graphx.Graph(vertices, edges), 1)
 
     val resultGraph = mockedServer.lastServed.get.asInstanceOf[Graph]
     resultGraph.vertices.toSet shouldBe Set("a")
@@ -546,7 +546,7 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     DDS.start(mockedServer)
     val vertices: RDD[(graphx.VertexId, String)] = sc.makeRDD(List((0L, "a"), (10L, "b"), (5L, "c")))
     val edges: RDD[graphx.Edge[String]] = sc.makeRDD(List(graphx.Edge(0L, 10L, "a-b"), graphx.Edge(5L, 10L, "c-b")))
-    DDS.show(graphx.Graph(vertices, edges), 2)
+    DDS.showVertexSample(graphx.Graph(vertices, edges), 2)
 
     val resultGraph = mockedServer.lastServed.get.asInstanceOf[Graph]
     resultGraph.vertices.toSet shouldBe Set("a", "b")
@@ -556,16 +556,94 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     )
   }
 
-  it should "be printed when a vertex sample is taken and a filter is specified" in {
+  it should "be printed when a vertex sample is taken and a vertex filter is specified" in {
     DDS.start(mockedServer)
     val vertices: RDD[(graphx.VertexId, String)] = sc.makeRDD(List((0L, "a"), (10L, "a"), (5L, "c")))
     val edges: RDD[graphx.Edge[String]] = sc.makeRDD(List(graphx.Edge(5L, 10L, "c-a")))
-    DDS.show(graphx.Graph(vertices, edges), 3, (id: VertexId, label: String) => label == "a")
+    DDS.showVertexSample(graphx.Graph(vertices, edges), 3, (id: VertexId, label: String) => label == "a")
 
     val resultGraph = mockedServer.lastServed.get.asInstanceOf[Graph]
     resultGraph.vertices.toList shouldBe List("a", "a")
     val vertexList = resultGraph.vertices.toList
     resultGraph.edges.toSet shouldBe Set.empty
+  }
+
+  "A correct edge sampled graph" should "be printed when the full graph is taken" in {
+    DDS.start(mockedServer)
+    val vertices: RDD[(graphx.VertexId, String)] = sc.makeRDD(List((0L, "a"), (5L, "b"), (10L, "c")))
+    val edges: RDD[graphx.Edge[String]] = sc.makeRDD(List(graphx.Edge(0L, 5L, "a-b"), graphx.Edge(5L, 10L, "b-c")))
+    DDS.showEdgeSample(graphx.Graph(vertices, edges), 20)
+
+    val resultGraph = mockedServer.lastServed.get.asInstanceOf[Graph]
+    resultGraph.vertices.toSet shouldBe Set("a", "b", "c")
+    val vertexList = resultGraph.vertices.toList
+    resultGraph.edges.toSet shouldBe Set(
+      (vertexList.indexOf("a"), vertexList.indexOf("b"), "a-b"),
+      (vertexList.indexOf("b"), vertexList.indexOf("c"), "b-c")
+    )
+  }
+
+  it should "be printed when a single edge is taken" in {
+    DDS.start(mockedServer)
+    val vertices: RDD[(graphx.VertexId, String)] = sc.makeRDD(List((0L, "a"), (5L, "b"), (10L, "c")))
+    val edges: RDD[graphx.Edge[String]] = sc.makeRDD(List(graphx.Edge(0L, 5L, "a-b"), graphx.Edge(5L, 10L, "b-c")))
+    DDS.showEdgeSample(graphx.Graph(vertices, edges), 1)
+
+    val resultGraph = mockedServer.lastServed.get.asInstanceOf[Graph]
+    resultGraph.vertices.toSet shouldBe Set("a", "b")
+    val vertexList = resultGraph.vertices.toList
+    resultGraph.edges.toSet shouldBe Set(
+      (vertexList.indexOf("a"), vertexList.indexOf("b"), "a-b")
+    )
+  }
+
+  it should "be printed when a bigger edge sample is taken" in {
+    DDS.start(mockedServer)
+    val vertices: RDD[(graphx.VertexId, String)] = sc.makeRDD(List((0L, "a"), (10L, "b"), (5L, "c")))
+    val edges: RDD[graphx.Edge[String]] = sc.makeRDD(List(
+      graphx.Edge(0L, 10L, "a-b"),
+      graphx.Edge(5L, 10L, "c-b"),
+      graphx.Edge(0L, 5L, "a-c")
+    ))
+    DDS.showEdgeSample(graphx.Graph(vertices, edges), 2)
+
+    val resultGraph = mockedServer.lastServed.get.asInstanceOf[Graph]
+    resultGraph.vertices.toSet shouldBe Set("a", "b", "c")
+    val vertexList = resultGraph.vertices.toList
+    resultGraph.edges.toSet == Set(
+      (vertexList.indexOf("a"), vertexList.indexOf("b"), "a-b"),
+      (vertexList.indexOf("c"), vertexList.indexOf("b"), "c-b")
+    ) || resultGraph.edges.toSet == Set(
+      (vertexList.indexOf("c"), vertexList.indexOf("b"), "c-b"),
+      (vertexList.indexOf("a"), vertexList.indexOf("a"), "a-c")
+    ) || resultGraph.edges.toSet == Set(
+      (vertexList.indexOf("a"), vertexList.indexOf("b"), "a-b"),
+      (vertexList.indexOf("a"), vertexList.indexOf("c"), "a-c")
+    ) shouldBe true
+  }
+
+  it should "be printed when an all edges are taken and an edge filter is specified" in {
+    DDS.start(mockedServer)
+    val vertices: RDD[(graphx.VertexId, String)] = sc.makeRDD(List((0L, "b"), (10L, "a"), (5L, "c")))
+    val edges: RDD[graphx.Edge[String]] = sc.makeRDD(List(graphx.Edge(5L, 10L, "c-a")))
+    DDS.showEdgeSample(graphx.Graph(vertices, edges), 3, (edge: Edge[String]) => edge.srcId == 5L)
+
+    val resultGraph = mockedServer.lastServed.get.asInstanceOf[Graph]
+    resultGraph.vertices.toList shouldBe List("a", "c")
+    val vertexList = resultGraph.vertices.toList
+    resultGraph.edges.toSet shouldBe Set((1, 0, "c-a"))
+  }
+
+  it should "be printed when an edges sample is taken and an edge filter is specified" in {
+    DDS.start(mockedServer)
+    val vertices: RDD[(graphx.VertexId, String)] = sc.makeRDD(List((0L, "b"), (10L, "a"), (5L, "c")))
+    val edges: RDD[graphx.Edge[String]] = sc.makeRDD(List(graphx.Edge(5L, 10L, "c-a"), graphx.Edge(10L, 5L, "a-c")))
+    DDS.showEdgeSample(graphx.Graph(vertices, edges), 1, (edge: Edge[String]) => edge.srcId == 5L)
+
+    val resultGraph = mockedServer.lastServed.get.asInstanceOf[Graph]
+    resultGraph.vertices.toList shouldBe List("a", "c")
+    val vertexList = resultGraph.vertices.toList
+    resultGraph.edges.toSet == Set((1, 0, "c-a")) || resultGraph.edges.toSet == Set((0, 1, "a-c")) shouldBe true
   }
 
   "A correct scatterplot" should "be constructed from numeric values" in {
