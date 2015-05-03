@@ -28,23 +28,20 @@ when working on the cluster with the Spark REPL. It does not offer a fully flexi
 4. Explore your data
 
     ```scala
-    // create dummy transaction data and push to the cluster
-    case class Transaction(customer: String, day: String, amount: Double)
-    val transactions = sc.parallelize(List(
-      Transaction("Frank", "Monday", 50.2),
-      Transaction("Frank", "Tuesday", 102.50),
-      Transaction("Milos", "Monday", 73.24),
-      Transaction("Rick", "Wednesday", 9.99)
-    ))
+    // load example data set
+    val golf = de.frosner.dds.datasets.golf(sc)
 
-    // look at a nice overview of transactions
-    show(transactions)
+    // look at a sample of your data set
+    show(golf)
 
-    // view distribution of transaction amount
-    histogram(transactions.map(_.amount), buckets = List(0,50,100,200))
+    // visualize the distribution of a numeric attribute
+    histogram(golf.map(_.temperature), buckets = List(60, 65, 70, 75, 80, 85, 90))
 
-    // compare summed amount of your customers
-    groupAndPie(transactions.map(t => (t.customer, t.amount)))(_ + _)
+    // compute some summary statistics
+    summarize(golf.map(_.humidity))
+
+    // visualize the distribution of a nominal attribute
+    bar(golf.map(_.outlook))
     ```
 
 5. Stop the server once you are done
