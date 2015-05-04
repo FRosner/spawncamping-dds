@@ -570,8 +570,8 @@ object DDS {
         val valueCounts = values.map((_, 1)).reduceByKey(_ + _)
         val (mode, modeCount) = valueCounts.max()(Ordering.by { case (value, count) => count})
         table(
-          List("label", "mode", "cardinality"),
-          List(List("data", mode, cardinality))
+          List("mode", "cardinality"),
+          List(List(mode, cardinality))
         )
       } else {
         println("Summarize function requires a non-empty RDD!")

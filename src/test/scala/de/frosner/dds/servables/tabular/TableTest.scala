@@ -14,7 +14,6 @@ class TableTest extends FlatSpec with Matchers {
     val actualTableTypes = actualTableJson.fields("types")
     val actualTableRows = actualTableJson.fields("rows")
     actualTableTypes shouldBe JsObject(
-      ("label", JsString(Table.DISCRETE_TYPE)),
       ("count", JsString(Table.NUMERIC_TYPE)),
       ("sum", JsString(Table.NUMERIC_TYPE)),
       ("min", JsString(Table.NUMERIC_TYPE)),
@@ -24,7 +23,6 @@ class TableTest extends FlatSpec with Matchers {
       ("variance", JsString(Table.NUMERIC_TYPE))
     )
     actualTableRows shouldBe JsArray(JsObject(OrderedMap[String, JsValue](List(
-      ("label", JsString("data")),
       ("count", JsNumber(statCounter.count)),
       ("sum", JsNumber(statCounter.sum)),
       ("min", JsNumber(statCounter.min)),

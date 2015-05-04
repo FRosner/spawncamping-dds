@@ -60,14 +60,19 @@ object Table {
 
   val NULL_TYPE = "null"
 
-  def fromStatCounter(stat: StatCounter): Table = fromStatCounters(List("data"), List(stat))
+  def fromStatCounter(stat: StatCounter): Table = fromStatCounters(List.empty, List(stat))
 
   def fromStatCounters(labels: Seq[String], stats: Seq[StatCounter]) = {
-    val head = List(
-      "label", "count", "sum", "min", "max", "mean", "stdev", "variance"
+    val optionalLabelHead = if (labels.size > 0) List("label") else List.empty
+    val head = optionalLabelHead ++ List(
+      "count", "sum", "min", "max", "mean", "stdev", "variance"
     )
-    val rows = labels.zip(stats).map{ case (label, stats) =>
-      List(label, stats.count, stats.sum, stats.min, stats.max, stats.mean, stats.stdev, stats.variance)
+    val rows = if (labels.size > 0) {
+      labels.zip(stats).map{ case (label, stats) =>
+        List(label, stats.count, stats.sum, stats.min, stats.max, stats.mean, stats.stdev, stats.variance)
+      }
+    } else {
+      stats.map(stats => List(stats.count, stats.sum, stats.min, stats.max, stats.mean, stats.stdev, stats.variance))
     }
     Table(head, rows)
   }
