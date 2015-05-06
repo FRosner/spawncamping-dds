@@ -110,7 +110,7 @@ function checkForUpdate() {
               .data(servable.content)
               .draw();
           } else {
-            console.log("Unrecognized response: " + response);
+            console.error("Unrecognized response: " + response);
           }
         });
       }
