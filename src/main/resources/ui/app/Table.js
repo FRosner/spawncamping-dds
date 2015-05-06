@@ -182,7 +182,7 @@ Table.prototype._draw = function(tableAndTypes) {
     var singleColumn = table.map(function(row) {
       return row[Object.keys(row)[0]];
     });
-    if (types[Object.keys(types)[0]] == "number") {
+    if (types[Object.keys(types)[0]] == "number" && singleColumn.length > 1) {
       var bins = d3.layout.histogram()
         .bins(100)(singleColumn);
       bins = bins.map(function(bin) {
