@@ -20,6 +20,20 @@ Graph.prototype._draw = function(graph) {
     .attr('width', width)
     .attr('height', height);
 
+  // arrow heads
+  svg.append("svg:marker")
+    .attr("id", "triangle")
+    .attr("viewBox", "0 0 10 10")
+    .attr("refX", 16)
+    .attr("refY", 5)
+    .attr("markerUnits", "strokeWidth")
+    .attr("markerWidth", 7)
+    .attr("markerHeight", 7)
+    .attr("orient", "auto")
+    .attr("class", "arrowHead")
+    .append("svg:path")
+    .attr("d", "M 0 0 L 10 5 L 0 10 z");
+
   var force = d3.layout.force()
     .size([width, height])
     .nodes(nodes)
@@ -31,8 +45,8 @@ Graph.prototype._draw = function(graph) {
     .data(links)
     .enter();
 
-  var linkLines = links.append('line')
-    .attr('class', 'link');
+  var linkLines = links.append("line")
+    .attr("class", "link");
 
   var linkLabels = links.append('text')
     .text(function(l) {
@@ -167,9 +181,42 @@ Graph.prototype._draw = function(graph) {
   this._header.appendChild(edgeButton);
   this._triggerEdgeLabelsButton = edgeButton;
 
+  var directionButton = document.createElement('div');
+  directionButton.setAttribute("id", "triggerDirectionsButton");
+  directionButton.onclick = function() {
+    if (document.drawDirections === false) {
+      directionButton.setAttribute("class", "visible");
+      directionButton.setAttribute("title", "Draw undirected edges");
+      document.drawDirections = true;
+      d3.selectAll(".link")
+        .attr("marker-end", "url(#triangle)");
+    } else {
+      directionButton.setAttribute("class", "hidden");
+      directionButton.setAttribute("title", "Draw directed edges");
+      document.drawDirections = false;
+      d3.selectAll(".link")
+        .attr("marker-end", "");
+    }
+  }
+  if (document.drawDirections === false) {
+    directionButton.setAttribute("class", "hidden");
+    directionButton.setAttribute("title", "Draw directed edges");
+    d3.selectAll(".link")
+      .attr("marker-end", "");
+  } else {
+    directionButton.setAttribute("class", "visible");
+    directionButton.setAttribute("title", "Draw undirected edges");
+    d3.selectAll(".link")
+      .attr("marker-end", "url(#triangle)");
+    document.drawDirections = true;
+  }
+  this._header.appendChild(directionButton);
+  this._triggerDirectionsButton = directionButton;
+
 }
 
 Graph.prototype.clearHeader = function() {
   removeElementIfExists(this._triggerNodeLabelsButton);
   removeElementIfExists(this._triggerEdgeLabelsButton);
+  removeElementIfExists(this._triggerDirectionsButton);
 }

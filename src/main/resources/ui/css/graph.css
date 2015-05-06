@@ -1,12 +1,16 @@
 .node {
-    fill: #ccc;
-    stroke: #777;
-    stroke-width: 1px;
+  fill: #ccc;
+  stroke: #777;
+  stroke-width: 1px;
 }
 
 .link {
-    stroke: #777;
-    stroke-width: 1px;
+  stroke: #777;
+  stroke-width: 1px;
+}
+
+.arrowHead {
+  fill: #555;
 }
 
 #triggerNodeLabelsButton {
@@ -50,5 +54,27 @@
 }
 
 #triggerEdgeLabelsButton.visible:hover {
+  background-position:14px;
+}
+
+#triggerDirectionsButton {
+  margin-top:1px;
+  margin-right:10px;
+  cursor:pointer;
+  float:right;
+  width:14px;
+  height:14px;
+  background-image:url("/ui/img/arrowHead.png");
+}
+
+#triggerDirectionsButton.visible {
+  background-position:0px;
+}
+
+#triggerDirectionsButton.hidden {
+  background-position:14px;
+}
+
+#triggerDirectionsButton.visible:hover {
   background-position:14px;
 }
