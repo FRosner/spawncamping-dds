@@ -51,8 +51,6 @@ function Visualization() {
   this._height = this._defaultHeight;
 }
 
-// TODO put width and height also as parameters
-
 Visualization.prototype.header = function(newHeaderId) {
   if (newHeaderId != null) {
     this._header = document.getElementById(newHeaderId);
