@@ -11,7 +11,8 @@ function removeElementIfExists(element) {
   if (element != null) {
     var parent = element.parentNode;
     if (parent == null) {
-      console.warn("Trying to remove " + element.tagName + " (" + element.id + ") but parent node does not exist anymore.");
+      console.warn("Trying to remove " + element.tagName + " (" + element.id +
+        ") but parent node does not exist anymore.");
     } else {
       parent.removeChild(element);
     }

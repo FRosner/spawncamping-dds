@@ -12,6 +12,7 @@ print "Beautifying " + fileName
 opts = jsbeautifier.default_options()
 opts.indent_size = 2
 opts.break_chained_methods = True
+opts.wrap_line_length = 120
 
 beautified = jsbeautifier.beautify_file(fileName, opts)
 f = open(fileName, 'w')
