@@ -646,6 +646,59 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     resultGraph.edges.toSet == Set((1, 0, "c-a")) || resultGraph.edges.toSet == Set((0, 1, "a-c")) shouldBe true
   }
 
+  "A correct connected components summary" should "be computed for a single connected component" in {
+    DDS.start(mockedServer)
+    val vertices: RDD[(graphx.VertexId, String)] = sc.makeRDD(List(
+      (1L, "a"),
+      (2L, "b"),
+      (3L, "c"),
+      (4L, "d"),
+      (5L, "e"),
+      (6L, "f")
+    ))
+    val edges: RDD[graphx.Edge[String]] = sc.makeRDD(List(
+      graphx.Edge(1L, 2L, "a-b"),
+      graphx.Edge(2L, 3L, "b-c"),
+      graphx.Edge(3L, 4L, "c-d"),
+      graphx.Edge(5L, 4L, "e-d"),
+      graphx.Edge(6L, 5L, "f-e"),
+      graphx.Edge(6L, 4L, "f-d")
+    ))
+    DDS.connectedComponents(graphx.Graph(vertices, edges))
+
+    val resultTable = mockedServer.lastServed.get.asInstanceOf[Table]
+    resultTable.head.toList shouldBe List("Connected Component", "#Vertices", "#Edges")
+    resultTable.rows.map(_.toList) shouldBe List(
+      List(1L, 6, 6)
+    )
+  }
+
+  it should "be computed for a graph with multiple connected components" in {
+    DDS.start(mockedServer)
+    val vertices: RDD[(graphx.VertexId, String)] = sc.makeRDD(List(
+      (1L, "a"),
+      (2L, "b"),
+      (3L, "c"),
+      (4L, "d"),
+      (5L, "e"),
+      (6L, "f")
+    ))
+    val edges: RDD[graphx.Edge[String]] = sc.makeRDD(List(
+      graphx.Edge(1L, 2L, "a-b"),
+      graphx.Edge(2L, 3L, "b-c"),
+      graphx.Edge(5L, 4L, "e-d")
+    ))
+    DDS.connectedComponents(graphx.Graph(vertices, edges))
+
+    val resultTable = mockedServer.lastServed.get.asInstanceOf[Table]
+    resultTable.head.toList shouldBe List("Connected Component", "#Vertices", "#Edges")
+    resultTable.rows.map(_.toList).toSet shouldBe Set(
+      List(1L, 3, 2),
+      List(4L, 2, 1),
+      List(6L, 1, 0)
+    )
+  }
+
   "A correct scatterplot" should "be constructed from numeric values" in {
     DDS.start(mockedServer)
     val points = List((1,2), (3,4))

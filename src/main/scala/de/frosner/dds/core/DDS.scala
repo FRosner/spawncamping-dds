@@ -474,6 +474,31 @@ object DDS {
   }
 
   @Help(
+    category = "Spark GraphX",
+    shortDescription = "Plots some statistics about the connected components of a graph",
+    longDescription = "Plots the vertex and edge count of all connected components in the given graph.",
+    parameters = "graph: Graph[VD, ED]"
+  )
+  def connectedComponents[VD: ClassTag, ED: ClassTag](graph: graphx.Graph[VD, ED]): Unit = {
+    val connectedComponents = graph.connectedComponents()
+    val vertexCounts = connectedComponents.vertices.map{
+      case (id, connectedComponent) => (connectedComponent, 1)
+    }.reduceByKey(_ + _)
+    val edgeCounts = connectedComponents.edges.map(e => (e.srcId, 1)).join(
+      connectedComponents.vertices
+    ).map{
+      case (id, (count, connectedComponent)) => (connectedComponent, count)
+    }.reduceByKey(_ + _)
+    val counts = vertexCounts.leftOuterJoin(edgeCounts)
+    table(
+      List("Connected Component", "#Vertices", "#Edges"),
+      counts.map{ case (connectedComponent, (numVertices, numEdges)) =>
+        List(connectedComponent, numVertices, numEdges.getOrElse(0))
+      }.collect
+    )
+  }
+
+  @Help(
     category = "Spark Statistics",
     shortDescription = "Computes pearson correlation between numerical columns",
     longDescription = "Computes pearson correlation between numerical columns. There need to be at least two numerical," +
