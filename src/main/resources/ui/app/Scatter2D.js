@@ -116,6 +116,7 @@ Scatter2D.prototype._draw = function(pointsWithTypes) {
   var enableJitterButton = document.createElement('div');
   enableJitterButton.setAttribute("id", "enableJitterButton");
   this._header.appendChild(enableJitterButton);
+  var contentId = this._content.id;
   enableJitterButton.onclick = function() {
     if (document.jitterEnabled) {
       document.jitterEnabled = false;
@@ -126,8 +127,7 @@ Scatter2D.prototype._draw = function(pointsWithTypes) {
       enableJitterButton.setAttribute("class", "enabled");
       enableJitterButton.setAttribute("title", "Disable Jitter");
     }
-    document.getElementById("content")
-      .innerHTML = "";
+    document.getElementById(contentId).innerHTML = "";
     drawScatter();
   };
   if (document.jitterEnabled) {

@@ -13,7 +13,8 @@ Table.prototype._draw = function(tableAndTypes) {
 
   var numColumns = Object.keys(table[0])
     .length;
-  var shouldDrawParcoords = numColumns > 1;
+  var shouldDrawParcoords = numColumns > 2;
+  var shouldDrawScatter = numColumns == 2;
 
   // slickgrid needs each data element to have an id
   var ids = table.map(function(row, i) {
@@ -178,6 +179,36 @@ Table.prototype._draw = function(tableAndTypes) {
     }
 
     document.coloringEnabled = false;
+  } else if (shouldDrawScatter) {
+    var scatterPoints = table.map(function(row) {
+      columnKeys = Object.keys(row);
+      return {
+        x: row[columnKeys[0]],
+        y: row[columnKeys[1]]
+      };
+    });
+    var scatterTypes = {
+      x: types[Object.keys(types)[0]],
+      y: types[Object.keys(types)[1]]
+    };
+    var scatterDivId = "scatter"
+    this._graphDiv = generateDiv(this._content, scatterDivId);
+    this._scatter = new Scatter2D()
+      .header(this._header.id)
+      .content(scatterDivId)
+      .width(window.innerWidth)
+      .height(window.innerHeight / 5 * 2)
+      .margin({
+          top: 15,
+          right: 30,
+          bottom: 30,
+          left: 50
+      })
+      .data({
+        points:scatterPoints,
+        types:scatterTypes
+      })
+      .draw();
   } else {
     var singleColumn = table.map(function(row) {
       return row[Object.keys(row)[0]];
@@ -193,8 +224,8 @@ Table.prototype._draw = function(tableAndTypes) {
         };
       });
       var hist = new Histogram()
-        .header("header")
-        .content("content")
+        .header(this._header.id)
+        .content(this._content.id)
         .margin({
           top: 15,
           right: 30,
@@ -341,4 +372,7 @@ Table.prototype._draw = function(tableAndTypes) {
 
 Table.prototype.clearHeader = function() {
   removeElementIfExists(this._hideLabelButton);
+  if (this._scatter != null) {
+    this._scatter.clearHeader();
+  }
 }
