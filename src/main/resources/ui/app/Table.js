@@ -281,7 +281,7 @@ Table.prototype._draw = function(tableAndTypes) {
   this._content.appendChild(pager);
   var grid = document.createElement('div');
   grid.setAttribute("id", 'grid');
-  grid.style.height = this._height / 5 * 3 - 20
+  grid.style.height = this._height / 5 * 3 - 47
   this._content.appendChild(grid);
 
   // setting up grid
