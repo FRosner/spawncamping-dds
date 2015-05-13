@@ -64,6 +64,8 @@ Please follow the general code style convention of Scala. It is advised to stick
 
 All (most of the) code committed should be covered by some automated unit tests. All existing tests need to pass before committing changes.
 
+Please view the [Developer Guide](https://github.com/FRosner/spawncamping-dds/wiki/Developer-Guide) for additional information about extending DDS.
+
 ### Authors
 
 - [Frank Rosner](https://github.com/FRosner) (Creator)
