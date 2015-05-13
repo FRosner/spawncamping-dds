@@ -8,7 +8,13 @@ import com.typesafe.config.ConfigFactory
 import de.frosner.dds.html.Index
 import spray.http.MediaTypes._
 import spray.routing.SimpleRoutingApp
+import spray.routing.authentication._
+import spray.routing.Route
+import spray.routing.directives.AuthMagnet
+import scala.concurrent.{ExecutionContext, Future}
+import ExecutionContext.Implicits.global
 
+import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.util.Try
 
@@ -22,9 +28,10 @@ import scala.util.Try
  * @param port to bind the server to
  */
 case class SprayServer(name: String,
-                       launchBrowser: Boolean,
+                       launchBrowser: Boolean = true,
                        interface: String = SprayServer.DEFAULT_INTERFACE,
-                       port: Int = SprayServer.DEFAULT_PORT)
+                       port: Int = SprayServer.DEFAULT_PORT,
+                       password: Option[String] = Option.empty)
   extends SimpleRoutingApp with Server {
 
   private var servable: Option[Servable] = Option.empty
@@ -35,6 +42,21 @@ case class SprayServer(name: String,
   })
 
   private val actorName = "chart-server-" + name + "-actor"
+
+  private def withAuthentication(innerRoute: Route) =
+    if (password.isDefined) {
+      authenticate(AuthMagnet.fromContextAuthenticator(
+        new BasicHttpAuthenticator(
+          "DDS has been password protected",
+          (userPass: Option[UserPass]) => Future(
+            if (userPass.exists(_.pass == password.get)) Some(true)
+            else None
+          )
+        )
+      ))(authenticated => innerRoute)
+    } else {
+      innerRoute
+    }
   
   def start() = {
     val tryToConnectToSocket = Try(scalaj.http.Http(s"http://$interface:$port").asString)
@@ -44,15 +66,20 @@ case class SprayServer(name: String,
       DDS.help("start")
     } else {
       println(s"""Starting server on $interface:$port""")
+      if (password.isDefined) println(s"""Basic HTTP authentication enabled (password = ${password.get}). """ +
+        s"""Password will be transmitted unencrypted. Do not reuse it somewhere else!""")
       val server = startServer(interface, port, actorName) {
         path("") {
-          get {
-            respondWithMediaType(`text/html`) {
-              complete(Index.html)
+          withAuthentication {
+            get {
+              respondWithMediaType(`text/html`) {
+                complete(Index.html)
+              }
             }
           }
         } ~
-          path("chart" / "update") {
+        path("chart" / "update") {
+          withAuthentication {
             get {
               complete {
                 val response = servable.map(_.toJsonString).getOrElse("{}")
@@ -60,10 +87,13 @@ case class SprayServer(name: String,
                 response
               }
             }
-          } ~
-          pathPrefix("ui") {
+          }
+        } ~
+        pathPrefix("ui") {
+          withAuthentication {
             getFromResourceDirectory("ui")
           }
+        }
       }
 
       Thread.sleep(1000)
@@ -92,19 +122,11 @@ object SprayServer {
   val DEFAULT_PORT = 23080
 
   /**
-   * Create a server instance bound to default port and interface, and open a browser window once the server is started.
-   *
-   * @param name of the server
-   * @return A server bound to default port and interface.
-   */
-  def apply(name: String): SprayServer = SprayServer(name, true)
-
-  /**
    * Create a server instance bound to default port and interface, without opening a browser window.
    *
    * @param name of the server
    * @return A server bound to default port and interface.
    */
-  def withoutLaunchingBrowser(name: String) = SprayServer(name, false)
+  def withoutLaunchingBrowser(name: String) = SprayServer(name, launchBrowser = false)
 
 }

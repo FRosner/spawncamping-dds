@@ -65,12 +65,20 @@ object DDS {
 
   @Help(
     category = "Web UI",
-    shortDescription = "Starts the DDS Web UI bound to the given interface and port",
-    longDescription = "Starts the DDS Web UI bound to the given interface and port. You can stop it by calling stop().",
-    parameters = "interface: String, port: Int"
+    shortDescription = "Starts the DDS Web UI bound to the given interface and port with an optional authentication mechanism",
+    longDescription = "Starts the DDS Web UI bound to the given interface and port. You can also specify a password " +
+      "which will be used for a simple HTTP authentication. Note however, that this is transmitting the password " +
+      "unencrypted and you should not reuse this password somewhere else. You can stop it by calling stop().",
+    parameters = "interface: String, port: Int, (optional) password: String"
   )
-  def start(interface: String, port: Int): Unit = {
-    start(SprayServer("dds-" + serverNumber, interface = interface, port = port, launchBrowser = true))
+  def start(interface: String, port: Int, password: String = null): Unit = {
+    start(SprayServer(
+      "dds-" + serverNumber,
+      interface = interface,
+      port = port,
+      launchBrowser = true,
+      password = Option(password)
+    ))
   }
 
   private[core] def resetServer() = {

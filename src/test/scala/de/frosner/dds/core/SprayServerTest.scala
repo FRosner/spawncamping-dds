@@ -11,27 +11,27 @@ import scalaj.http.Http
 
 class SprayServerTest extends FlatSpec with Matchers with BeforeAndAfter{
 
-  private val waitTime = 2000
+  private val waitTime = 4000
   private var testNumber = 0
-  private var chartServer: SprayServer = _
   private val hostName = Source.fromInputStream(Runtime.getRuntime().exec("hostname").getInputStream).mkString.trim
 
   before {
-    Thread.sleep(waitTime)
-    chartServer = SprayServer.withoutLaunchingBrowser("server-" + testNumber)
+    Thread.sleep(waitTime/2)
     testNumber += 1
-    chartServer.start()
-    Thread.sleep(waitTime)
   }
 
   after {
     Thread.sleep(waitTime)
-    chartServer.stop()
-    Thread.sleep(waitTime)
   }
 
   "A chart server" should s"be available on $DEFAULT_INTERFACE:$DEFAULT_PORT when started with default settings" in {
+    val chartServer = SprayServer.withoutLaunchingBrowser("server-" + testNumber)
+    chartServer.start()
+    Thread.sleep(waitTime)
+
     Http(s"http://$DEFAULT_INTERFACE:$DEFAULT_PORT").asString shouldBe 'success
+
+    chartServer.stop()
   }
 
   it should "be available on the given interface and port as specified" in {
@@ -42,7 +42,9 @@ class SprayServerTest extends FlatSpec with Matchers with BeforeAndAfter{
     )
     customServer.start()
     Thread.sleep(waitTime)
+
     Http(s"http://$hostName:$port").asString shouldBe 'success
+
     customServer.stop()
   }
 
@@ -59,26 +61,116 @@ class SprayServerTest extends FlatSpec with Matchers with BeforeAndAfter{
   }
 
   it should "respond with an empty object if no chart is served" in {
+    val chartServer = SprayServer.withoutLaunchingBrowser("server-" + testNumber)
+    chartServer.start()
+    Thread.sleep(waitTime)
+
     Http(s"http://$DEFAULT_INTERFACE:$DEFAULT_PORT/chart/update").asString.body shouldBe "{}"
+
+    chartServer.stop()
   }
 
   it should "respond with a chart object if a chart is served" in {
+    val chartServer = SprayServer.withoutLaunchingBrowser("server-" + testNumber)
+    chartServer.start()
+    Thread.sleep(waitTime)
+
     val chart = Chart(new DummyData("key", "value"))
     chartServer.serve(chart)
     Http(s"http://$DEFAULT_INTERFACE:$DEFAULT_PORT/chart/update").asString.body shouldBe chart.toJsonString
+
+    chartServer.stop()
   }
 
   it should "respond with a table object if stats are served" in {
+    val chartServer = SprayServer.withoutLaunchingBrowser("server-" + testNumber)
+    chartServer.start()
+    Thread.sleep(waitTime)
+
     val table = Table.fromStatCounter(StatCounter(0D, 1D, 2D))
     chartServer.serve(table)
     Http(s"http://$DEFAULT_INTERFACE:$DEFAULT_PORT/chart/update").asString.body shouldBe table.toJsonString
+
+    chartServer.stop()
   }
 
   it should "respond with an empty object after serving a servable once" in {
+    val chartServer = SprayServer.withoutLaunchingBrowser("server-" + testNumber)
+    chartServer.start()
+    Thread.sleep(waitTime)
+
     val chart = Chart(new DummyData("key", "value"))
     chartServer.serve(chart)
     Http(s"http://$DEFAULT_INTERFACE:$DEFAULT_PORT/chart/update").asString.body shouldBe chart.toJsonString
     Http(s"http://$DEFAULT_INTERFACE:$DEFAULT_PORT/chart/update").asString.body shouldBe "{}"
+
+    chartServer.stop()
+  }
+
+  "A secured chart server" should "require HTTP authentication for the index page" in {
+    val chartServer = SprayServer("server-" + testNumber, launchBrowser = false, password = Option("test"))
+    chartServer.start()
+    Thread.sleep(waitTime)
+
+    Http(s"http://$DEFAULT_INTERFACE:$DEFAULT_PORT").asString.isCodeInRange(401, 401) shouldBe true
+
+    chartServer.stop()
+  }
+
+  it should "require HTTP authentication for the chart update page" in {
+    val chartServer = SprayServer("server-" + testNumber, launchBrowser = false, password = Option("test"))
+    chartServer.start()
+    Thread.sleep(waitTime)
+
+    Http(s"http://$DEFAULT_INTERFACE:$DEFAULT_PORT/chart/update").asString.isCodeInRange(401, 401) shouldBe true
+
+    chartServer.stop()
+  }
+
+  it should "require HTTP authentication for the resource directory" in {
+    val chartServer = SprayServer("server-" + testNumber, launchBrowser = false, password = Option("test"))
+    chartServer.start()
+    Thread.sleep(waitTime)
+
+    Http(s"http://$DEFAULT_INTERFACE:$DEFAULT_PORT/ui/").asString.isCodeInRange(401, 401) shouldBe true
+
+    chartServer.stop()
+  }
+
+  it should "reject authentication attempts with wrong passwords" in {
+    val chartServer = SprayServer("server-" + testNumber, launchBrowser = false, password = Option("test"))
+    chartServer.start()
+    Thread.sleep(waitTime)
+
+    val http = Http(s"http://$DEFAULT_INTERFACE:$DEFAULT_PORT/chart/update")
+    val httpAuth = http.auth("", "wrongPass")
+    httpAuth.asString.isCodeInRange(401, 401) shouldBe true
+
+    chartServer.stop()
+  }
+
+  it should "allow authentication attempts with correct passwords" in {
+    val chartServer = SprayServer("server-" + testNumber, launchBrowser = false, password = Option("test"))
+    chartServer.start()
+    Thread.sleep(waitTime)
+
+    val http = Http(s"http://$DEFAULT_INTERFACE:$DEFAULT_PORT/chart/update")
+    val httpAuth = http.auth("", "test")
+    httpAuth.asString shouldBe 'success
+
+    chartServer.stop()
+  }
+
+  it should "allow authentication attempts with correct passwords and ignore any entered user name" in {
+    val chartServer = SprayServer("server-" + testNumber, launchBrowser = false, password = Option("test"))
+    chartServer.start()
+    Thread.sleep(waitTime)
+
+    val http = Http(s"http://$DEFAULT_INTERFACE:$DEFAULT_PORT/chart/update")
+    val httpAuth = http.auth("user", "test")
+    httpAuth.asString shouldBe 'success
+
+    chartServer.stop()
   }
 
 }
