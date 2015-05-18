@@ -1,6 +1,5 @@
 package de.frosner.dds.analytics
 
-import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable
 
 class CorrelationAggregator(val numColumns: Int) extends Serializable {

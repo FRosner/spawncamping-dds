@@ -13,13 +13,11 @@ import org.apache.spark.SparkContext._
 import org.apache.spark.graphx
 import org.apache.spark.graphx.{Edge, VertexId}
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{Row, SchemaRDD}
-import org.apache.spark.sql._
-
+import org.apache.spark.sql.{Row, SchemaRDD, _}
 import org.apache.spark.util.StatCounter
 
-import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
 
