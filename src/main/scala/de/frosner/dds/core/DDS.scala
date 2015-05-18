@@ -520,8 +520,7 @@ object DDS {
     if (fields.size >= 2) {
       val numericalFields = fields.zipWithIndex.filter{ case (field, idx) => {
         val dataType = field.dataType
-        (dataType == DoubleType || dataType == FloatType || dataType == IntegerType || dataType == LongType) &&
-          !field.nullable
+        (dataType == DoubleType || dataType == FloatType || dataType == IntegerType || dataType == LongType)
       }}
       val numericalFieldIndexes = numericalFields.map{ case (field, idx) => idx }.toSet
       if (numericalFields.size >= 2) {
@@ -532,11 +531,16 @@ object DDS {
               case ((element, elementIdx), (elementType, typeIdx)) => {
                 require(elementIdx == typeIdx, s"Element index ($elementIdx) did not equal type index ($typeIdx)")
                 val dataType = elementType.dataType
-                if (dataType == DoubleType) element.asInstanceOf[Double]
-                else if (dataType == FloatType) element.asInstanceOf[Float].toDouble
-                else if (dataType == IntegerType) element.asInstanceOf[Int].toDouble
-                else if (dataType == LongType) element.asInstanceOf[Long].toDouble
-                else element.toString.toDouble // fall back, should not happen
+                if (element == null)
+                  Option.empty[Double]
+                else
+                  Option[Double](
+                    if (dataType == DoubleType) element.asInstanceOf[Double]
+                    else if (dataType == FloatType) element.asInstanceOf[Float].toDouble
+                    else if (dataType == IntegerType) element.asInstanceOf[Int].toDouble
+                    else if (dataType == LongType) element.asInstanceOf[Long].toDouble
+                    else element.toString.toDouble // fall back, should not happen
+                  )
               }
             }
             agg.iterate(numericalValues)
