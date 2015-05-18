@@ -7,7 +7,6 @@ class CorrelationAggregator(val numColumns: Int) extends Serializable {
 
   require(numColumns > 0, "You need to pass a positive number of columns to use the aggregator.")
 
-  // counts, sums and sums of squares need also to be maps
   private[analytics] var counts: mutable.Map[(Int, Int), Int] =
     initializeMapWith(numColumns)(0)
   private[analytics] var sums: mutable.Map[(Int, Int), (Double, Double)] =
