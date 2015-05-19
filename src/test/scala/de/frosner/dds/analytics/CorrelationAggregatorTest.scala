@@ -253,14 +253,4 @@ class CorrelationAggregatorTest extends FlatSpec with Matchers {
     result((1, 2)) should be (1d +- epsilon)
   }
 
-//    [,1] [,2]      [,3]
-//  [1,] 1.0000000    1 0.2850809
-//    [2,] 1.0000000    1 1.0000000
-//    [3,] 0.2850809    1 1.0000000
-//  > x
-//  [,1] [,2] [,3]
-//  [1,]    5    7    1
-//    [2,]    3   NA    8
-//    [3,]    2    6   -5
-
 }
