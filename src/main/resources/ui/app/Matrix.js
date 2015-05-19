@@ -88,12 +88,12 @@ Matrix.prototype._draw = function(matrixAndNames) {
     .attr("width", x.rangeBand() - 1)
     .attr("height", y.rangeBand() - 1)
     .attr("fill", function(value) {
-      return z(value.z)
+      return z(value.z);
     })
     .attr("class", "matrix-cell")
     .append("svg:title")
     .text(function(value) {
-      return value.z
+      return value.z;
     });
 }
 
