@@ -787,9 +787,9 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     corrMatrix(1)(1) should be (1d +- epsilon)
   }
 
-  it should "be served from an RDD with three double columns but ignore the nullable one" in {
+  it should "be served from an RDD with three double columns where one is nullable" in {
     DDS.start(mockedServer)
-    val rdd = sc.makeRDD(List(Row(1d, 3d, null), Row(2d, 2d, 2d), Row(3d, 1d, 2d)))
+    val rdd = sc.makeRDD(List(Row(1d, 3d, null), Row(2d, 2d, 2d), Row(3d, 1d, 3d)))
     val schemaRdd = sql.applySchema(rdd, StructType(List(
       StructField("first", DoubleType, false),
       StructField("second", DoubleType, false),
@@ -798,13 +798,18 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     DDS.correlation(schemaRdd)
 
     val resultMatrix = mockedServer.lastServed.get.asInstanceOf[Matrix2D]
-    resultMatrix.colNames.toList shouldBe List("first", "second")
-    resultMatrix.rowNames.toList shouldBe List("first", "second")
+    resultMatrix.colNames.toList shouldBe List("first", "second", "third")
+    resultMatrix.rowNames.toList shouldBe List("first", "second", "third")
     val corrMatrix = resultMatrix.entries.toSeq.map(_.toSeq)
     corrMatrix(0)(0) should be (1d +- epsilon)
     corrMatrix(0)(1) should be (-1d +- epsilon)
+    corrMatrix(0)(2) should be (1d +- epsilon)
     corrMatrix(1)(0) should be (-1d +- epsilon)
     corrMatrix(1)(1) should be (1d +- epsilon)
+    corrMatrix(1)(2) should be (-1d +- epsilon)
+    corrMatrix(2)(0) should be (1d +- epsilon)
+    corrMatrix(2)(1) should be (-1d +- epsilon)
+    corrMatrix(2)(2) should be (1d +- epsilon)
   }
 
   it should "be served from an RDD containing some non-numerical columns" in {
