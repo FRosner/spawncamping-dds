@@ -127,7 +127,8 @@ Scatter2D.prototype._draw = function(pointsWithTypes) {
       enableJitterButton.setAttribute("class", "enabled");
       enableJitterButton.setAttribute("title", "Disable Jitter");
     }
-    document.getElementById(contentId).innerHTML = "";
+    document.getElementById(contentId)
+      .innerHTML = "";
     drawScatter();
   };
   if (document.jitterEnabled) {

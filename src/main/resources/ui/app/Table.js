@@ -199,14 +199,14 @@ Table.prototype._draw = function(tableAndTypes) {
       .width(window.innerWidth)
       .height(window.innerHeight / 5 * 2)
       .margin({
-          top: 15,
-          right: 30,
-          bottom: 30,
-          left: 50
+        top: 15,
+        right: 30,
+        bottom: 30,
+        left: 50
       })
       .data({
-        points:scatterPoints,
-        types:scatterTypes
+        points: scatterPoints,
+        types: scatterTypes
       })
       .draw();
   } else {

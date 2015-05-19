@@ -29,3 +29,11 @@ function generateDiv(root, id) {
   root.appendChild(div);
   return div;
 }
+
+function generateTextInput(root, id) {
+  var input = document.createElement("input");
+  input.type = "text";
+  input.setAttribute("id", id)
+  root.appendChild(input);
+  return input;
+}
