@@ -35,8 +35,8 @@ Matrix.prototype._draw = function(matrixAndNames) {
   var zValues = matrix.map(function(v) {
     return v.z
   });
-  var zMin = Math.min.apply(null, zValues);
-  var zMax = Math.max.apply(null, zValues);
+  var zMin = (document.isNewVisualization) ? Math.min.apply(null, zValues) : document.lastServed._lowerBoundInput.value;
+  var zMax = (document.isNewVisualization) ? Math.max.apply(null, zValues) : document.lastServed._upperBoundInput.value;
   var zDomain = [
     zMin,
     zMax

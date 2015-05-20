@@ -23,6 +23,7 @@ function checkForUpdate() {
     success: function(response) {
       if (response != "{}") {
         var servable = JSON.parse(response);
+        document.isNewVisualization = true;
         doAndRedoOnResize(function() {
           var contentId = "content";
           var headerId = "header";
@@ -112,6 +113,7 @@ function checkForUpdate() {
           } else {
             console.error("Unrecognized response: " + response);
           }
+          document.isNewVisualization = false;
         });
       }
     }
