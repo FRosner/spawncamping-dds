@@ -23,17 +23,23 @@ function removeElementByIdIfExists(elementId) {
   removeElementIfExists(document.getElementById(elementId));
 }
 
+function generateElement(root, id, type) {
+  var element = document.createElement(type);
+  element.setAttribute("id", id);
+  root.appendChild(element);
+  return element;
+}
+
 function generateDiv(root, id) {
-  var div = document.createElement('div');
-  div.setAttribute("id", id);
-  root.appendChild(div);
-  return div;
+  return generateElement(root, id, "div");
+}
+
+function generateSpan(root, id) {
+  return generateElement(root, id, "span");
 }
 
 function generateTextInput(root, id) {
-  var input = document.createElement("input");
+  var input = generateElement(root, id, "input");
   input.type = "text";
-  input.setAttribute("id", id)
-  root.appendChild(input);
   return input;
 }

@@ -3,7 +3,7 @@ body {
     margin-right:0;
     margin-bottom:0;
     overflow: hidden;
-    font-size: 12px;
+    font: 10px sans-serif;
 }
 
 #header {

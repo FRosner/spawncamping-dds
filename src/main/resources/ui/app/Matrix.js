@@ -33,7 +33,7 @@ Matrix.prototype._draw = function(matrixAndNames) {
     .rangeBands([height, 0]);
 
   var zValues = matrix.map(function(v) {
-    return v.z
+    return v.z;
   });
   var zMin = (document.isNewVisualization) ? Math.min.apply(null, zValues) : document.lastServed._lowerBoundInput.value;
   var zMax = (document.isNewVisualization) ? Math.max.apply(null, zValues) : document.lastServed._upperBoundInput.value;
@@ -98,8 +98,13 @@ Matrix.prototype._draw = function(matrixAndNames) {
       return value.z;
     });
 
-  var lowerBoundInput = generateTextInput(this._header, "lowerBoundInput");
+  var boundArea = generateSpan(this._header, "boundArea");
+  this._boundArea = boundArea;
+  var zText1 = generateSpan(this._boundArea, "");
+  zText1.innerHTML = "z: "
+  var lowerBoundInput = generateTextInput(this._boundArea, "lowerBoundInput");
   lowerBoundInput.value = zMin;
+  lowerBoundInput.setAttribute("class", "boundButton");
   lowerBoundInput.onblur = function() {
     var customZDomain = [
       lowerBoundInput.value,
@@ -112,7 +117,10 @@ Matrix.prototype._draw = function(matrixAndNames) {
     });
   };
   this._lowerBoundInput = lowerBoundInput;
-  var upperBoundInput = generateTextInput(this._header, "upperBoundInput");
+  var zText2 = generateSpan(this._boundArea, "");
+  zText2.innerHTML = " - ";
+  var upperBoundInput = generateTextInput(this._boundArea, "upperBoundInput");
+  upperBoundInput.setAttribute("class", "boundButton");
   upperBoundInput.value = zMax;
   upperBoundInput.onblur = function() {
     var customZDomain = [
@@ -131,4 +139,5 @@ Matrix.prototype._draw = function(matrixAndNames) {
 Matrix.prototype.clearHeader = function() {
   removeElementIfExists(this._lowerBoundInput);
   removeElementIfExists(this._upperBoundInput);
+  removeElementIfExists(this._boundArea);
 }
