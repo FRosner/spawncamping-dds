@@ -33,11 +33,13 @@ Matrix.prototype._draw = function(matrixAndNames) {
     .rangeBands([height, 0]);
 
   var zValues = matrix.map(function(v) {
-    return v.z
+    return v.z;
   });
+  var zMin = (document.isNewVisualization) ? Math.min.apply(null, zValues) : document.lastServed._lowerBoundInput.value;
+  var zMax = (document.isNewVisualization) ? Math.max.apply(null, zValues) : document.lastServed._upperBoundInput.value;
   var zDomain = [
-    Math.min.apply(null, zValues),
-    Math.max.apply(null, zValues)
+    zMin,
+    zMax
   ];
   var z = chroma.scale("YlOrRd")
     .domain(zDomain);
@@ -74,7 +76,7 @@ Matrix.prototype._draw = function(matrixAndNames) {
 
   var g = main.append("svg:g");
 
-  g.selectAll("matrix-rects")
+  var rects = g.selectAll("matrix-rects")
     .data(matrix)
     .enter()
     .append("rect")
@@ -88,13 +90,54 @@ Matrix.prototype._draw = function(matrixAndNames) {
     .attr("width", x.rangeBand() - 1)
     .attr("height", y.rangeBand() - 1)
     .attr("fill", function(value) {
-      return z(value.z)
+      return z(value.z);
     })
     .attr("class", "matrix-cell")
-    .append("svg:title")
+  rects.append("svg:title")
     .text(function(value) {
-      return value.z
+      return value.z;
     });
+
+  var boundArea = generateSpan(this._header, "boundArea");
+  this._boundArea = boundArea;
+  var zText1 = generateSpan(this._boundArea, "");
+  zText1.innerHTML = "z: "
+  var lowerBoundInput = generateTextInput(this._boundArea, "lowerBoundInput");
+  lowerBoundInput.value = zMin;
+  lowerBoundInput.setAttribute("class", "boundButton");
+  lowerBoundInput.onblur = function() {
+    var customZDomain = [
+      lowerBoundInput.value,
+      upperBoundInput.value
+    ];
+    var customZ = chroma.scale("YlOrRd")
+      .domain(customZDomain);
+    rects.attr("fill", function(value) {
+      return customZ(value.z);
+    });
+  };
+  this._lowerBoundInput = lowerBoundInput;
+  var zText2 = generateSpan(this._boundArea, "");
+  zText2.innerHTML = " - ";
+  var upperBoundInput = generateTextInput(this._boundArea, "upperBoundInput");
+  upperBoundInput.setAttribute("class", "boundButton");
+  upperBoundInput.value = zMax;
+  upperBoundInput.onblur = function() {
+    var customZDomain = [
+      lowerBoundInput.value,
+      upperBoundInput.value
+    ];
+    var customZ = chroma.scale("YlOrRd")
+      .domain(customZDomain);
+    rects.attr("fill", function(value) {
+      return customZ(value.z);
+    });
+  };
+  this._upperBoundInput = upperBoundInput;
 }
 
-Matrix.prototype.clearHeader = function() {}
+Matrix.prototype.clearHeader = function() {
+  removeElementIfExists(this._lowerBoundInput);
+  removeElementIfExists(this._upperBoundInput);
+  removeElementIfExists(this._boundArea);
+}

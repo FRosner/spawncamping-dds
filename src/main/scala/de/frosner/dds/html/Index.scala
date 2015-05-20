@@ -9,6 +9,7 @@ object Index {
         <link href="/ui/css/table.css" rel="stylesheet" type="text/css"></link>
         <link href="/ui/css/index.css" rel="stylesheet" type="text/css"></link>
         <link href="/ui/css/graph.css" rel="stylesheet" type="text/css"></link>
+        <link href="/ui/css/matrix.css" rel="stylesheet" type="text/css"></link>
         <link href="/ui/css/scatter.css" rel="stylesheet" type="text/css"></link>
         <link href="/ui/css/d3.parcoords.css" rel="stylesheet" type="text/css"></link>
         <script src="/ui/lib/d3.v3.min.js" charset="utf-8"></script>
