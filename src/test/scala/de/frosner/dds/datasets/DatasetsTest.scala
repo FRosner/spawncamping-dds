@@ -1,11 +1,15 @@
 package de.frosner.dds.datasets
 
-import de.frosner.dds.GolfRow
+import java.util.{GregorianCalendar, Calendar, Date}
+
+import de.frosner.dds.{FlightsRow, GolfRow}
 import org.apache.spark.sql.catalyst.expressions.Row
 import org.apache.spark.sql.catalyst.types._
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.sql.SQLContext
 import org.scalatest.{BeforeAndAfterAll, Matchers, FlatSpec}
+
+import scala.collection.mutable.ArrayBuffer
 
 class DatasetsTest extends FlatSpec with Matchers with BeforeAndAfterAll {
 
@@ -70,6 +74,85 @@ class DatasetsTest extends FlatSpec with Matchers with BeforeAndAfterAll {
       GolfRow("overcast",81,75,false,true),
       GolfRow("rain",71,80,true,false)
     )
+  }
+
+  "Flights CSV case class RDD" should "have the correct data" in {
+    val flightsArray = flights(sc).collect
+    flightsArray.head shouldBe FlightsRow(
+      flightDate = new GregorianCalendar(2015, Calendar.JANUARY, 1).getTime(),
+      carrier = "AA",
+      tailNumber = Option("N3KEAA"),
+      flightNumber = "41",
+      originAirport = "13930",
+      destinationAirport = "14747",
+      crsDepartureTime = new GregorianCalendar(1970, Calendar.JANUARY, 1, 20, 55).getTime(),
+      departureTime = Option(new GregorianCalendar(1970, Calendar.JANUARY, 1, 20, 54).getTime()),
+      departureDelay = Option(0d),
+      wheelsOffTime = Option(new GregorianCalendar(1970, Calendar.JANUARY, 1, 21, 10).getTime()),
+      wheelsOnTime = Option(new GregorianCalendar(1970, Calendar.JANUARY, 1, 23, 6).getTime()),
+      crsArrivalTime = new GregorianCalendar(1970, Calendar.JANUARY, 1, 23, 25).getTime(),
+      arrivalTime = Option(new GregorianCalendar(1970, Calendar.JANUARY, 1, 23, 47).getTime()),
+      arrivalDelay = Option(22d),
+      airTime = Option(236d),
+      carrierDelay = Option(0d),
+      weatherDelay = Option(0d),
+      nasDelay = Option(22d),
+      securityDelay = Option(0d),
+      lateAircraftDelay = Option(0d)
+    )
+    flightsArray.size shouldBe 18441
+  }
+
+  "Flights CSV SchemaRDD" should "have the correct schema" in {
+    flights(sc, sql).schema shouldBe StructType(ArrayBuffer(
+      StructField("Flight Date", DateType, false),
+      StructField("Carrier", StringType, false),
+      StructField("Tail Number", StringType, true),
+      StructField("Flight Number", StringType, false),
+      StructField("Origin Airport", StringType, false),
+      StructField("Destination Airport", StringType, false),
+      StructField("CRS Departure Time", DateType, false),
+      StructField("Departure Time", DateType, true),
+      StructField("Departure Delay", DoubleType, true),
+      StructField("Wheels-Off Time", DateType, true),
+      StructField("Wheels-On Time", DateType, true),
+      StructField("CRS Arrival Time", DateType, false),
+      StructField("Arrival Time", DateType, true),
+      StructField("Arrival Delay", DoubleType, true),
+      StructField("Air Time", DoubleType, true),
+      StructField("Carrier Delay", DoubleType, true),
+      StructField("Weather Delay", DoubleType, true),
+      StructField("NAS Delay", DoubleType, true),
+      StructField("Security Delay", DoubleType, true),
+      StructField("Late Aircraft Delay", DoubleType, true)
+    ))
+  }
+
+  it should "have the correct data" in {
+    val flightsArray = flights(sc, sql).collect
+    flightsArray.head shouldBe Row(
+      new GregorianCalendar(2015, Calendar.JANUARY, 1).getTime(),
+      "AA",
+      "N3KEAA",
+      "41",
+      "13930",
+      "14747",
+      new GregorianCalendar(1970, Calendar.JANUARY, 1, 20, 55).getTime(),
+      new GregorianCalendar(1970, Calendar.JANUARY, 1, 20, 54).getTime(),
+      0d,
+      new GregorianCalendar(1970, Calendar.JANUARY, 1, 21, 10).getTime(),
+      new GregorianCalendar(1970, Calendar.JANUARY, 1, 23, 6).getTime(),
+      new GregorianCalendar(1970, Calendar.JANUARY, 1, 23, 25).getTime(),
+      new GregorianCalendar(1970, Calendar.JANUARY, 1, 23, 47).getTime(),
+      22d,
+      236d,
+      0d,
+      0d,
+      22d,
+      0d,
+      0d
+    )
+    flightsArray.size shouldBe 18441
   }
 
 }
