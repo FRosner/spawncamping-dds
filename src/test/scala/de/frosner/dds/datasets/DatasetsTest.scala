@@ -100,6 +100,28 @@ class DatasetsTest extends FlatSpec with Matchers with BeforeAndAfterAll {
       securityDelay = Option(0d),
       lateAircraftDelay = Option(0d)
     )
+    flightsArray(979) shouldBe FlightsRow(
+      flightDate = new GregorianCalendar(2015, Calendar.JANUARY, 2).getTime(),
+      carrier = "DL",
+      tailNumber = Option("N549US"),
+      flightNumber = "1398",
+      originAirport = "12892",
+      destinationAirport = "14747",
+      crsDepartureTime = new GregorianCalendar(1970, Calendar.JANUARY, 1, 8, 45).getTime(),
+      departureTime = Option.empty,
+      departureDelay = Option.empty,
+      wheelsOffTime = Option.empty,
+      wheelsOnTime = Option.empty,
+      crsArrivalTime = new GregorianCalendar(1970, Calendar.JANUARY, 1, 11, 37).getTime(),
+      arrivalTime = Option.empty,
+      arrivalDelay = Option.empty,
+      airTime = Option.empty,
+      carrierDelay = Option.empty,
+      weatherDelay = Option.empty,
+      nasDelay = Option.empty,
+      securityDelay = Option.empty,
+      lateAircraftDelay = Option.empty
+    )
     flightsArray.size shouldBe 18441
   }
 
@@ -151,6 +173,28 @@ class DatasetsTest extends FlatSpec with Matchers with BeforeAndAfterAll {
       22d,
       0d,
       0d
+    )
+    flightsArray(979) shouldBe Row(
+      new GregorianCalendar(2015, Calendar.JANUARY, 2).getTime(),
+      "DL",
+      "N549US",
+      "1398",
+      "12892",
+      "14747",
+      new GregorianCalendar(1970, Calendar.JANUARY, 1, 8, 45).getTime(),
+      null,
+      null,
+      null,
+      null,
+      new GregorianCalendar(1970, Calendar.JANUARY, 1, 11, 37).getTime(),
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
     )
     flightsArray.size shouldBe 18441
   }
