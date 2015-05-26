@@ -41,7 +41,15 @@ Matrix.prototype._draw = function(matrixAndNames) {
     zMin,
     zMax
   ];
-  var z = chroma.scale("YlOrRd")
+  this._defaultScale = "YlOrRd";
+  var zScaleString;
+  if (document.heatMapScale) {
+    zScaleString = document.heatMapScale;
+  } else {
+    zScaleString = this._defaultScale;
+    document.heatMapScale = zScaleString;
+  }
+  var z = chroma.scale(zScaleString)
     .domain(zDomain);
 
   var chart = d3.select("#chart")
@@ -110,7 +118,7 @@ Matrix.prototype._draw = function(matrixAndNames) {
       lowerBoundInput.value,
       upperBoundInput.value
     ];
-    var customZ = chroma.scale("YlOrRd")
+    var customZ = chroma.scale(document.heatMapScale)
       .domain(customZDomain);
     rects.attr("fill", function(value) {
       return customZ(value.z);
@@ -134,10 +142,43 @@ Matrix.prototype._draw = function(matrixAndNames) {
     });
   };
   this._upperBoundInput = upperBoundInput;
+
+  var redrawWithDifferentScale = function(scale) {
+    return function() {
+      if (document.heatMapScale != scale) {
+        document.heatMapScale = scale;
+        var zMin = document.lastServed._lowerBoundInput.value;
+        var zMax = document.lastServed._upperBoundInput.value;
+        var zDomain = [
+          zMin,
+          zMax
+        ];
+        var newZ = chroma.scale(scale)
+          .domain(zDomain);
+        rects.attr("fill", function(value) {
+          return newZ(value.z);
+        });
+      }
+    }
+  }
+
+  var ylOrRdButton = document.createElement('div');
+  ylOrRdButton.setAttribute("id", "ylOrRdButton");
+  ylOrRdButton.onclick = redrawWithDifferentScale("YlOrRd");
+  this._header.appendChild(ylOrRdButton);
+  this._ylOrRdButton = ylOrRdButton;
+
+  var pRGnButton = document.createElement('div');
+  pRGnButton.setAttribute("id", "pRGnButton");
+  pRGnButton.onclick = redrawWithDifferentScale("PRGn");
+  this._header.appendChild(pRGnButton);
+  this._pRGnButton = pRGnButton;
 }
 
 Matrix.prototype.clearHeader = function() {
   removeElementIfExists(this._lowerBoundInput);
   removeElementIfExists(this._upperBoundInput);
   removeElementIfExists(this._boundArea);
+  removeElementIfExists(this._ylOrRdButton);
+  removeElementIfExists(this._pRGnButton);
 }
