@@ -164,6 +164,7 @@ Matrix.prototype._draw = function(matrixAndNames) {
 
   var ylOrRdButton = document.createElement('div');
   ylOrRdButton.setAttribute("id", "ylOrRdButton");
+  ylOrRdButton.setAttribute("class", "headerButton");
   ylOrRdButton.onclick = redrawWithDifferentScale("YlOrRd");
   this._header.appendChild(ylOrRdButton);
   this._ylOrRdButton = ylOrRdButton;

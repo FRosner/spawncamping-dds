@@ -11,11 +11,6 @@
 }
 
 #ylOrRdButton {
-  margin-right:10px;
-  cursor:pointer;
-  float:right;
-  width:14px;
-  height:14px;
   background-image:url("/ui/img/YlOrRd.png");
 }
 
