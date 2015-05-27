@@ -153,13 +153,13 @@ Graph.prototype._draw = function(graph) {
   edgeButton.setAttribute("id", "triggerEdgeLabelsButton");
   edgeButton.onclick = function() {
     if (document.drawEdgeLabels === false) {
-      edgeButton.setAttribute("class", "visible");
+      edgeButton.setAttribute("class", "headerButton visible");
       edgeButton.setAttribute("title", "Hide edge labels");
       document.drawEdgeLabels = true;
       d3.selectAll(".edgeLabel")
         .style("visibility", "visible");
     } else {
-      edgeButton.setAttribute("class", "hidden");
+      edgeButton.setAttribute("class", "headerButton hidden");
       edgeButton.setAttribute("title", "Draw edge labels");
       document.drawEdgeLabels = false;
       d3.selectAll(".edgeLabel")
@@ -167,12 +167,12 @@ Graph.prototype._draw = function(graph) {
     }
   }
   if (document.drawEdgeLabels === false) {
-    edgeButton.setAttribute("class", "hidden");
+    edgeButton.setAttribute("class", "headerButton hidden");
     edgeButton.setAttribute("title", "Draw edge labels");
     d3.selectAll(".edgeLabel")
       .style("visibility", "hidden");
   } else {
-    edgeButton.setAttribute("class", "visible");
+    edgeButton.setAttribute("class", "headerButton visible");
     edgeButton.setAttribute("title", "Hide edge labels");
     d3.selectAll(".edgeLabel")
       .style("visibility", "visible");
