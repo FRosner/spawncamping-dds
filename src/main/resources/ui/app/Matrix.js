@@ -164,12 +164,14 @@ Matrix.prototype._draw = function(matrixAndNames) {
 
   var ylOrRdButton = document.createElement('div');
   ylOrRdButton.setAttribute("id", "ylOrRdButton");
+  ylOrRdButton.setAttribute("class", "headerButton");
   ylOrRdButton.onclick = redrawWithDifferentScale("YlOrRd");
   this._header.appendChild(ylOrRdButton);
   this._ylOrRdButton = ylOrRdButton;
 
   var pRGnButton = document.createElement('div');
   pRGnButton.setAttribute("id", "pRGnButton");
+  pRGnButton.setAttribute("class", "headerButton");
   pRGnButton.onclick = redrawWithDifferentScale("PRGn");
   this._header.appendChild(pRGnButton);
   this._pRGnButton = pRGnButton;

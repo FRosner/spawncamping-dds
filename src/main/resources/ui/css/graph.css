@@ -15,11 +15,6 @@
 
 #triggerNodeLabelsButton {
   margin-top:1px;
-  margin-right:10px;
-  cursor:pointer;
-  float:right;
-  width:14px;
-  height:14px;
   background-image:url("/ui/img/nodeLabel.png");
 }
 
@@ -37,11 +32,6 @@
 
 #triggerEdgeLabelsButton {
   margin-top:1px;
-  margin-right:10px;
-  cursor:pointer;
-  float:right;
-  width:14px;
-  height:14px;
   background-image:url("/ui/img/edgeLabel.png");
 }
 
@@ -59,11 +49,6 @@
 
 #triggerDirectionsButton {
   margin-top:1px;
-  margin-right:10px;
-  cursor:pointer;
-  float:right;
-  width:14px;
-  height:14px;
   background-image:url("/ui/img/arrowHead.png");
 }
 

@@ -121,13 +121,13 @@ Graph.prototype._draw = function(graph) {
   nodeButton.setAttribute("id", "triggerNodeLabelsButton");
   nodeButton.onclick = function() {
     if (document.drawNodeLabels === false) {
-      nodeButton.setAttribute("class", "visible");
+      nodeButton.setAttribute("class", "headerButton visible");
       nodeButton.setAttribute("title", "Hide node labels");
       document.drawNodeLabels = true;
       d3.selectAll(".nodeLabel")
         .style("visibility", "visible");
     } else {
-      nodeButton.setAttribute("class", "hidden");
+      nodeButton.setAttribute("class", "headerButton hidden");
       nodeButton.setAttribute("title", "Draw node labels");
       document.drawNodeLabels = false;
       d3.selectAll(".nodeLabel")
@@ -135,12 +135,12 @@ Graph.prototype._draw = function(graph) {
     }
   }
   if (document.drawNodeLabels === false) {
-    nodeButton.setAttribute("class", "hidden");
+    nodeButton.setAttribute("class", "headerButton hidden");
     nodeButton.setAttribute("title", "Draw node labels");
     d3.selectAll(".nodeLabel")
       .style("visibility", "hidden");
   } else {
-    nodeButton.setAttribute("class", "visible");
+    nodeButton.setAttribute("class", "headerButton visible");
     nodeButton.setAttribute("title", "Hide node labels");
     d3.selectAll(".nodeLabel")
       .style("visibility", "visible");
@@ -153,13 +153,13 @@ Graph.prototype._draw = function(graph) {
   edgeButton.setAttribute("id", "triggerEdgeLabelsButton");
   edgeButton.onclick = function() {
     if (document.drawEdgeLabels === false) {
-      edgeButton.setAttribute("class", "visible");
+      edgeButton.setAttribute("class", "headerButton visible");
       edgeButton.setAttribute("title", "Hide edge labels");
       document.drawEdgeLabels = true;
       d3.selectAll(".edgeLabel")
         .style("visibility", "visible");
     } else {
-      edgeButton.setAttribute("class", "hidden");
+      edgeButton.setAttribute("class", "headerButton hidden");
       edgeButton.setAttribute("title", "Draw edge labels");
       document.drawEdgeLabels = false;
       d3.selectAll(".edgeLabel")
@@ -167,12 +167,12 @@ Graph.prototype._draw = function(graph) {
     }
   }
   if (document.drawEdgeLabels === false) {
-    edgeButton.setAttribute("class", "hidden");
+    edgeButton.setAttribute("class", "headerButton hidden");
     edgeButton.setAttribute("title", "Draw edge labels");
     d3.selectAll(".edgeLabel")
       .style("visibility", "hidden");
   } else {
-    edgeButton.setAttribute("class", "visible");
+    edgeButton.setAttribute("class", "headerButton visible");
     edgeButton.setAttribute("title", "Hide edge labels");
     d3.selectAll(".edgeLabel")
       .style("visibility", "visible");
@@ -185,13 +185,13 @@ Graph.prototype._draw = function(graph) {
   directionButton.setAttribute("id", "triggerDirectionsButton");
   directionButton.onclick = function() {
     if (document.drawDirections === false) {
-      directionButton.setAttribute("class", "visible");
+      directionButton.setAttribute("class", "headerButton visible");
       directionButton.setAttribute("title", "Draw undirected edges");
       document.drawDirections = true;
       d3.selectAll(".link")
         .attr("marker-end", "url(#triangle)");
     } else {
-      directionButton.setAttribute("class", "hidden");
+      directionButton.setAttribute("class", "headerButton hidden");
       directionButton.setAttribute("title", "Draw directed edges");
       document.drawDirections = false;
       d3.selectAll(".link")
@@ -199,12 +199,12 @@ Graph.prototype._draw = function(graph) {
     }
   }
   if (document.drawDirections === false) {
-    directionButton.setAttribute("class", "hidden");
+    directionButton.setAttribute("class", "headerButton hidden");
     directionButton.setAttribute("title", "Draw directed edges");
     d3.selectAll(".link")
       .attr("marker-end", "");
   } else {
-    directionButton.setAttribute("class", "visible");
+    directionButton.setAttribute("class", "headerButton visible");
     directionButton.setAttribute("title", "Draw undirected edges");
     d3.selectAll(".link")
       .attr("marker-end", "url(#triangle)");

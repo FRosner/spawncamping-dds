@@ -32,7 +32,7 @@ object Index {
       <body>
         <div id="header">
           <input type="text" id="vizTitle" value="Visualization Title"/>
-          <div id="lockButton" onclick="toggleUpdating()" class="unlocked" title="Lock Vizboard"></div>
+          <div id="lockButton" onclick="toggleUpdating()" class="headerButton unlocked" title="Lock Vizboard"></div>
         </div>
         <div id="content">
           <object data="/ui/img/watermark.svg" type="image/svg+xml" id="watermark" style="display: block; width: 50%; margin: 0 auto;"></object>
