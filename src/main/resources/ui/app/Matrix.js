@@ -171,6 +171,7 @@ Matrix.prototype._draw = function(matrixAndNames) {
 
   var pRGnButton = document.createElement('div');
   pRGnButton.setAttribute("id", "pRGnButton");
+  pRGnButton.setAttribute("class", "headerButton");
   pRGnButton.onclick = redrawWithDifferentScale("PRGn");
   this._header.appendChild(pRGnButton);
   this._pRGnButton = pRGnButton;

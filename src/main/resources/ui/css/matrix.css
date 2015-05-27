@@ -15,10 +15,5 @@
 }
 
 #pRGnButton {
-  margin-right:10px;
-  cursor:pointer;
-  float:right;
-  width:14px;
-  height:14px;
   background-image:url("/ui/img/PRGn.png");
 }
