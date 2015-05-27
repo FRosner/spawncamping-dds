@@ -185,13 +185,13 @@ Graph.prototype._draw = function(graph) {
   directionButton.setAttribute("id", "triggerDirectionsButton");
   directionButton.onclick = function() {
     if (document.drawDirections === false) {
-      directionButton.setAttribute("class", "visible");
+      directionButton.setAttribute("class", "headerButton visible");
       directionButton.setAttribute("title", "Draw undirected edges");
       document.drawDirections = true;
       d3.selectAll(".link")
         .attr("marker-end", "url(#triangle)");
     } else {
-      directionButton.setAttribute("class", "hidden");
+      directionButton.setAttribute("class", "headerButton hidden");
       directionButton.setAttribute("title", "Draw directed edges");
       document.drawDirections = false;
       d3.selectAll(".link")
@@ -199,12 +199,12 @@ Graph.prototype._draw = function(graph) {
     }
   }
   if (document.drawDirections === false) {
-    directionButton.setAttribute("class", "hidden");
+    directionButton.setAttribute("class", "headerButton hidden");
     directionButton.setAttribute("title", "Draw directed edges");
     d3.selectAll(".link")
       .attr("marker-end", "");
   } else {
-    directionButton.setAttribute("class", "visible");
+    directionButton.setAttribute("class", "headerButton visible");
     directionButton.setAttribute("title", "Draw undirected edges");
     d3.selectAll(".link")
       .attr("marker-end", "url(#triangle)");
