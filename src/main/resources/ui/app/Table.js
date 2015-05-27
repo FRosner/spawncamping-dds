@@ -158,23 +158,23 @@ Table.prototype._draw = function(tableAndTypes) {
       .onclick = function() {
         if (document.tickLabelsHidden) {
           labels.attr("visibility", "visible");
-          button.setAttribute("class", "unhidden");
+          button.setAttribute("class", "headerButton unhidden");
           button.setAttribute("title", "Hide Ticks Labels");
           document.tickLabelsHidden = false;
         } else {
           labels.attr("visibility", "hidden");
-          button.setAttribute("class", "hidden");
+          button.setAttribute("class", "headerButton hidden");
           button.setAttribute("title", "Show Ticks Labels");
           document.tickLabelsHidden = true;
         }
       };
     if (!document.tickLabelsHidden) {
       labels.attr("visibility", "visible");
-      button.setAttribute("class", "unhidden");
+      button.setAttribute("class", "headerButton unhidden");
       button.setAttribute("title", "Hide Ticks Labels");
     } else {
       labels.attr("visibility", "hidden");
-      button.setAttribute("class", "hidden");
+      button.setAttribute("class", "headerButton hidden");
       button.setAttribute("title", "Show Ticks Labels");
     }
 
