@@ -18,14 +18,12 @@ body {
 }
 
 .headerElement {
-  margin-top:1px;
   margin-right:10px;
   float:right;
   height:14px;
 }
 
 .headerButton {
-  margin-top:1px;
   margin-right:10px;
   float:right;
   height:14px;
@@ -36,6 +34,7 @@ body {
 
 #lockButton {
   background-image:url("/ui/img/lock.png");
+  margin-top:1px;
 }
 
 #lockButton.unlocked {
