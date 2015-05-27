@@ -1,13 +1,13 @@
 function toggleUpdating() {
   var lockButton = document.getElementById("lockButton");
   if (document.checkingForUpdate == true) {
-    lockButton.className = "locked";
+    lockButton.className = "headerButton locked";
     lockButton.title = "Unlock Vizboard"
     document.checkingForUpdate = false;
     clearInterval(document.updater);
     document.updater = null;
   } else {
-    lockButton.className = "unlocked"
+    lockButton.className = "headerButton unlocked"
     lockButton.title = "Lock Vizboard"
     document.updater = setInterval("checkForUpdate()", 100);
     document.checkingForUpdate = true;

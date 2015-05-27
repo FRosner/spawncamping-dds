@@ -17,13 +17,24 @@ body {
   width:30%;
 }
 
-#lockButton {
+.headerElement {
   margin-top:1px;
   margin-right:10px;
-  cursor:pointer;
   float:right;
-  width:14px;
   height:14px;
+}
+
+.headerButton {
+  margin-top:1px;
+  margin-right:10px;
+  float:right;
+  height:14px;
+
+  cursor:pointer;
+  width:14px;
+}
+
+#lockButton {
   background-image:url("/ui/img/lock.png");
 }
 
