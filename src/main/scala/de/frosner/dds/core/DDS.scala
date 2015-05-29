@@ -207,6 +207,28 @@ object DDS {
 
   @Help(
     category = "Scala",
+    shortDescription = "Plots a histogram chart of data, using an optimal binning formula",
+    longDescription = "Plots a histogram chart visualizing the given dataset. ",
+    parameters = "values: Seq[Numeric]"
+  )
+  def histogram[N](values: Seq[N])(implicit num:  Numeric[N]) = {
+    //Sturge's formula:
+    var numBins = 1
+    val count = values.count(n => true)
+    while (count!= 0){
+      count <<1
+      numBins+=1
+    }
+    val steps = values.max[N]/numBins
+    val bins = mutable.Seq(num.toDouble(values.min[N]))
+    for ( i <- 0 to numBins){
+      bins = bins::(bins.last+steps)
+    }
+    serve(Histogram(bins,values.map(v=> num.toLong(v))))
+  }
+
+  @Help(
+    category = "Scala",
     shortDescription = "Plots a line chart",
     longDescription = "Plots a line chart visualizing the given value sequence.",
     parameters = "values: Seq[NumericValue]"
