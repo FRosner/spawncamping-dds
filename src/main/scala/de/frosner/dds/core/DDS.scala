@@ -598,7 +598,7 @@ object DDS {
       "which makes it rather expensive.",
     parameters = "values: RDD[NumericValue]"
   )
-  def median[N: ClassTag](values: RDD[N])(implicit num: Numeric[N] = null): Unit = {
+  def median[N: ClassTag](values: RDD[N])(implicit num: Numeric[N]): Unit = {
     val sorted = values.sortBy(identity).zipWithIndex().map{
       case (v, idx) => (idx, v)
     }
