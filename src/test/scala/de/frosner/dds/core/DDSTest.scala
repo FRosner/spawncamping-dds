@@ -833,6 +833,46 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     corrMatrix(1)(1) should be (1d +- epsilon)
   }
 
+  "A correct mutual information heatmap" should "be served from an RDD with three columns" in {
+    DDS.start(mockedServer)
+    val rdd = sc.makeRDD(List(Row(1, "a", 1d), Row(1, "b", 2d), Row(2, "b", 3d)))
+    val schemaRdd = sql.applySchema(rdd, StructType(List(
+      StructField("first", IntegerType, false),
+      StructField("second", StringType, false),
+      StructField("third", DoubleType, false)
+    )))
+    DDS.mutualInformation(schemaRdd)
+
+    val resultMatrix = mockedServer.lastServed.get.asInstanceOf[Matrix2D]
+    resultMatrix.colNames.toList shouldBe List("first", "second", "third")
+    resultMatrix.rowNames.toList shouldBe List("first", "second", "third")
+    val miMatrix = resultMatrix.entries.map(_.toSeq)
+    miMatrix(0)(0) should be (0.6365142 +- epsilon)
+    miMatrix(0)(1) should be (0.174416 +- epsilon)
+    miMatrix(0)(2) should be (0.6365142 +- epsilon)
+    miMatrix(1)(0) should be (0.174416 +- epsilon)
+    miMatrix(1)(1) should be (0.6365142 +- epsilon)
+    miMatrix(1)(2) should be (0.6365142 +- epsilon)
+    miMatrix(2)(0) should be (0.6365142 +- epsilon)
+    miMatrix(2)(1) should be (0.6365142 +- epsilon)
+    miMatrix(2)(2) should be (1.098612 +- epsilon)
+  }
+
+  it should "be served from an RDD with one column" in {
+    DDS.start(mockedServer)
+    val rdd = sc.makeRDD(List(Row(1), Row(1), Row(2)))
+    val schemaRdd = sql.applySchema(rdd, StructType(List(
+      StructField("first", IntegerType, false)
+    )))
+    DDS.mutualInformation(schemaRdd)
+
+    val resultMatrix = mockedServer.lastServed.get.asInstanceOf[Matrix2D]
+    resultMatrix.colNames.toList shouldBe List("first")
+    resultMatrix.rowNames.toList shouldBe List("first")
+    val miMatrix = resultMatrix.entries.map(_.toSeq)
+    miMatrix(0)(0) should be (0.6365142 +- epsilon)
+  }
+
   "Help" should "work" in {
     DDS.help()
     DDS.help("start")
