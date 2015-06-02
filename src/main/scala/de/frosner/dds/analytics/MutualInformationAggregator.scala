@@ -57,17 +57,10 @@ class MutualInformationAggregator(val numColumns: Int) extends Serializable {
   }
 
   def mutualInformation: Map[(Int, Int), Double] = {
-    // compute totalCount by going through first columnCounts map and summing up the values
     val totalCount = columnCounts.head.map{ case (key, value) => value }.sum.toDouble
-    // compute p(x) arrays by normalizing counts
     val columnProbabilities = columnCounts.map(counts => {
       counts.mapValues(_ / totalCount)
     })
-    // go through pXY crossCounts to transform it into iXY map; for each crossCounts;
-    //  for each (x, y) pair in crossCounts
-    //    compute p(x, y) = count(x, y) / totalCount
-    //    return p(x, y) * log(p(x, y) / p(x) / p(y))
-    //  sum up the resulting (x, y) information values to iXY
     val mutualColumnInformation = crossColumnCounts.map{ case ((idx1, idx2), crossCounts) => {
       val crossInformationCounts = crossCounts.map{ case ((value1, value2), crossCount) => {
         val column1Probabilities = columnProbabilities(idx1)
