@@ -1,6 +1,6 @@
 package de.frosner.dds.core
 
-import de.frosner.dds.analytics.CorrelationAggregator
+import de.frosner.dds.analytics.{MutualInformationAggregator, CorrelationAggregator}
 import de.frosner.dds.servables.c3.ChartTypeEnum.ChartType
 import de.frosner.dds.servables.c3._
 import de.frosner.dds.servables.graph.Graph
@@ -556,6 +556,35 @@ object DDS {
       } else {
         showError
       }
+    } else {
+      showError
+    }
+  }
+
+  @Help(
+    category = "Spark Statistics",
+    shortDescription = "Computes mutual information between columns",
+    longDescription = "Computes mutual information between columns. It will treat all columns as nominal variables and " +
+      "thus not work well with real numerical data. Internally it uses the natural logarithm.",
+    parameters = "rdd: SchemaRDD"
+  )
+  def mutualInformation(rdd: SchemaRDD) = {
+    def showError = println("Mutual information only supported for RDDs with at least one column.")
+    val schema = rdd.schema
+    val fields = schema.fields
+    if (fields.size >= 1) {
+        val corrAgg = rdd.aggregate(new MutualInformationAggregator(fields.size)) (
+          (agg, row) => agg.iterate(row),
+          (agg1, agg2) => agg1.merge(agg2)
+        )
+        var mutualInformationMatrix: mutable.Seq[mutable.Seq[Double]] = new ArrayBuffer(corrAgg.numColumns) ++
+          List.fill(corrAgg.numColumns)(new ArrayBuffer[Double](corrAgg.numColumns) ++
+            List.fill(corrAgg.numColumns)(0d))
+        for (((i, j), corr) <- corrAgg.mutualInformation) {
+          mutualInformationMatrix(i)(j) = corr
+        }
+        val fieldNames = fields.map(_.name)
+        heatmap(mutualInformationMatrix, fieldNames, fieldNames)
     } else {
       showError
     }
