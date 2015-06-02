@@ -512,7 +512,7 @@ object DDS {
     parameters = "rdd: SchemaRDD"
   )
   def correlation(rdd: SchemaRDD) = {
-    def showError = println("Correlation only supported for RDDs with multiple non-nullable numerical columns.")
+    def showError = println("Correlation only supported for RDDs with multiple numerical columns.")
     val schema = rdd.schema
     val fields = schema.fields
     if (fields.size >= 2) {
