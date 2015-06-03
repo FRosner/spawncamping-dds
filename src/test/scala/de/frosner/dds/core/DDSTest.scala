@@ -8,10 +8,8 @@ import de.frosner.dds.servables.scatter.Points2D
 import de.frosner.dds.servables.tabular.Table
 import org.apache.spark.graphx._
 import org.apache.spark.{SparkConf, SparkContext, graphx}
-import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.catalyst.types._
-import org.apache.spark.sql.test.TestSQLContext
+import org.apache.spark.sql.types._
 import org.apache.spark.util.StatCounter
 import org.apache.spark.sql.{SQLContext, Row}
 import org.scalamock.scalatest.MockFactory
@@ -434,7 +432,7 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
   it should "be printed from SchemaRDD w/o nullable columns" in {
     DDS.start(mockedServer)
     val rdd = sc.parallelize(List(Row(1, "5", 5d), Row(3, "g", 5d)))
-    val schemaRdd = sql.applySchema(rdd, StructType(List(
+    val schemaRdd = sql.createDataFrame(rdd, StructType(List(
       StructField("first", IntegerType, false),
       StructField("second", StringType, false),
       StructField("third", DoubleType, false)
@@ -448,7 +446,7 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
   it should "be printed from SchemaRDD w/ nullable columns" in {
     DDS.start(mockedServer)
     val rdd = sc.parallelize(List(Row(null), Row(1)))
-    val schemaRdd = sql.applySchema(rdd, StructType(List(
+    val schemaRdd = sql.createDataFrame(rdd, StructType(List(
       StructField("first", IntegerType, true)
     )))
     DDS.show(schemaRdd)
@@ -740,7 +738,7 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
   "A correct correlation heatmap" should "be served from an RDD with two integer columns" in {
     DDS.start(mockedServer)
     val rdd = sc.makeRDD(List(Row(1, 3), Row(2, 2), Row(3, 1)))
-    val schemaRdd = sql.applySchema(rdd, StructType(List(
+    val schemaRdd = sql.createDataFrame(rdd, StructType(List(
       StructField("first", IntegerType, false),
       StructField("second", IntegerType, false)
     )))
@@ -759,7 +757,7 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
   it should "not be served from an RDD with not enough numerical columns" in {
     DDS.start(mockedServer)
     val rdd = sc.makeRDD(List(Row(1d, "c"), Row(2d, "a"), Row(3d, "b")))
-    val schemaRdd = sql.applySchema(rdd, StructType(List(
+    val schemaRdd = sql.createDataFrame(rdd, StructType(List(
       StructField("first", DoubleType, false),
       StructField("second", StringType, false)
     )))
@@ -771,7 +769,7 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
   it should "be served from an RDD with two double columns" in {
     DDS.start(mockedServer)
     val rdd = sc.makeRDD(List(Row(1d, 3d), Row(2d, 2d), Row(3d, 1d)))
-    val schemaRdd = sql.applySchema(rdd, StructType(List(
+    val schemaRdd = sql.createDataFrame(rdd, StructType(List(
       StructField("first", DoubleType, false),
       StructField("second", DoubleType, false)
     )))
@@ -790,7 +788,7 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
   it should "be served from an RDD with three double columns where one is nullable" in {
     DDS.start(mockedServer)
     val rdd = sc.makeRDD(List(Row(1d, 3d, null), Row(2d, 2d, 2d), Row(3d, 1d, 3d)))
-    val schemaRdd = sql.applySchema(rdd, StructType(List(
+    val schemaRdd = sql.createDataFrame(rdd, StructType(List(
       StructField("first", DoubleType, false),
       StructField("second", DoubleType, false),
       StructField("third", DoubleType, true)
@@ -815,7 +813,7 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
   it should "be served from an RDD containing some non-numerical columns" in {
     DDS.start(mockedServer)
     val rdd = sc.makeRDD(List(Row("a", 1d, true, 3), Row("b", 2d, false, 2), Row("c", 3d, true, 1)))
-    val schemaRdd = sql.applySchema(rdd, StructType(List(
+    val schemaRdd = sql.createDataFrame(rdd, StructType(List(
       StructField("first", StringType, false),
       StructField("second", DoubleType, false),
       StructField("third", BooleanType, false),
@@ -836,7 +834,7 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
   "A correct mutual information heatmap" should "be served from an RDD with three columns" in {
     DDS.start(mockedServer)
     val rdd = sc.makeRDD(List(Row(1, "a", 1d), Row(1, "b", 2d), Row(2, "b", 3d)))
-    val schemaRdd = sql.applySchema(rdd, StructType(List(
+    val schemaRdd = sql.createDataFrame(rdd, StructType(List(
       StructField("first", IntegerType, false),
       StructField("second", StringType, false),
       StructField("third", DoubleType, false)
@@ -861,7 +859,7 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
   it should "be served from an RDD with one column" in {
     DDS.start(mockedServer)
     val rdd = sc.makeRDD(List(Row(1), Row(1), Row(2)))
-    val schemaRdd = sql.applySchema(rdd, StructType(List(
+    val schemaRdd = sql.createDataFrame(rdd, StructType(List(
       StructField("first", IntegerType, false)
     )))
     DDS.mutualInformation(schemaRdd)

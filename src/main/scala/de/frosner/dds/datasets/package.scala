@@ -5,9 +5,9 @@ import java.util.Date
 
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{SchemaRDD, SQLContext}
+import org.apache.spark.sql.{DataFrame, SQLContext}
 import org.apache.spark.sql.catalyst.expressions.Row
-import org.apache.spark.sql.catalyst.types._
+import org.apache.spark.sql.types._
 
 import scala.io.Source
 import scala.util.Try
@@ -36,7 +36,7 @@ package object datasets {
     })
   }
 
-  def golf(implicit sc: SparkContext, sql: SQLContext): SchemaRDD = {
+  def golf(implicit sc: SparkContext, sql: SQLContext): DataFrame = {
     val (rawHead, rawBody) = readGolf
     val schema = rawHead.split(",", -1).map(columnName => StructField(
       name = columnName,
@@ -53,7 +53,7 @@ package object datasets {
       val split = line.split(",", -1)
       Row(split(0), split(1).toDouble, split(2).toDouble, split(3).toBoolean, split(4) == "yes")
     })
-    sql.applySchema(data, StructType(schema))
+    sql.createDataFrame(data, StructType(schema))
   }
 
   lazy val readFlights = readCsvWithHeader("/data/flights.csv")
@@ -90,7 +90,7 @@ package object datasets {
     })
   }
 
-  def flights(implicit sc: SparkContext, sql: SQLContext): SchemaRDD = {
+  def flights(implicit sc: SparkContext, sql: SQLContext): DataFrame = {
     val (rawHead, rawBody) = readFlights
     val schema = rawHead.split(",").map(_.replace("\"", "")).map(columnName => columnName match {
       case "FL_DATE" => StructField("Flight Date", DateType, false)
@@ -139,7 +139,7 @@ package object datasets {
         Try(split(19).toDouble).toOption.getOrElse(null)
       )
     })
-    sql.applySchema(data, StructType(schema))
+    sql.createDataFrame(data, StructType(schema))
   }
 
 }
