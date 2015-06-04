@@ -59,8 +59,10 @@ Visualization.prototype.header = function(newHeaderId) {
 Visualization.prototype.content = function(newContentId) {
   if (newContentId != null) {
     this._content = document.getElementById(newContentId);
-    this._width = $(this._content).width();
-    this._height = $(this._content).height();
+    this._width = $(this._content)
+      .width();
+    this._height = $(this._content)
+      .height();
     return this;
   } else {
     return this._content;
