@@ -41,8 +41,6 @@ function checkForUpdate() {
                 right: 15,
                 left: 60
               })
-              .width(window.innerWidth)
-              .height(window.innerHeight)
               .data(servable.content)
               .draw();
           } else if (servable.type == "table") {
@@ -55,8 +53,6 @@ function checkForUpdate() {
                 bottom: 0,
                 left: 0
               })
-              .width(window.innerWidth)
-              .height(window.innerHeight)
               .data(servable.content)
               .draw();
           } else if (servable.type == "histogram") {
@@ -69,17 +65,12 @@ function checkForUpdate() {
                 bottom: 60,
                 left: 60
               })
-              .width(window.innerWidth)
-              .height(window.innerHeight)
               .data(servable.content)
               .draw();
           } else if (servable.type == "graph") {
             document.lastServed = new Graph()
               .header(headerId)
               .content(contentId)
-              .width(window.innerWidth)
-              .height(
-                window.innerHeight)
               .data(servable.content)
               .draw();
           } else if (servable.type == "points-2d") {
@@ -92,8 +83,6 @@ function checkForUpdate() {
                 bottom: 60,
                 left: 60
               })
-              .width(window.innerWidth)
-              .height(window.innerHeight)
               .data(servable.content)
               .draw();
           } else if (servable.type == "matrix") {
@@ -106,8 +95,6 @@ function checkForUpdate() {
                 bottom: 60,
                 left: 60
               })
-              .width(window.innerWidth)
-              .height(window.innerHeight)
               .data(servable.content)
               .draw();
           } else {
