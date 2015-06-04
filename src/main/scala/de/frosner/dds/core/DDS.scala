@@ -3,6 +3,7 @@ package de.frosner.dds.core
 import de.frosner.dds.analytics.{MutualInformationAggregator, CorrelationAggregator}
 import de.frosner.dds.servables.c3.ChartTypeEnum.ChartType
 import de.frosner.dds.servables.c3._
+import de.frosner.dds.servables.composite.CompositeServable
 import de.frosner.dds.servables.graph.Graph
 import de.frosner.dds.servables.histogram.Histogram
 import de.frosner.dds.servables.matrix.Matrix2D
@@ -681,6 +682,25 @@ object DDS {
   )
   def groupAndSummarize[K: ClassTag, N: ClassTag](toBeGroupedValues: RDD[(K, N)])(implicit num: Numeric[N]): Unit = {
     summarizeGroups(toBeGroupedValues.groupByKey())
+  }
+
+  def dashboard(dataFrame: DataFrame): Unit = {
+    serve(CompositeServable(List(
+      List(Matrix2D(List(
+        List(1, 5, 3),
+        List(5, 10, -5),
+        List(5, 4, 3)
+      ), List("a", "b", "c"), List("a", "b", "c")), Matrix2D(List(
+        List(1, 5, 3),
+        List(5, 10, -5),
+        List(5, 4, 3)
+      ), List("a", "b", "c"), List("a", "b", "c"))),
+      List(Matrix2D(List(
+        List(1, 5, 3),
+        List(5, 10, -5),
+        List(5, 4, 3)
+      ), List("a", "b", "c"), List("a", "b", "c")))
+    )))
   }
 
 }

@@ -5,6 +5,8 @@ Matrix.prototype.constructor = Visualization;
 Matrix.prototype.parent = Visualization.prototype;
 
 Matrix.prototype._draw = function(matrixAndNames) {
+  var vizId = this._content.id;
+  var cache = getCache(vizId);
   var matrix = flatMap(matrixAndNames.entries, function(row, i) {
     return row.map(function(entry, j) {
       return {
@@ -17,7 +19,7 @@ Matrix.prototype._draw = function(matrixAndNames) {
   var rowNames = matrixAndNames.rowNames;
   var colNames = matrixAndNames.colNames;
 
-  this._chartDiv = generateDiv(this._content, "chart");
+  this._chartDiv = generateDiv(this._content, "chart-" + vizId);
   this._chartDiv.className = "c3";
 
   var margin = this._margin;
@@ -35,24 +37,24 @@ Matrix.prototype._draw = function(matrixAndNames) {
   var zValues = matrix.map(function(v) {
     return v.z;
   });
-  var zMin = (document.isNewVisualization) ? Math.min.apply(null, zValues) : document.lastServed._lowerBoundInput.value;
-  var zMax = (document.isNewVisualization) ? Math.max.apply(null, zValues) : document.lastServed._upperBoundInput.value;
+  var zMin = (document.isNewVisualization) ? Math.min.apply(null, zValues) : cache.lowerBoundInput.value;
+  var zMax = (document.isNewVisualization) ? Math.max.apply(null, zValues) : cache.upperBoundInput.value;
   var zDomain = [
     zMin,
     zMax
   ];
   this._defaultScale = "YlOrRd";
   var zScaleString;
-  if (document.heatMapScale) {
-    zScaleString = document.heatMapScale;
+  if (cache.heatMapScale) {
+    zScaleString = cache.heatMapScale;
   } else {
     zScaleString = this._defaultScale;
-    document.heatMapScale = zScaleString;
+    cache.heatMapScale = zScaleString;
   }
   var z = chroma.scale(zScaleString)
     .domain(zDomain);
 
-  var chart = d3.select("#chart")
+  var chart = d3.select("#chart-" + vizId)
     .append('svg:svg')
     .attr('width', width + margin.right + margin.left)
     .attr('height', height + margin.top + margin.bottom)
@@ -106,11 +108,12 @@ Matrix.prototype._draw = function(matrixAndNames) {
       return value.z;
     });
 
-  var boundArea = generateSpan(this._header, "boundArea");
+  var boundArea = generateSpan(this._header, "boundArea-" + vizId);
+  boundArea.setAttribute("class", "boundArea");
   this._boundArea = boundArea;
   var zText1 = generateSpan(this._boundArea, "");
   zText1.innerHTML = "z: "
-  var lowerBoundInput = generateTextInput(this._boundArea, "lowerBoundInput");
+  var lowerBoundInput = generateTextInput(this._boundArea, "lowerBoundInput-" + vizId);
   lowerBoundInput.value = zMin;
   lowerBoundInput.setAttribute("class", "boundButton");
   lowerBoundInput.onblur = function() {
@@ -118,16 +121,17 @@ Matrix.prototype._draw = function(matrixAndNames) {
       lowerBoundInput.value,
       upperBoundInput.value
     ];
-    var customZ = chroma.scale(document.heatMapScale)
+    var customZ = chroma.scale(cache.heatMapScale)
       .domain(customZDomain);
     rects.attr("fill", function(value) {
       return customZ(value.z);
     });
   };
   this._lowerBoundInput = lowerBoundInput;
+  cache.lowerBoundInput = lowerBoundInput;
   var zText2 = generateSpan(this._boundArea, "");
   zText2.innerHTML = " - ";
-  var upperBoundInput = generateTextInput(this._boundArea, "upperBoundInput");
+  var upperBoundInput = generateTextInput(this._boundArea, "upperBoundInput" + vizId);
   upperBoundInput.setAttribute("class", "boundButton");
   upperBoundInput.value = zMax;
   upperBoundInput.onblur = function() {
@@ -135,20 +139,21 @@ Matrix.prototype._draw = function(matrixAndNames) {
       lowerBoundInput.value,
       upperBoundInput.value
     ];
-    var customZ = chroma.scale("YlOrRd")
+    var customZ = chroma.scale(cache.heatMapScale)
       .domain(customZDomain);
     rects.attr("fill", function(value) {
       return customZ(value.z);
     });
   };
   this._upperBoundInput = upperBoundInput;
+  cache.upperBoundInput = upperBoundInput;
 
   var redrawWithDifferentScale = function(scale) {
     return function() {
-      if (document.heatMapScale != scale) {
-        document.heatMapScale = scale;
-        var zMin = document.lastServed._lowerBoundInput.value;
-        var zMax = document.lastServed._upperBoundInput.value;
+      if (cache.heatMapScale != scale) {
+        cache.heatMapScale = scale;
+        var zMin = cache.lowerBoundInput.value;
+        var zMax = cache.upperBoundInput.value;
         var zDomain = [
           zMin,
           zMax
@@ -163,15 +168,15 @@ Matrix.prototype._draw = function(matrixAndNames) {
   }
 
   var ylOrRdButton = document.createElement('div');
-  ylOrRdButton.setAttribute("id", "ylOrRdButton");
-  ylOrRdButton.setAttribute("class", "headerButton");
+  ylOrRdButton.setAttribute("id", "ylOrRdButton-" + vizId);
+  ylOrRdButton.setAttribute("class", "headerButton ylOrRdButton");
   ylOrRdButton.onclick = redrawWithDifferentScale("YlOrRd");
   this._header.appendChild(ylOrRdButton);
   this._ylOrRdButton = ylOrRdButton;
 
   var pRGnButton = document.createElement('div');
-  pRGnButton.setAttribute("id", "pRGnButton");
-  pRGnButton.setAttribute("class", "headerButton");
+  pRGnButton.setAttribute("id", "pRGnButton-" + vizId);
+  pRGnButton.setAttribute("class", "headerButton pRGnButton");
   pRGnButton.onclick = redrawWithDifferentScale("PRGn");
   this._header.appendChild(pRGnButton);
   this._pRGnButton = pRGnButton;
