@@ -196,8 +196,8 @@ Table.prototype._draw = function(tableAndTypes) {
     this._scatter = new Scatter2D()
       .header(this._header.id)
       .content(scatterDivId)
-      .width(window.innerWidth)
-      .height(window.innerHeight / 5 * 2)
+      .width(this._width)
+      .height(this._height / 5 * 2)
       .margin({
         top: 15,
         right: 30,
@@ -232,8 +232,8 @@ Table.prototype._draw = function(tableAndTypes) {
           bottom: 30,
           left: 50
         })
-        .width(window.innerWidth)
-        .height(window.innerHeight / 5 * 2)
+        .width(this._width)
+        .height(this._height / 5 * 2)
         .data(bins)
         .draw();
     } else {
