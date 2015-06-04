@@ -13,7 +13,8 @@ import org.apache.spark.SparkContext._
 import org.apache.spark.graphx
 import org.apache.spark.graphx.{Edge, VertexId}
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{Row, SchemaRDD, _}
+import org.apache.spark.sql._
+import org.apache.spark.sql.types._
 import org.apache.spark.util.StatCounter
 
 import scala.collection.mutable
@@ -24,7 +25,7 @@ import scala.reflect.runtime.universe._
 /**
  * Main object containing the core commands that can be executed from the Spark shell. It holds a mutable reference
  * to a [[Server]] which is used to communicate the results to the web front-end.
- * 
+ *
  * Hacks applied here:
  *
  * - ClassTags are needed for conversion to PairRDD
@@ -357,7 +358,7 @@ object DDS {
                                            (implicit num: Numeric[N]): Unit = {
     pie(toBeGroupedValues.reduceByKey(reduceFunction).collect.sortBy{ case (value, count) => count })
   }
-  
+
   private def table(table: Table): Unit = {
     serve(table)
   }
@@ -399,6 +400,8 @@ object DDS {
     }
   }
 
+  private val DEFAULT_SHOW_SAMPLE_SIZE = 100
+
   @Help(
     category = "Spark Core",
     shortDescription = "Shows the first rows of an RDD",
@@ -406,40 +409,49 @@ object DDS {
       "of the data. The second argument is optional and determines the sample size.",
     parameters = "rdd: RDD[T], (optional) sampleSize: Int"
   )
-  def show[V](rdd: RDD[V], sampleSize: Int = 100)(implicit tag: TypeTag[V]): Unit = {
+  def show[V](rdd: RDD[V], sampleSize: Int)(implicit tag: TypeTag[V]): Unit = {
     val vType = tag.tpe
     if (vType <:< typeOf[Row]) {
-      if (rdd.isInstanceOf[SchemaRDD]) {
-        // SchemaRDD
-        val schemaRdd = rdd.asInstanceOf[SchemaRDD]
-        val fields = schemaRdd.schema.fields
-        val nullableColumns = (0 to fields.size - 1).zip(fields).filter {
-          case (index, field) => field.nullable
-        }.map {
-          case (index, nullableField) => index
-        }.toSet
-        val values = schemaRdd.take(sampleSize).map(row =>
-          (0 to row.size).zip(row).map { case (index, element) =>
-            if (nullableColumns.contains(index))
-              Option(element)
-            else
-              element
-          }
-        )
-        val fieldNames = schemaRdd.schema.fields.map(field => {
-          s"""${field.name} [${field.dataType.toString.replace("Type", "")}${if (field.nullable) "*" else ""}]"""
-        })
-        table(fieldNames, values)
-      } else {
-        // RDD of rows but w/o a schema
-        val values = rdd.take(sampleSize).map(_.asInstanceOf[Row])
-        table((1 to values.head.size).map(_.toString), values)
-      }
+      // RDD of rows but w/o a schema
+      val values = rdd.take(sampleSize).map(_.asInstanceOf[Row].toSeq)
+      table((1 to values.head.size).map(_.toString), values)
     } else {
       // Normal RDD
       show(rdd.take(sampleSize))(tag)
     }
   }
+  def show[V](rdd: RDD[V])(implicit tag: TypeTag[V]): Unit =
+    show(rdd, DEFAULT_SHOW_SAMPLE_SIZE)(tag)
+
+  @Help(
+    category = "Spark Core",
+    shortDescription = "Shows the first rows of a DataFrame",
+    longDescription = "Shows the first rows of a DataFrame. In addition to a tabular view DDS also shows visualizations" +
+      "of the data. The second argument is optional and determines the sample size.",
+    parameters = "rdd: DataFrame, (optional) sampleSize: Int"
+  )
+  def show(dataFrame: DataFrame, sampleSize: Int): Unit = {
+    val fields = dataFrame.schema.fields
+    val nullableColumns = (0 to fields.size - 1).zip(fields).filter {
+      case (index, field) => field.nullable
+    }.map {
+      case (index, nullableField) => index
+    }.toSet
+    val values = dataFrame.take(sampleSize).map(row =>
+      (0 to row.size).zip(row.toSeq).map { case (index, element) =>
+        if (nullableColumns.contains(index))
+          Option(element)
+        else
+          element
+      }
+    )
+    val fieldNames = dataFrame.schema.fields.map(field => {
+      s"""${field.name} [${field.dataType.toString.replace("Type", "")}${if (field.nullable) "*" else ""}]"""
+    })
+    table(fieldNames, values)
+  }
+  def show(dataFrame: DataFrame): Unit =
+    show(dataFrame, DEFAULT_SHOW_SAMPLE_SIZE)
 
   @Help(
     category = "Spark GraphX",
@@ -509,11 +521,11 @@ object DDS {
     shortDescription = "Computes pearson correlation between numerical columns",
     longDescription = "Computes pearson correlation between numerical columns. There need to be at least two numerical," +
       " non-nullable columns in the table. The columns must not be nullable.",
-    parameters = "rdd: SchemaRDD"
+    parameters = "dataFrame: DataFrame"
   )
-  def correlation(rdd: SchemaRDD) = {
+  def correlation(dataFrame: DataFrame) = {
     def showError = println("Correlation only supported for RDDs with multiple numerical columns.")
-    val schema = rdd.schema
+    val schema = dataFrame.schema
     val fields = schema.fields
     if (fields.size >= 2) {
       val numericalFields = fields.zipWithIndex.filter{ case (field, idx) => {
@@ -522,9 +534,9 @@ object DDS {
       }}
       val numericalFieldIndexes = numericalFields.map{ case (field, idx) => idx }.toSet
       if (numericalFields.size >= 2) {
-        val corrAgg = rdd.aggregate(new CorrelationAggregator((numericalFields.size))) (
+        val corrAgg = dataFrame.rdd.aggregate(new CorrelationAggregator((numericalFields.size))) (
           (agg, row) => {
-            val numericalCells = row.zipWithIndex.filter{ case (element, idx) => numericalFieldIndexes.contains(idx) }
+            val numericalCells = row.toSeq.zipWithIndex.filter{ case (element, idx) => numericalFieldIndexes.contains(idx) }
             val numericalValues = numericalCells.zip(numericalFields).map {
               case ((element, elementIdx), (elementType, typeIdx)) => {
                 require(elementIdx == typeIdx, s"Element index ($elementIdx) did not equal type index ($typeIdx)")
@@ -566,15 +578,15 @@ object DDS {
     shortDescription = "Computes mutual information between columns",
     longDescription = "Computes mutual information between columns. It will treat all columns as nominal variables and " +
       "thus not work well with real numerical data. Internally it uses the natural logarithm.",
-    parameters = "rdd: SchemaRDD"
+    parameters = "dataFrame: DataFrame"
   )
-  def mutualInformation(rdd: SchemaRDD) = {
+  def mutualInformation(dataFrame: DataFrame) = {
     def showError = println("Mutual information only supported for RDDs with at least one column.")
-    val schema = rdd.schema
+    val schema = dataFrame.schema
     val fields = schema.fields
     if (fields.size >= 1) {
-        val corrAgg = rdd.aggregate(new MutualInformationAggregator(fields.size)) (
-          (agg, row) => agg.iterate(row),
+        val corrAgg = dataFrame.rdd.aggregate(new MutualInformationAggregator(fields.size)) (
+          (agg, row) => agg.iterate(row.toSeq),
           (agg1, agg2) => agg1.merge(agg2)
         )
         var mutualInformationMatrix: mutable.Seq[mutable.Seq[Double]] = new ArrayBuffer(corrAgg.numColumns) ++
