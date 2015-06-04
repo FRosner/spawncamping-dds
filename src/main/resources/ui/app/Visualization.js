@@ -45,10 +45,6 @@ function Visualization() {
     right: 0
   };
   this._margin = this._defaultMargin;
-  this._defaultWidth = 800;
-  this._defaultHeight = 450;
-  this._width = this._defaultWidth;
-  this._height = this._defaultHeight;
 }
 
 Visualization.prototype.header = function(newHeaderId) {
@@ -63,6 +59,10 @@ Visualization.prototype.header = function(newHeaderId) {
 Visualization.prototype.content = function(newContentId) {
   if (newContentId != null) {
     this._content = document.getElementById(newContentId);
+    this._width = $(this._content)
+      .width();
+    this._height = $(this._content)
+      .height();
     return this;
   } else {
     return this._content;
