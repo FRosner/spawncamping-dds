@@ -32,7 +32,7 @@ function drawServable(servable, headerId, contentId) {
       .header(headerId)
       .content(contentId)
       .margin({
-        top: 40,
+        top: 30,
         right: 0,
         bottom: 0,
         left: 0
@@ -44,7 +44,7 @@ function drawServable(servable, headerId, contentId) {
       .header(headerId)
       .content(contentId)
       .margin({
-        top: 15,
+        top: 5,
         right: 15,
         left: 60
       })
@@ -55,7 +55,7 @@ function drawServable(servable, headerId, contentId) {
       .header(headerId)
       .content(contentId)
       .margin({
-        top: 40,
+        top: 30,
         right: 0,
         bottom: 0,
         left: 0
@@ -67,7 +67,7 @@ function drawServable(servable, headerId, contentId) {
       .header(headerId)
       .content(contentId)
       .margin({
-        top: 30,
+        top: 20,
         right: 60,
         bottom: 60,
         left: 60
@@ -85,7 +85,7 @@ function drawServable(servable, headerId, contentId) {
       .header(headerId)
       .content(contentId)
       .margin({
-        top: 20,
+        top: 10,
         right: 15,
         bottom: 60,
         left: 60
@@ -97,7 +97,7 @@ function drawServable(servable, headerId, contentId) {
       .header(headerId)
       .content(contentId)
       .margin({
-        top: 20,
+        top: 10,
         right: 15,
         bottom: 60,
         left: 60
