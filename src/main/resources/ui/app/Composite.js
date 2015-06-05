@@ -24,6 +24,9 @@ Composite.prototype._draw = function(composite) {
     .attr("class", "row");
   var cells = rows.selectAll("div")
     .data(function(row) {
+      if (row.length > 12) {
+        console.warn("The following row has more than 12 cells which is not properly supported by grid layout: " + JSON.stringify(row));
+      }
       var enhancedRow = row.map(function(cell) {
         var enhancedCell = cell;
         var columnLayout = "col-lg-"
@@ -38,9 +41,6 @@ Composite.prototype._draw = function(composite) {
         } else if (row.length <= 6) {
           enhancedCell.cssClass = columnLayout + "2";
         } else {
-          if (row.length <= 12) {
-            console.warn(row + " has more than 12 cells which is not supported by grid layout!");
-          }
           enhancedCell.cssClass = columnLayout + "1";
         }
         return enhancedCell;

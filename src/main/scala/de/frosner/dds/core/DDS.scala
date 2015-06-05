@@ -685,21 +685,26 @@ object DDS {
   }
 
   def dashboard(dataFrame: DataFrame): Unit = {
+    val m = Matrix2D(List(
+      List(1, 5, 3),
+      List(5, 10, -5),
+      List(5, 4, 3)
+    ), List("a", "b", "c"), List("a", "b", "c"))
     serve(CompositeServable(List(
-      List(Matrix2D(List(
-        List(1, 5, 3),
-        List(5, 10, -5),
-        List(5, 4, 3)
-      ), List("a", "b", "c"), List("a", "b", "c")), Matrix2D(List(
-        List(1, 5, 3),
-        List(5, 10, -5),
-        List(5, 4, 3)
-      ), List("a", "b", "c"), List("a", "b", "c"))),
-      List(Matrix2D(List(
-        List(1, 5, 3),
-        List(5, 10, -5),
-        List(5, 4, 3)
-      ), List("a", "b", "c"), List("a", "b", "c")))
+      List.fill(13)(m),
+      List.fill(12)(m),
+      List.fill(11)(m),
+      List.fill(10)(m),
+      List.fill(9)(m),
+      List.fill(8)(m),
+      List.fill(7)(m),
+      List.fill(6)(m),
+      List.fill(5)(m),
+      List.fill(4)(m),
+      List.fill(3)(m),
+      List.fill(2)(m),
+      List.fill(1)(m),
+      List.empty
     )))
   }
 
