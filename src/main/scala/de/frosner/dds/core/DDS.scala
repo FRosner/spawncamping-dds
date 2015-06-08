@@ -685,7 +685,7 @@ object DDS {
   }
 
   def dashboard(dataFrame: DataFrame): Unit = {
-    val m = Chart(SeriesData(Series("data", List(1,2,3)), ChartTypeEnum.AreaStep))
+    val m = Graph(List("a", "b", "c"), List((0, 1, "a-b"), (0, 2, "a-c")))
     serve(CompositeServable(List(
       List.fill(12)(m),
       List.fill(6)(m),

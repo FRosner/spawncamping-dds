@@ -7,15 +7,18 @@ Graph.prototype.constructor = Visualization;
 Graph.prototype.parent = Visualization.prototype;
 
 Graph.prototype._draw = function(graph) {
+  var divId = "graph-" + this._content.id
+  var cache = getCache(divId);
+
   var width = this._width,
     height = this._height;
 
   var nodes = graph.vertices;
   var links = graph.edges;
 
-  this._graphDiv = generateDiv(this._content, "graph");
+  this._graphDiv = generateDiv(this._content, divId);
 
-  var svg = d3.select('#graph')
+  var svg = d3.select("#" + divId)
     .append('svg')
     .attr('width', width)
     .attr('height', height);
@@ -118,65 +121,63 @@ Graph.prototype._draw = function(graph) {
   force.start();
 
   var nodeButton = document.createElement('div');
-  nodeButton.setAttribute("id", "triggerNodeLabelsButton");
   nodeButton.onclick = function() {
-    if (document.drawNodeLabels === false) {
-      nodeButton.setAttribute("class", "headerButton visible");
+    if (cache.drawNodeLabels === false) {
+      nodeButton.setAttribute("class", "triggerNodeLabelsButton headerButton visible");
       nodeButton.setAttribute("title", "Hide node labels");
-      document.drawNodeLabels = true;
-      d3.selectAll(".nodeLabel")
+      cache.drawNodeLabels = true;
+      svg.selectAll(".nodeLabel")
         .style("visibility", "visible");
     } else {
-      nodeButton.setAttribute("class", "headerButton hidden");
+      nodeButton.setAttribute("class", "triggerNodeLabelsButton headerButton hidden");
       nodeButton.setAttribute("title", "Draw node labels");
-      document.drawNodeLabels = false;
-      d3.selectAll(".nodeLabel")
+      cache.drawNodeLabels = false;
+      svg.selectAll(".nodeLabel")
         .style("visibility", "hidden");
     }
   }
-  if (document.drawNodeLabels === false) {
-    nodeButton.setAttribute("class", "headerButton hidden");
+  if (cache.drawNodeLabels === false) {
+    nodeButton.setAttribute("class", "triggerNodeLabelsButton headerButton hidden");
     nodeButton.setAttribute("title", "Draw node labels");
-    d3.selectAll(".nodeLabel")
+    svg.selectAll(".nodeLabel")
       .style("visibility", "hidden");
   } else {
-    nodeButton.setAttribute("class", "headerButton visible");
+    nodeButton.setAttribute("class", "triggerNodeLabelsButton headerButton visible");
     nodeButton.setAttribute("title", "Hide node labels");
-    d3.selectAll(".nodeLabel")
+    svg.selectAll(".nodeLabel")
       .style("visibility", "visible");
-    document.drawNodeLabels = true;
+    cache.drawNodeLabels = true;
   }
   this._header.appendChild(nodeButton);
   this._triggerNodeLabelsButton = nodeButton;
 
   var edgeButton = document.createElement('div');
-  edgeButton.setAttribute("id", "triggerEdgeLabelsButton");
   edgeButton.onclick = function() {
-    if (document.drawEdgeLabels === false) {
-      edgeButton.setAttribute("class", "headerButton visible");
+    if (cache.drawEdgeLabels === false) {
+      edgeButton.setAttribute("class", "triggerEdgeLabelsButton headerButton visible");
       edgeButton.setAttribute("title", "Hide edge labels");
-      document.drawEdgeLabels = true;
-      d3.selectAll(".edgeLabel")
+      cache.drawEdgeLabels = true;
+      svg.selectAll(".edgeLabel")
         .style("visibility", "visible");
     } else {
-      edgeButton.setAttribute("class", "headerButton hidden");
+      edgeButton.setAttribute("class", "triggerEdgeLabelsButton headerButton hidden");
       edgeButton.setAttribute("title", "Draw edge labels");
-      document.drawEdgeLabels = false;
-      d3.selectAll(".edgeLabel")
+      cache.drawEdgeLabels = false;
+      svg.selectAll(".edgeLabel")
         .style("visibility", "hidden");
     }
   }
-  if (document.drawEdgeLabels === false) {
-    edgeButton.setAttribute("class", "headerButton hidden");
+  if (cache.drawEdgeLabels === false) {
+    edgeButton.setAttribute("class", "triggerEdgeLabelsButton headerButton hidden");
     edgeButton.setAttribute("title", "Draw edge labels");
-    d3.selectAll(".edgeLabel")
+    svg.selectAll(".edgeLabel")
       .style("visibility", "hidden");
   } else {
-    edgeButton.setAttribute("class", "headerButton visible");
+    edgeButton.setAttribute("class", "triggerEdgeLabelsButton headerButton visible");
     edgeButton.setAttribute("title", "Hide edge labels");
-    d3.selectAll(".edgeLabel")
+    svg.selectAll(".edgeLabel")
       .style("visibility", "visible");
-    document.drawEdgeLabels = true;
+    cache.drawEdgeLabels = true;
   }
   this._header.appendChild(edgeButton);
   this._triggerEdgeLabelsButton = edgeButton;
@@ -184,31 +185,31 @@ Graph.prototype._draw = function(graph) {
   var directionButton = document.createElement('div');
   directionButton.setAttribute("id", "triggerDirectionsButton");
   directionButton.onclick = function() {
-    if (document.drawDirections === false) {
-      directionButton.setAttribute("class", "headerButton visible");
+    if (cache.drawDirections === false) {
+      directionButton.setAttribute("class", "triggerDirectionsButton headerButton visible");
       directionButton.setAttribute("title", "Draw undirected edges");
-      document.drawDirections = true;
-      d3.selectAll(".link")
+      cache.drawDirections = true;
+      svg.selectAll(".link")
         .attr("marker-end", "url(#triangle)");
     } else {
-      directionButton.setAttribute("class", "headerButton hidden");
+      directionButton.setAttribute("class", "triggerDirectionsButton headerButton hidden");
       directionButton.setAttribute("title", "Draw directed edges");
-      document.drawDirections = false;
-      d3.selectAll(".link")
+      cache.drawDirections = false;
+      svg.selectAll(".link")
         .attr("marker-end", "");
     }
   }
-  if (document.drawDirections === false) {
-    directionButton.setAttribute("class", "headerButton hidden");
+  if (cache.drawDirections === false) {
+    directionButton.setAttribute("class", "triggerDirectionsButton headerButton hidden");
     directionButton.setAttribute("title", "Draw directed edges");
-    d3.selectAll(".link")
+    svg.selectAll(".link")
       .attr("marker-end", "");
   } else {
-    directionButton.setAttribute("class", "headerButton visible");
+    directionButton.setAttribute("class", "triggerDirectionsButton headerButton visible");
     directionButton.setAttribute("title", "Draw undirected edges");
-    d3.selectAll(".link")
+    svg.selectAll(".link")
       .attr("marker-end", "url(#triangle)");
-    document.drawDirections = true;
+    cache.drawDirections = true;
   }
   this._header.appendChild(directionButton);
   this._triggerDirectionsButton = directionButton;
