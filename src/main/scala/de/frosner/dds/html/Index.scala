@@ -19,7 +19,6 @@ object Index {
         <script src="/ui/lib/jquery-1.7.min.js"></script>
         <script src="/ui/lib/chroma.min.js"></script>
         <script src="/ui/lib/underscore.min.js"></script>
-        <script src="/ui/lib/bootstrap.min.js"></script>
         <link rel="stylesheet" href="/ui/lib/slickgrid/slick.grid.css" type="text/css"/>
         <link rel="stylesheet" href="/ui/lib/slickgrid/jquery-ui-1.8.16.custom.css" type="text/css"/>
         <link rel="stylesheet" href="/ui/lib/slickgrid/slick.pager.css" type="text/css"/>
