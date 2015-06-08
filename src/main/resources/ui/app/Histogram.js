@@ -7,14 +7,16 @@ Histogram.prototype.constructor = Visualization;
 Histogram.prototype.parent = Visualization.prototype;
 
 Histogram.prototype._draw = function(bins) {
-  this._chartDiv = generateDiv(this._content, "chart");
+  var divId = "histogram-" + this._content.id
+
+  this._chartDiv = generateDiv(this._content, divId);
   this._chartDiv.className = "c3";
 
   var margin = this._margin;
   var width = this._width - margin.left - margin.right,
     height = this._height - margin.top - margin.bottom;
 
-  var svg = d3.select("#chart")
+  var svg = d3.select("#" + divId)
     .append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)

@@ -685,7 +685,7 @@ object DDS {
   }
 
   def dashboard(dataFrame: DataFrame): Unit = {
-    val m = Graph(List("a", "b", "c"), List((0, 1, "a-b"), (0, 2, "a-c")))
+    val m = Histogram(List(1d, 2d, 4d, 8d), List(5, 10, 3))
     serve(CompositeServable(List(
       List.fill(12)(m),
       List.fill(6)(m),
