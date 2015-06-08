@@ -7,7 +7,7 @@ Graph.prototype.constructor = Visualization;
 Graph.prototype.parent = Visualization.prototype;
 
 Graph.prototype._draw = function(graph) {
-  var divId = "graph-" + this._content.id
+  var divId = "graph-" + this._content.id;
   var cache = getCache(divId);
 
   var width = this._width,

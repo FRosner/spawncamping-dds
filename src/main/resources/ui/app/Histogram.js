@@ -7,7 +7,7 @@ Histogram.prototype.constructor = Visualization;
 Histogram.prototype.parent = Visualization.prototype;
 
 Histogram.prototype._draw = function(bins) {
-  var divId = "histogram-" + this._content.id
+  var divId = "histogram-" + this._content.id;
 
   this._chartDiv = generateDiv(this._content, divId);
   this._chartDiv.className = "c3";
