@@ -73,7 +73,4 @@ Composite.prototype._draw = function(composite) {
 }
 
 Composite.prototype.clearHeader = function() {
-  this._servedComponents.forEach(function(served) {
-    served.clearHeader();
-  });
 }
