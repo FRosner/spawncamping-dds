@@ -685,7 +685,10 @@ object DDS {
   }
 
   def dashboard(dataFrame: DataFrame): Unit = {
-    val m = Points2D(List(("a", 1), ("b", 2), ("c", 2)))
+    val m = Table(List("a", "b", "c"), List(List(1,2,3), List(2,2,2)))
+    val m2 = Table(List("a", "b"), List(List(1,2), List(2,2)))
+    val m3 = Table(List("a"), List(List(1), List(2), List(3)))
+    val m4 = Table(List("a"), List(List("1"), List("2"), List("3")))
     serve(CompositeServable(List(
       List.fill(12)(m),
       List.fill(6)(m),
@@ -693,7 +696,12 @@ object DDS {
       List.fill(3)(m),
       List.fill(2)(m),
       List.fill(1)(m),
-      List.empty
+      List.fill(2)(m2),
+      List.fill(1)(m2),
+      List.fill(2)(m3),
+      List.fill(1)(m3),
+      List.fill(2)(m4),
+      List.fill(1)(m4)
     )))
   }
 

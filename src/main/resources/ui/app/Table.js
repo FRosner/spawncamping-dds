@@ -5,6 +5,9 @@ Table.prototype.constructor = Visualization;
 Table.prototype.parent = Visualization.prototype;
 
 Table.prototype._draw = function(tableAndTypes) {
+  var divId = "table-" + this._content.id;
+  var cache = getCache(divId);
+
   var table = tableAndTypes.rows;
   var types = {};
   for (columnName in tableAndTypes.types) {
@@ -35,16 +38,16 @@ Table.prototype._draw = function(tableAndTypes) {
   });
 
   var parcoords = {};
+  var parcoordsDivId = divId + "-pcvis";
   if (shouldDrawParcoords) {
     this._parcoordsDiv = document.createElement('div');
-    this._parcoordsDiv.setAttribute("id", "pcvis");
+    this._parcoordsDiv.setAttribute("id", parcoordsDivId);
     this._parcoordsDiv.setAttribute("class", 'parcoords');
     this._parcoordsDiv.style.height = this._height / 5 * 2
     this._content.appendChild(this._parcoordsDiv);
     this._hideLabelButton = document.createElement('div');
-    this._hideLabelButton.setAttribute("id", "hideLabelButton");
     this._header.appendChild(this._hideLabelButton);
-    var parcoords = d3.parcoords()("#pcvis")
+    var parcoords = d3.parcoords()("#" + parcoordsDivId)
       .data(data)
       .dimensions(Object.keys(types))
       .types(types)
@@ -90,13 +93,13 @@ Table.prototype._draw = function(tableAndTypes) {
       var dimensions = parcoords.svg.selectAll(".dimension");
       dimensions.selectAll("circle")
         .attr("class", "colorSelector");
-      if (!document.coloringEnabled || document.lastColoredDimension != dimension) {
+      if (!cache.coloringEnabled || cache.lastColoredDimension != dimension) {
         dimensions.filter(function(d) {
             return d == dimension;
           })
           .selectAll("circle")
           .attr("class", "colorSelector-selected");
-        document.coloredDimension = dimension;
+        cache.coloredDimension = dimension;
         var values = data.map(function(row) {
           return row[dimension];
         });
@@ -130,11 +133,11 @@ Table.prototype._draw = function(tableAndTypes) {
             return scale(value);
           })
           .render()
-        document.coloringEnabled = true;
-        document.lastColoredDimension = dimension;
+        cache.coloringEnabled = true;
+        cache.lastColoredDimension = dimension;
       } else {
         parcoords.color("#1f77b4");
-        document.coloringEnabled = false;
+        cache.coloringEnabled = false;
       }
     }
 
@@ -153,32 +156,31 @@ Table.prototype._draw = function(tableAndTypes) {
 
     var labels = parcoords.svg.selectAll(".tick")
       .selectAll("text");
-    var button = document.getElementById("hideLabelButton");
-    document.getElementById("hideLabelButton")
-      .onclick = function() {
-        if (document.tickLabelsHidden) {
+    var button = this._hideLabelButton;
+    button.onclick = function() {
+        if (cache.tickLabelsHidden) {
           labels.attr("visibility", "visible");
-          button.setAttribute("class", "headerButton unhidden");
+          button.setAttribute("class", "hideLabelButton headerButton unhidden");
           button.setAttribute("title", "Hide Ticks Labels");
-          document.tickLabelsHidden = false;
+          cache.tickLabelsHidden = false;
         } else {
           labels.attr("visibility", "hidden");
-          button.setAttribute("class", "headerButton hidden");
+          button.setAttribute("class", "hideLabelButton headerButton hidden");
           button.setAttribute("title", "Show Ticks Labels");
-          document.tickLabelsHidden = true;
+          cache.tickLabelsHidden = true;
         }
       };
-    if (!document.tickLabelsHidden) {
+    if (!cache.tickLabelsHidden) {
       labels.attr("visibility", "visible");
-      button.setAttribute("class", "headerButton unhidden");
+      button.setAttribute("class", "hideLabelButton headerButton unhidden");
       button.setAttribute("title", "Hide Ticks Labels");
     } else {
       labels.attr("visibility", "hidden");
-      button.setAttribute("class", "headerButton hidden");
+      button.setAttribute("class", "hideLabelButton headerButton hidden");
       button.setAttribute("title", "Show Ticks Labels");
     }
 
-    document.coloringEnabled = false;
+    cache.coloringEnabled = false;
   } else if (shouldDrawScatter) {
     var scatterPoints = table.map(function(row) {
       columnKeys = Object.keys(row);
@@ -191,7 +193,7 @@ Table.prototype._draw = function(tableAndTypes) {
       x: types[Object.keys(types)[0]],
       y: types[Object.keys(types)[1]]
     };
-    var scatterDivId = "scatter"
+    var scatterDivId = divId + "-scatter"
     this._graphDiv = generateDiv(this._content, scatterDivId);
     this._scatter = new Scatter2D()
       .header(this._header.id)
@@ -237,7 +239,8 @@ Table.prototype._draw = function(tableAndTypes) {
         .data(bins)
         .draw();
     } else {
-      generateDiv(this._content, "chart");
+      var chartId = divId + "-chart";
+      generateDiv(this._content, chartId);
       var singleColumnCounts = singleColumn.reduce(function(counts, value) {
         counts[value] = counts[value] ? counts[value] + 1 : 1;
         return counts;
@@ -250,6 +253,7 @@ Table.prototype._draw = function(tableAndTypes) {
           };
         });
       var chart = {
+        bindto: "#" + chartId,
         data: {
           json: singleColumnCountsForC3,
           keys: {
@@ -276,11 +280,13 @@ Table.prototype._draw = function(tableAndTypes) {
     }
   }
 
+  var pagerId = divId + "-pager";
   var pager = document.createElement('div');
-  pager.setAttribute("id", 'pager');
+  pager.setAttribute("id", pagerId);
   this._content.appendChild(pager);
+  var gridId = divId + "-grid";
   var grid = document.createElement('div');
-  grid.setAttribute("id", 'grid');
+  grid.setAttribute("id", gridId);
   grid.style.height = this._height / 5 * 3 - 47
   this._content.appendChild(grid);
 
@@ -307,8 +313,8 @@ Table.prototype._draw = function(tableAndTypes) {
   };
 
   var dataView = new Slick.Data.DataView();
-  var grid = new Slick.Grid("#grid", dataView, columns, options);
-  var pager = new Slick.Controls.Pager(dataView, grid, $("#pager"));
+  var grid = new Slick.Grid("#" + gridId, dataView, columns, options);
+  var pager = new Slick.Controls.Pager(dataView, grid, $("#" + pagerId));
 
   // wire up model events to drive the grid
   dataView.onRowCountChanged.subscribe(function(e, args) {

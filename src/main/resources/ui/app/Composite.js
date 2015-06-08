@@ -21,7 +21,7 @@ Composite.prototype._draw = function(composite) {
     .data(composite)
     .enter()
     .append("div")
-    .attr("class", "row");
+    .attr("class", "bootstrap-div row");
   var cells = rows.selectAll("div")
     .data(function(row) {
       if (row.length > 12) {
@@ -29,7 +29,7 @@ Composite.prototype._draw = function(composite) {
       }
       var enhancedRow = row.map(function(cell) {
         var enhancedCell = cell;
-        var columnLayout = "col-lg-"
+        var columnLayout = "bootstrap-div col-lg-"
         if (row.length == 1) {
           enhancedCell.cssClass = columnLayout + "12";
         } else if (row.length == 2) {
