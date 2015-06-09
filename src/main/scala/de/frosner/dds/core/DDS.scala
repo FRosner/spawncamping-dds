@@ -174,6 +174,18 @@ object DDS {
     serve(Points2D(values)(num1, num2))
   }
 
+  private def createHeatmap[N](values: Seq[Seq[N]], rowNames: Seq[String] = null, colNames: Seq[String] = null)
+                              (implicit num: Numeric[N]): Option[Servable] = {
+    if (values.size == 0 || values.head.size == 0) {
+      println("Can't show empty heatmap!")
+      Option.empty
+    } else {
+      val actualRowNames: Seq[String] = if (rowNames != null) rowNames else (1 to values.size).map(_.toString)
+      val actualColNames: Seq[String] = if (colNames != null) colNames else (1 to values.head.size).map(_.toString)
+      Option(Matrix2D(values.map(_.map(entry => num.toDouble(entry))), actualRowNames, actualColNames))
+    }
+  }
+
   @Help(
     category = "Scala",
     shortDescription = "Plots a heat map",
@@ -184,13 +196,7 @@ object DDS {
   )
   def heatmap[N](values: Seq[Seq[N]], rowNames: Seq[String] = null, colNames: Seq[String] = null)
                 (implicit num: Numeric[N]): Unit = {
-    if (values.size == 0 || values.head.size == 0) {
-      println("Can't show empty heatmap!")
-    } else {
-      val actualRowNames: Seq[String] = if (rowNames != null) rowNames else (1 to values.size).map(_.toString)
-      val actualColNames: Seq[String] = if (colNames != null) colNames else (1 to values.head.size).map(_.toString)
-      serve(Matrix2D(values.map(_.map(entry => num.toDouble(entry))), actualRowNames, actualColNames))
-    }
+    createHeatmap(values, rowNames, colNames)(num).foreach(servable => serve(servable))
   }
 
   @Help(
@@ -364,6 +370,10 @@ object DDS {
     serve(table)
   }
 
+  private def createTable(head: Seq[String], rows: Seq[Seq[Any]]): Option[Servable] = {
+    Option(Table(head, rows))
+  }
+
   @Help(
     category = "Scala",
     shortDescription = "Displays data in tabular format",
@@ -372,7 +382,7 @@ object DDS {
     parameters = "head: Seq[String], rows: Seq[Seq[Any]]"
   )
   def table(head: Seq[String], rows: Seq[Seq[Any]]): Unit = {
-    table(Table(head, rows))
+    createTable(head, rows).foreach(servable => serve(servable))
   }
 
   @Help(
@@ -424,14 +434,7 @@ object DDS {
   def show[V](rdd: RDD[V])(implicit tag: TypeTag[V]): Unit =
     show(rdd, DEFAULT_SHOW_SAMPLE_SIZE)(tag)
 
-  @Help(
-    category = "Spark Core",
-    shortDescription = "Shows the first rows of a DataFrame",
-    longDescription = "Shows the first rows of a DataFrame. In addition to a tabular view DDS also shows visualizations" +
-      "of the data. The second argument is optional and determines the sample size.",
-    parameters = "rdd: DataFrame, (optional) sampleSize: Int"
-  )
-  def show(dataFrame: DataFrame, sampleSize: Int): Unit = {
+  private def createShow(dataFrame: DataFrame, sampleSize: Int): Option[Servable] = {
     val fields = dataFrame.schema.fields
     val nullableColumns = (0 to fields.size - 1).zip(fields).filter {
       case (index, field) => field.nullable
@@ -449,8 +452,19 @@ object DDS {
     val fieldNames = dataFrame.schema.fields.map(field => {
       s"""${field.name} [${field.dataType.toString.replace("Type", "")}${if (field.nullable) "*" else ""}]"""
     })
-    table(fieldNames, values)
+    createTable(fieldNames, values)
   }
+
+  @Help(
+    category = "Spark Core",
+    shortDescription = "Shows the first rows of a DataFrame",
+    longDescription = "Shows the first rows of a DataFrame. In addition to a tabular view DDS also shows visualizations" +
+      "of the data. The second argument is optional and determines the sample size.",
+    parameters = "rdd: DataFrame, (optional) sampleSize: Int"
+  )
+  def show(dataFrame: DataFrame, sampleSize: Int): Unit =
+    createShow(dataFrame, sampleSize).foreach(servable => serve(servable))
+
   def show(dataFrame: DataFrame): Unit =
     show(dataFrame, DEFAULT_SHOW_SAMPLE_SIZE)
 
@@ -517,14 +531,7 @@ object DDS {
     )
   }
 
-  @Help(
-    category = "Spark Statistics",
-    shortDescription = "Computes pearson correlation between numerical columns",
-    longDescription = "Computes pearson correlation between numerical columns. There need to be at least two numerical," +
-      " non-nullable columns in the table. The columns must not be nullable.",
-    parameters = "dataFrame: DataFrame"
-  )
-  def correlation(dataFrame: DataFrame) = {
+  private def createCorrelation(dataFrame: DataFrame): Option[Servable] = {
     def showError = println("Correlation only supported for RDDs with multiple numerical columns.")
     val schema = dataFrame.schema
     val fields = schema.fields
@@ -565,12 +572,48 @@ object DDS {
           corrMatrix(i)(j) = corr
         }
         val fieldNames = numericalFields.map{ case (field, idx) => field.name }
-        heatmap(corrMatrix, fieldNames, fieldNames)
+        createHeatmap(corrMatrix, fieldNames, fieldNames)
       } else {
         showError
+        Option.empty
       }
     } else {
       showError
+      Option.empty
+    }
+  }
+
+  @Help(
+    category = "Spark Statistics",
+    shortDescription = "Computes pearson correlation between numerical columns",
+    longDescription = "Computes pearson correlation between numerical columns. There need to be at least two numerical," +
+      " non-nullable columns in the table. The columns must not be nullable.",
+    parameters = "dataFrame: DataFrame"
+  )
+  def correlation(dataFrame: DataFrame): Unit = {
+    createCorrelation(dataFrame).foreach(servable => serve(servable))
+  }
+
+  def createMutualInformation(dataFrame: DataFrame): Option[Servable] = {
+    def showError = println("Mutual information only supported for RDDs with at least one column.")
+    val schema = dataFrame.schema
+    val fields = schema.fields
+    if (fields.size >= 1) {
+      val corrAgg = dataFrame.rdd.aggregate(new MutualInformationAggregator(fields.size)) (
+        (agg, row) => agg.iterate(row.toSeq),
+        (agg1, agg2) => agg1.merge(agg2)
+      )
+      var mutualInformationMatrix: mutable.Seq[mutable.Seq[Double]] = new ArrayBuffer(corrAgg.numColumns) ++
+        List.fill(corrAgg.numColumns)(new ArrayBuffer[Double](corrAgg.numColumns) ++
+          List.fill(corrAgg.numColumns)(0d))
+      for (((i, j), corr) <- corrAgg.mutualInformation) {
+        mutualInformationMatrix(i)(j) = corr
+      }
+      val fieldNames = fields.map(_.name)
+      createHeatmap(mutualInformationMatrix, fieldNames, fieldNames)
+    } else {
+      showError
+      Option.empty
     }
   }
 
@@ -582,25 +625,7 @@ object DDS {
     parameters = "dataFrame: DataFrame"
   )
   def mutualInformation(dataFrame: DataFrame) = {
-    def showError = println("Mutual information only supported for RDDs with at least one column.")
-    val schema = dataFrame.schema
-    val fields = schema.fields
-    if (fields.size >= 1) {
-        val corrAgg = dataFrame.rdd.aggregate(new MutualInformationAggregator(fields.size)) (
-          (agg, row) => agg.iterate(row.toSeq),
-          (agg1, agg2) => agg1.merge(agg2)
-        )
-        var mutualInformationMatrix: mutable.Seq[mutable.Seq[Double]] = new ArrayBuffer(corrAgg.numColumns) ++
-          List.fill(corrAgg.numColumns)(new ArrayBuffer[Double](corrAgg.numColumns) ++
-            List.fill(corrAgg.numColumns)(0d))
-        for (((i, j), corr) <- corrAgg.mutualInformation) {
-          mutualInformationMatrix(i)(j) = corr
-        }
-        val fieldNames = fields.map(_.name)
-        heatmap(mutualInformationMatrix, fieldNames, fieldNames)
-    } else {
-      showError
-    }
+    createMutualInformation(dataFrame).foreach(servable => serve(servable))
   }
 
   @Help(
@@ -685,23 +710,10 @@ object DDS {
   }
 
   def dashboard(dataFrame: DataFrame): Unit = {
-    val m = Table(List("a", "b", "c"), List(List(1,2,3), List(2,2,2)))
-    val m2 = Table(List("a", "b"), List(List(1,2), List(2,2)))
-    val m3 = Table(List("a"), List(List(1), List(2), List(3)))
-    val m4 = Table(List("a"), List(List("1"), List("2"), List("3")))
+    def toCell(maybeServable: Option[Servable]) = maybeServable.map(servable => List(servable)).getOrElse(List.empty)
     serve(CompositeServable(List(
-      List.fill(12)(m),
-      List.fill(6)(m),
-      List.fill(4)(m),
-      List.fill(3)(m),
-      List.fill(2)(m),
-      List.fill(1)(m),
-      List.fill(2)(m2),
-      List.fill(1)(m2),
-      List.fill(2)(m3),
-      List.fill(1)(m3),
-      List.fill(2)(m4),
-      List.fill(1)(m4)
+      toCell(createShow(dataFrame, DEFAULT_SHOW_SAMPLE_SIZE)),
+      toCell(createCorrelation(dataFrame)) ++ toCell(createMutualInformation(dataFrame))
     )))
   }
 
