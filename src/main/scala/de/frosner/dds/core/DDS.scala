@@ -710,10 +710,12 @@ object DDS {
   }
 
   def dashboard(dataFrame: DataFrame): Unit = {
+    val cachedDataFrame = dataFrame.cache()
+
     def toCell(maybeServable: Option[Servable]) = maybeServable.map(servable => List(servable)).getOrElse(List.empty)
     serve(CompositeServable(List(
-      toCell(createShow(dataFrame, DEFAULT_SHOW_SAMPLE_SIZE)),
-      toCell(createCorrelation(dataFrame)) ++ toCell(createMutualInformation(dataFrame))
+      toCell(createShow(cachedDataFrame, DEFAULT_SHOW_SAMPLE_SIZE)),
+      toCell(createCorrelation(cachedDataFrame)) ++ toCell(createMutualInformation(cachedDataFrame))
     )))
   }
 
