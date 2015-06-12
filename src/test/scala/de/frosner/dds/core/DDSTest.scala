@@ -838,6 +838,12 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     DDS.help("start")
   }
 
+  "An integer rounded logarithm dualis" should "be returned for every positive integer value" in {
+    val testValues = List(0,1,3,5,8,12,16)
+    val expectedValues = List(0,0,1,2,3,3,4)
+    testValues.map(a => DDS.lg_2_int(a)) shouldBe expectedValues
+  }
+
 }
 
 /**

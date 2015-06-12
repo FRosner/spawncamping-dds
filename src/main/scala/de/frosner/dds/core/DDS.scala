@@ -212,17 +212,14 @@ object DDS {
     parameters = "values: Seq[Numeric]"
   )
   def histogram[N](values: Seq[N])(implicit num:  Numeric[N]) = {
+    import num._
     //Sturge's formula:
-    var numBins = 1
-    val count = values.count(n => true)
-    while (count!= 0){
-      count <<1
-      numBins+=1
-    }
-    val steps = values.max[N]/numBins
-    val bins = mutable.Seq(num.toDouble(values.min[N]))
+    val numBins = lg_2_int(values.count(n => true))
+    //cast to double to allow division
+    val steps = values.max.toDouble / numBins
+    var bins = mutable.Seq(num.toDouble(values.min[N]))
     for ( i <- 0 to numBins){
-      bins = bins::(bins.last+steps)
+      bins = bins:+(bins.last+steps)
     }
     serve(Histogram(bins,values.map(v=> num.toLong(v))))
   }
@@ -662,6 +659,17 @@ object DDS {
   )
   def groupAndSummarize[K: ClassTag, N: ClassTag](toBeGroupedValues: RDD[(K, N)])(implicit num: Numeric[N]): Unit = {
     summarizeGroups(toBeGroupedValues.groupByKey())
+  }
+
+  def lg_2_int(count:Integer) : Integer = {
+    //integer lg_2 can be calculated by bitshifting
+    var log = 0
+    var count_down = count
+    while (count_down> 1){
+      count_down = count_down>>1
+      log+=1
+    }
+    log
   }
 
 }
