@@ -192,6 +192,14 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     actualHistogram.frequencies.toList shouldBe List(3.0, 8.0)
   }
 
+  it should "serve a correctly binned histogram according to Sturge's formula" in {
+    DDS.start(mockedServer)
+    DDS.histogram(sc.makeRDD(List(0,5,15,3,8)))
+    val actualHistogram = mockedServer.lastServed.get.asInstanceOf[Histogram]
+    actualHistogram.bins.toList shouldBe List(0,7.5,15)
+    actualHistogram.frequencies.toList shouldBe List(3,2)
+  }
+
   it should "serve a correct graph" in {
     DDS.start(mockedServer)
     DDS.graph(List((1, "label1"), (5, "label5")), List((1,1,"a"), (1,5,"b")))

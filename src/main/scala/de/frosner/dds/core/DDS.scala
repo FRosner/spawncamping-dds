@@ -338,13 +338,11 @@ object DDS {
     longDescription = "Plots a histogram chart of a numerical RDD visualizing the given dataset. Sturge's Formula is used to determine bins",
     parameters = "values: RDD[Numeric]"
   )
-  def histogram[N](values: RDD[N])(implicit num:  Numeric[N]) = {
+  def histogram[N](values: RDD[N])(implicit num:  Numeric[N]):Unit = {
     import num._
     //Sturge's formula:
     val numBins = lg_2_int(values.count)
-    //cast to double to allow division
-    val steps = round(values.max.toDouble / numBins)
-    val (buckets, frequencies) = values.map(v => num.toDouble(v)).histogram(steps)
+    val (buckets, frequencies) = values.map(v => num.toDouble(v)).histogram(numBins)
     histogram(buckets,frequencies)
   }
 
