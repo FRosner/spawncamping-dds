@@ -207,25 +207,6 @@ object DDS {
 
   @Help(
     category = "Scala",
-    shortDescription = "Plots a histogram chart of data, using an optimal binning formula",
-    longDescription = "Plots a histogram chart visualizing the given dataset. ",
-    parameters = "values: Seq[Numeric]"
-  )
-  def histogram[N](values: Seq[N])(implicit num:  Numeric[N]) = {
-    import num._
-    //Sturge's formula:
-    val numBins = lg_2_int(values.count(n => true))
-    //cast to double to allow division
-    val steps = values.max.toDouble / numBins
-    var bins = mutable.Seq(num.toDouble(values.min[N]))
-    for ( i <- 0 to numBins){
-      bins = bins:+(bins.last+steps)
-    }
-    serve(Histogram(bins,values.map(v=> num.toLong(v))))
-  }
-
-  @Help(
-    category = "Scala",
     shortDescription = "Plots a line chart",
     longDescription = "Plots a line chart visualizing the given value sequence.",
     parameters = "values: Seq[NumericValue]"
@@ -349,6 +330,22 @@ object DDS {
                                            (implicit num1: Numeric[N1], num2: Numeric[N2]): Unit = {
     val frequencies = values.map(v => num1.toLong(v)).histogram(buckets.map(b => num2.toDouble(b)).toArray, false)
     histogram(buckets, frequencies)
+  }
+
+  @Help(
+    category = "Spark Core",
+    shortDescription = "Plots a histogram chart of a numerical RDD, using an optimal binning formula",
+    longDescription = "Plots a histogram chart of a numerical RDD visualizing the given dataset. Sturge's Formula is used to determine bins",
+    parameters = "values: RDD[Numeric]"
+  )
+  def histogram[N](values: RDD[N])(implicit num:  Numeric[N]) = {
+    import num._
+    //Sturge's formula:
+    val numBins = lg_2_int(values.count)
+    //cast to double to allow division
+    val steps = round(values.max.toDouble / numBins)
+    val (buckets, frequencies) = values.map(v => num.toDouble(v)).histogram(steps)
+    histogram(buckets,frequencies)
   }
 
   @Help(
@@ -661,7 +658,7 @@ object DDS {
     summarizeGroups(toBeGroupedValues.groupByKey())
   }
 
-  def lg_2_int(count:Integer) : Integer = {
+  def lg_2_int(count:Long) : Integer = {
     //integer lg_2 can be calculated by bitshifting
     var log = 0
     var count_down = count
