@@ -192,14 +192,6 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     actualHistogram.frequencies.toList shouldBe List(3.0, 8.0)
   }
 
-  it should "serve a correctly binned histogram according to Sturge's formula" in {
-    DDS.start(mockedServer)
-    DDS.histogram(sc.makeRDD(List(0,5,15,3,8)))
-    val actualHistogram = mockedServer.lastServed.get.asInstanceOf[Histogram]
-    actualHistogram.bins.toList shouldBe List(0,7.5,15)
-    actualHistogram.frequencies.toList shouldBe List(3,2)
-  }
-
   it should "serve a correct graph" in {
     DDS.start(mockedServer)
     DDS.graph(List((1, "label1"), (5, "label5")), List((1,1,"a"), (1,5,"b")))
@@ -257,6 +249,16 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     val actualChart = mockedServer.lastServed.get.asInstanceOf[Histogram]
     actualChart.bins.toList shouldBe List(0.5, 1.5, 2.5, 3.5)
     actualChart.frequencies.toList shouldBe List(3,1,2)
+  }
+
+  it should "be served from a single numeric value RDD, binned according to Sturge's formula" in {
+    DDS.start(mockedServer)
+    val values = sc.makeRDD(List(0,5,15,3,8))
+    DDS.histogram(values)
+
+    val actualChart = mockedServer.lastServed.get.asInstanceOf[Histogram]
+    actualChart.bins.toList shouldBe List(0,3.75,7.5,11.25,15.0)
+    actualChart.frequencies.toList shouldBe List(2,1,1,1)
   }
 
   "Correct pie chart from RDD after groupBy" should "be served when values are already grouped" in {
@@ -846,10 +848,10 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     DDS.help("start")
   }
 
-  "An integer rounded logarithm dualis" should "be returned for every positive integer value" in {
+  "An integer ceiling-rounded logarithm dualis" should "be returned for every positive integer value" in {
     val testValues = List(0,1,3,5,8,12,16)
-    val expectedValues = List(0,0,1,2,3,3,4)
-    testValues.map(a => DDS.lg_2_int(a)) shouldBe expectedValues
+    val expectedValues = List(0,0,2,3,3,4,4)
+    testValues.map(a => DDS.lg_2_int_ceil(a)) shouldBe expectedValues
   }
 
 }

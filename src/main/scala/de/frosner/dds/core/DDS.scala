@@ -335,13 +335,13 @@ object DDS {
   @Help(
     category = "Spark Core",
     shortDescription = "Plots a histogram chart of a numerical RDD, using an optimal binning formula",
-    longDescription = "Plots a histogram chart of a numerical RDD visualizing the given dataset. Sturge's Formula is used to determine bins",
+    longDescription = "Plots a histogram chart of a numerical RDD visualizing the given dataset."+
+      "Sturge's Formula is used to determine bins.",
     parameters = "values: RDD[Numeric]"
   )
   def histogram[N](values: RDD[N])(implicit num:  Numeric[N]):Unit = {
-    import num._
     //Sturge's formula:
-    val numBins = lg_2_int(values.count)
+    val numBins = lg_2_int_ceil(values.count)+1
     val (buckets, frequencies) = values.map(v => num.toDouble(v)).histogram(numBins)
     histogram(buckets,frequencies)
   }
@@ -656,15 +656,19 @@ object DDS {
     summarizeGroups(toBeGroupedValues.groupByKey())
   }
 
-  def lg_2_int(count:Long) : Integer = {
+  def lg_2_int_ceil(count:Long) : Integer = {
     //integer lg_2 can be calculated by bitshifting
     var log = 0
     var count_down = count
-    while (count_down> 1){
-      count_down = count_down>>1
-      log+=1
+    while (count_down> 1) {
+      count_down = count_down >> 1
+      log += 1
     }
-    log
+    //ceiling by checking whether each LSB was zero, adding 1 if not.
+    if (count == 1<<log || count==0)
+      log
+    else
+      log + 1
   }
 
 }
