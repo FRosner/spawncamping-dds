@@ -311,11 +311,12 @@ object DDS {
     category = "Spark Core",
     shortDescription = "Plots a histogram of a numerical RDD for the given number of buckets",
     longDescription = "Plots a histogram of a numerical RDD for the given number of buckets. " +
-      "The number of buckets parameter is optional having the default value of 10.",
-    parameters = "values: RDD[NumericValue], (optional) numBuckets: Int"
+      "The number of buckets parameter is optional - if zero, Sturge's formula is used to determine an optimum number of bins",
+    parameters = "values: RDD[NumericValue], numBuckets: Int"
   )
-  def histogram[N: ClassTag](values: RDD[N], numBuckets: Int = 100)(implicit num: Numeric[N]): Unit = {
-    val (buckets, frequencies) = values.map(v => num.toDouble(v)).histogram(numBuckets)
+  def histogram[N: ClassTag](values: RDD[N], numBuckets: Integer)(implicit num: Numeric[N]): Unit = {
+    val localNumBuckets :Int = if (numBuckets == 0) lg_2_int_ceil(values.count)+1 else numBuckets
+    val (buckets, frequencies) = values.map(v => num.toDouble(v)).histogram(localNumBuckets)
     histogram(buckets, frequencies)
   }
 
@@ -330,20 +331,6 @@ object DDS {
                                            (implicit num1: Numeric[N1], num2: Numeric[N2]): Unit = {
     val frequencies = values.map(v => num1.toLong(v)).histogram(buckets.map(b => num2.toDouble(b)).toArray, false)
     histogram(buckets, frequencies)
-  }
-
-  @Help(
-    category = "Spark Core",
-    shortDescription = "Plots a histogram chart of a numerical RDD, using an optimal binning formula",
-    longDescription = "Plots a histogram chart of a numerical RDD visualizing the given dataset."+
-      "Sturge's Formula is used to determine bins.",
-    parameters = "values: RDD[Numeric]"
-  )
-  def histogram[N](values: RDD[N])(implicit num:  Numeric[N]):Unit = {
-    //Sturge's formula:
-    val numBins = lg_2_int_ceil(values.count)+1
-    val (buckets, frequencies) = values.map(v => num.toDouble(v)).histogram(numBins)
-    histogram(buckets,frequencies)
   }
 
   @Help(
