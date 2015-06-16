@@ -46,6 +46,8 @@ libraryDependencies += "org.apache.spark" %% "spark-graphx" % "1.3.0" % "provide
 
 libraryDependencies += "org.apache.spark" %% "spark-sql" % "1.3.0" % "provided"
 
+libraryDependencies += "org.slf4j" % "slf4j-log4j12" % "1.7.10"
+
 libraryDependencies += "org.scalaj" %% "scalaj-http" % "1.1.4"
 
 libraryDependencies += "org.scalamock" %% "scalamock-scalatest-support" % "3.2.1" % "test"
