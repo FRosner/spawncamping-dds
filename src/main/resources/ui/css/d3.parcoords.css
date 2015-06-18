@@ -1,5 +1,5 @@
 .parcoords > svg, .parcoords > canvas {
-  font: 14px sans-serif;
+  font: 12px sans-serif;
   position: absolute;
 }
 .parcoords > canvas {
@@ -60,19 +60,19 @@
 	fill: url(#gradient);
 }
 
-#hideLabelButton {
+.hideLabelButton {
   margin-top:1px;
   background-image:url("/ui/img/letters.png");
 }
 
-#hideLabelButton.hidden {
+.hideLabelButton.hidden {
   background-position:14px;
 }
 
-#hideLabelButton.unhidden {
+.hideLabelButton.unhidden {
   background-position:0px;
 }
 
-#hideLabelButton.unhidden:hover {
+.hideLabelButton.unhidden:hover {
   background-position:14px;
 }

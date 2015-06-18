@@ -89,3 +89,4 @@ This project is licensed under the Apache License Version 2.0. For details pleas
 | [SlickGrid](https://github.com/mleibman/SlickGrid) | MIT |
 | [Chroma.js](https://github.com/gka/chroma.js) | BSD |
 | [Underscore.js](http://underscorejs.org/) | MIT |
+| [Bootstrap](http://getbootstrap.com) | MIT |

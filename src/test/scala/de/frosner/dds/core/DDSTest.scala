@@ -1,6 +1,7 @@
 package de.frosner.dds.core
 
 import de.frosner.dds.servables.c3._
+import de.frosner.dds.servables.composite.CompositeServable
 import de.frosner.dds.servables.graph.Graph
 import de.frosner.dds.servables.histogram.Histogram
 import de.frosner.dds.servables.matrix.Matrix2D
@@ -869,6 +870,58 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     resultMatrix.rowNames.toList shouldBe List("first")
     val miMatrix = resultMatrix.entries.map(_.toSeq)
     miMatrix(0)(0) should be (0.6365142 +- epsilon)
+  }
+
+  "A correct dashboard" should "be served" in {
+    DDS.start(mockedServer)
+    val rdd = sc.parallelize(List(Row(1, "5", 5d), Row(3, "g", 5d), Row(5, "g", 6d)))
+    val dataFrame = sql.createDataFrame(rdd, StructType(List(
+      StructField("first", IntegerType, false),
+      StructField("second", StringType, false),
+      StructField("third", DoubleType, false)
+    )))
+    DDS.dashboard(dataFrame)
+    val resultDashboard = mockedServer.lastServed.get.asInstanceOf[CompositeServable]
+    val resultServables = resultDashboard.servables
+
+    resultServables.size shouldBe 5
+    resultServables(0).size shouldBe 1
+    resultServables(1).size shouldBe 2
+    resultServables(2).size shouldBe 1
+    resultServables(3).size shouldBe 1
+    resultServables(4).size shouldBe 1
+
+    val table = resultServables(0)(0).asInstanceOf[Table]
+    table.head.toList shouldBe List("first [Integer]", "second [String]", "third [Double]")
+    table.rows.toList.map(_.toList) shouldBe List(
+      List(1, "5", 5d),
+      List(3, "g", 5d),
+      List(5, "g", 6d)
+    )
+
+    val correlationServable = resultServables(1)(0).asInstanceOf[Matrix2D]
+    correlationServable.colNames.toList shouldBe List("first", "third")
+    correlationServable.rowNames.toList shouldBe List("first", "third")
+    correlationServable.entries.size shouldBe 2
+    correlationServable.entries.foreach(row => row.size shouldBe 2)
+
+    val mutualInformationServable = resultServables(1)(1).asInstanceOf[Matrix2D]
+    mutualInformationServable.colNames.toList shouldBe List("first", "second", "third")
+    mutualInformationServable.rowNames.toList shouldBe List("first", "second", "third")
+    mutualInformationServable.entries.size shouldBe 3
+    mutualInformationServable.entries.foreach(row => row.size shouldBe 3)
+
+    val column1Summary = resultServables(2)(0).asInstanceOf[Table]
+    column1Summary.head.toList shouldBe List("count", "sum", "min", "max", "mean", "stdev", "variance")
+    column1Summary.rows(0)(1) shouldBe 9d // sum of 9 for first column
+
+    val column2Summary = resultServables(3)(0).asInstanceOf[Table]
+    column2Summary.head.toList shouldBe List("mode", "cardinality")
+    column2Summary.rows(0)(0) shouldBe "g" // mode of "g" for second column
+
+    val column3Summary = resultServables(4)(0).asInstanceOf[Table]
+    column3Summary.head.toList shouldBe List("count", "sum", "min", "max", "mean", "stdev", "variance")
+    column3Summary.rows(0)(1) shouldBe 16d // sum of 16 for third column
   }
 
   "Help" should "work" in {

@@ -17,6 +17,98 @@ function toggleUpdating() {
 $(document)
   .ready(toggleUpdating);
 
+document.servablesCache = {};
+function getCache(id) {
+  if (!document.servablesCache[id]) {
+    // lazy initialization
+    document.servablesCache[id] = {};
+  }
+  return document.servablesCache[id];
+}
+
+function drawServable(servable, headerId, contentId) {
+  if (servable.type == "composite") {
+    return new Composite()
+      .header(headerId)
+      .content(contentId)
+      .margin({
+        top: 30,
+        right: 0,
+        bottom: 0,
+        left: 0
+      })
+      .data(servable.content)
+      .draw();
+  } else if (servable.type == "chart") {
+    return new C3Chart()
+      .header(headerId)
+      .content(contentId)
+      .margin({
+        top: 5,
+        right: 15,
+        left: 60
+      })
+      .data(servable.content)
+      .draw();
+  } else if (servable.type == "table") {
+    return new Table()
+      .header(headerId)
+      .content(contentId)
+      .margin({
+        top: 30,
+        right: 0,
+        bottom: 0,
+        left: 0
+      })
+      .data(servable.content)
+      .draw();
+  } else if (servable.type == "histogram") {
+    return new Histogram()
+      .header(headerId)
+      .content(contentId)
+      .margin({
+        top: 20,
+        right: 60,
+        bottom: 60,
+        left: 60
+      })
+      .data(servable.content)
+      .draw();
+  } else if (servable.type == "graph") {
+    return new Graph()
+      .header(headerId)
+      .content(contentId)
+      .data(servable.content)
+      .draw();
+  } else if (servable.type == "points-2d") {
+    return new Scatter2D()
+      .header(headerId)
+      .content(contentId)
+      .margin({
+        top: 10,
+        right: 15,
+        bottom: 60,
+        left: 60
+      })
+      .data(servable.content)
+      .draw();
+  } else if (servable.type == "matrix") {
+    return new Matrix()
+      .header(headerId)
+      .content(contentId)
+      .margin({
+        top: 10,
+        right: 15,
+        bottom: 60,
+        left: 60
+      })
+      .data(servable.content)
+      .draw();
+  } else {
+    console.error("Unrecognized response: " + response);
+  }
+}
+
 function checkForUpdate() {
   $.ajax({
     url: "/chart/update",
@@ -32,74 +124,7 @@ function checkForUpdate() {
           }
           document.getElementById(contentId)
             .innerHTML = "";
-          if (servable.type == "chart") {
-            document.lastServed = new C3Chart()
-              .header(headerId)
-              .content(contentId)
-              .margin({
-                top: 15,
-                right: 15,
-                left: 60
-              })
-              .data(servable.content)
-              .draw();
-          } else if (servable.type == "table") {
-            document.lastServed = new Table()
-              .header(headerId)
-              .content(contentId)
-              .margin({
-                top: 40,
-                right: 0,
-                bottom: 0,
-                left: 0
-              })
-              .data(servable.content)
-              .draw();
-          } else if (servable.type == "histogram") {
-            document.lastServed = new Histogram()
-              .header(headerId)
-              .content(contentId)
-              .margin({
-                top: 30,
-                right: 60,
-                bottom: 60,
-                left: 60
-              })
-              .data(servable.content)
-              .draw();
-          } else if (servable.type == "graph") {
-            document.lastServed = new Graph()
-              .header(headerId)
-              .content(contentId)
-              .data(servable.content)
-              .draw();
-          } else if (servable.type == "points-2d") {
-            document.lastServed = new Scatter2D()
-              .header(headerId)
-              .content(contentId)
-              .margin({
-                top: 20,
-                right: 15,
-                bottom: 60,
-                left: 60
-              })
-              .data(servable.content)
-              .draw();
-          } else if (servable.type == "matrix") {
-            document.lastServed = new Matrix()
-              .header(headerId)
-              .content(contentId)
-              .margin({
-                top: 20,
-                right: 15,
-                bottom: 60,
-                left: 60
-              })
-              .data(servable.content)
-              .draw();
-          } else {
-            console.error("Unrecognized response: " + response);
-          }
+          document.lastServed = drawServable(servable, headerId, contentId);
           document.isNewVisualization = false;
         });
       }

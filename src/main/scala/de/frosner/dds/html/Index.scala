@@ -12,6 +12,7 @@ object Index {
         <link href="/ui/css/matrix.css" rel="stylesheet" type="text/css"></link>
         <link href="/ui/css/scatter.css" rel="stylesheet" type="text/css"></link>
         <link href="/ui/css/d3.parcoords.css" rel="stylesheet" type="text/css"></link>
+        <link href="/ui/css/bootstrap.min.css" rel="stylesheet" type="text/css"></link>
         <script src="/ui/lib/d3.v3.min.js" charset="utf-8"></script>
         <script src="/ui/lib/d3.parcoords.min.js" charset="utf-8"></script>
         <script src="/ui/lib/c3.min.js"></script>
@@ -30,7 +31,7 @@ object Index {
         <script src="/ui/lib/divgrid.min.js"></script>
       </head>
       <body>
-        <div id="header">
+        <div id="header" class="header">
           <input type="text" id="vizTitle" value="Visualization Title"/>
           <div id="lockButton" onclick="toggleUpdating()" class="headerButton unlocked" title="Lock Vizboard"></div>
         </div>
@@ -45,6 +46,7 @@ object Index {
           <script src="/ui/app/C3Chart.js"></script>
           <script src="/ui/app/Histogram.js"></script>
           <script src="/ui/app/Graph.js"></script>
+          <script src="/ui/app/Composite.js"></script>
         </div>
       </body>
     </html>

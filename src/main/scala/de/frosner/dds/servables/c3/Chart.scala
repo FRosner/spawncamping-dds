@@ -13,18 +13,9 @@ case class Chart(data: Data, xAxis: XAxis = XAxis.indexed) extends Servable {
 
   val servableType = "chart"
 
-  val bindTo = "#" + Chart.id
-
   def contentAsJson: JsValue = JsObject(
-    ("bindto", JsString(bindTo)),
     ("data", data.toJson),
     ("axis", JsObject(("x", xAxis.toJson)))
   )
-
-}
-
-object Chart{
-
-  val id = "chart"
 
 }

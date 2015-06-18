@@ -3,6 +3,7 @@ package de.frosner.dds.core
 import de.frosner.dds.analytics.{MutualInformationAggregator, CorrelationAggregator}
 import de.frosner.dds.servables.c3.ChartTypeEnum.ChartType
 import de.frosner.dds.servables.c3._
+import de.frosner.dds.servables.composite.CompositeServable
 import de.frosner.dds.servables.graph.Graph
 import de.frosner.dds.servables.histogram.Histogram
 import de.frosner.dds.servables.matrix.Matrix2D
@@ -118,7 +119,10 @@ object DDS {
     helper.printMethods(methodName, System.out)
   }
 
-  private def serve(servable: Servable) = {
+  private def serve(maybeServable: Option[Servable]): Unit =
+    maybeServable.foreach(servable => serve(servable))
+
+  private def serve(servable: Servable): Unit = {
     logger.debug(s"Attempting to serve $servable to $server")
     if (server.isDefined) {
       server.get.serve(servable)
@@ -173,6 +177,18 @@ object DDS {
     serve(Points2D(values)(num1, num2))
   }
 
+  private def createHeatmap[N](values: Seq[Seq[N]], rowNames: Seq[String] = null, colNames: Seq[String] = null)
+                              (implicit num: Numeric[N]): Option[Servable] = {
+    if (values.size == 0 || values.head.size == 0) {
+      println("Can't show empty heatmap!")
+      Option.empty
+    } else {
+      val actualRowNames: Seq[String] = if (rowNames != null) rowNames else (1 to values.size).map(_.toString)
+      val actualColNames: Seq[String] = if (colNames != null) colNames else (1 to values.head.size).map(_.toString)
+      Option(Matrix2D(values.map(_.map(entry => num.toDouble(entry))), actualRowNames, actualColNames))
+    }
+  }
+
   @Help(
     category = "Scala",
     shortDescription = "Plots a heat map",
@@ -183,13 +199,7 @@ object DDS {
   )
   def heatmap[N](values: Seq[Seq[N]], rowNames: Seq[String] = null, colNames: Seq[String] = null)
                 (implicit num: Numeric[N]): Unit = {
-    if (values.size == 0 || values.head.size == 0) {
-      println("Can't show empty heatmap!")
-    } else {
-      val actualRowNames: Seq[String] = if (rowNames != null) rowNames else (1 to values.size).map(_.toString)
-      val actualColNames: Seq[String] = if (colNames != null) colNames else (1 to values.head.size).map(_.toString)
-      serve(Matrix2D(values.map(_.map(entry => num.toDouble(entry))), actualRowNames, actualColNames))
-    }
+    serve(createHeatmap(values, rowNames, colNames)(num))
   }
 
   @Help(
@@ -363,6 +373,10 @@ object DDS {
     serve(table)
   }
 
+  private def createTable(head: Seq[String], rows: Seq[Seq[Any]]): Option[Servable] = {
+    Option(Table(head, rows))
+  }
+
   @Help(
     category = "Scala",
     shortDescription = "Displays data in tabular format",
@@ -371,7 +385,7 @@ object DDS {
     parameters = "head: Seq[String], rows: Seq[Seq[Any]]"
   )
   def table(head: Seq[String], rows: Seq[Seq[Any]]): Unit = {
-    table(Table(head, rows))
+    serve(createTable(head, rows))
   }
 
   @Help(
@@ -423,14 +437,7 @@ object DDS {
   def show[V](rdd: RDD[V])(implicit tag: TypeTag[V]): Unit =
     show(rdd, DEFAULT_SHOW_SAMPLE_SIZE)(tag)
 
-  @Help(
-    category = "Spark Core",
-    shortDescription = "Shows the first rows of a DataFrame",
-    longDescription = "Shows the first rows of a DataFrame. In addition to a tabular view DDS also shows visualizations" +
-      "of the data. The second argument is optional and determines the sample size.",
-    parameters = "rdd: DataFrame, (optional) sampleSize: Int"
-  )
-  def show(dataFrame: DataFrame, sampleSize: Int): Unit = {
+  private def createShow(dataFrame: DataFrame, sampleSize: Int): Option[Servable] = {
     val fields = dataFrame.schema.fields
     val nullableColumns = (0 to fields.size - 1).zip(fields).filter {
       case (index, field) => field.nullable
@@ -448,8 +455,19 @@ object DDS {
     val fieldNames = dataFrame.schema.fields.map(field => {
       s"""${field.name} [${field.dataType.toString.replace("Type", "")}${if (field.nullable) "*" else ""}]"""
     })
-    table(fieldNames, values)
+    createTable(fieldNames, values)
   }
+
+  @Help(
+    category = "Spark Core",
+    shortDescription = "Shows the first rows of a DataFrame",
+    longDescription = "Shows the first rows of a DataFrame. In addition to a tabular view DDS also shows visualizations" +
+      "of the data. The second argument is optional and determines the sample size.",
+    parameters = "rdd: DataFrame, (optional) sampleSize: Int"
+  )
+  def show(dataFrame: DataFrame, sampleSize: Int): Unit =
+    serve(createShow(dataFrame, sampleSize))
+
   def show(dataFrame: DataFrame): Unit =
     show(dataFrame, DEFAULT_SHOW_SAMPLE_SIZE)
 
@@ -516,14 +534,7 @@ object DDS {
     )
   }
 
-  @Help(
-    category = "Spark Statistics",
-    shortDescription = "Computes pearson correlation between numerical columns",
-    longDescription = "Computes pearson correlation between numerical columns. There need to be at least two numerical," +
-      " non-nullable columns in the table. The columns must not be nullable.",
-    parameters = "dataFrame: DataFrame"
-  )
-  def correlation(dataFrame: DataFrame) = {
+  private def createCorrelation(dataFrame: DataFrame): Option[Servable] = {
     def showError = println("Correlation only supported for RDDs with multiple numerical columns.")
     val schema = dataFrame.schema
     val fields = schema.fields
@@ -564,12 +575,48 @@ object DDS {
           corrMatrix(i)(j) = corr
         }
         val fieldNames = numericalFields.map{ case (field, idx) => field.name }
-        heatmap(corrMatrix, fieldNames, fieldNames)
+        createHeatmap(corrMatrix, fieldNames, fieldNames)
       } else {
         showError
+        Option.empty
       }
     } else {
       showError
+      Option.empty
+    }
+  }
+
+  @Help(
+    category = "Spark Statistics",
+    shortDescription = "Computes pearson correlation between numerical columns",
+    longDescription = "Computes pearson correlation between numerical columns. There need to be at least two numerical," +
+      " non-nullable columns in the table. The columns must not be nullable.",
+    parameters = "dataFrame: DataFrame"
+  )
+  def correlation(dataFrame: DataFrame): Unit = {
+    serve(createCorrelation(dataFrame))
+  }
+
+  def createMutualInformation(dataFrame: DataFrame): Option[Servable] = {
+    def showError = println("Mutual information only supported for RDDs with at least one column.")
+    val schema = dataFrame.schema
+    val fields = schema.fields
+    if (fields.size >= 1) {
+      val corrAgg = dataFrame.rdd.aggregate(new MutualInformationAggregator(fields.size)) (
+        (agg, row) => agg.iterate(row.toSeq),
+        (agg1, agg2) => agg1.merge(agg2)
+      )
+      var mutualInformationMatrix: mutable.Seq[mutable.Seq[Double]] = new ArrayBuffer(corrAgg.numColumns) ++
+        List.fill(corrAgg.numColumns)(new ArrayBuffer[Double](corrAgg.numColumns) ++
+          List.fill(corrAgg.numColumns)(0d))
+      for (((i, j), corr) <- corrAgg.mutualInformation) {
+        mutualInformationMatrix(i)(j) = corr
+      }
+      val fieldNames = fields.map(_.name)
+      createHeatmap(mutualInformationMatrix, fieldNames, fieldNames)
+    } else {
+      showError
+      Option.empty
     }
   }
 
@@ -581,25 +628,7 @@ object DDS {
     parameters = "dataFrame: DataFrame"
   )
   def mutualInformation(dataFrame: DataFrame) = {
-    def showError = println("Mutual information only supported for RDDs with at least one column.")
-    val schema = dataFrame.schema
-    val fields = schema.fields
-    if (fields.size >= 1) {
-        val corrAgg = dataFrame.rdd.aggregate(new MutualInformationAggregator(fields.size)) (
-          (agg, row) => agg.iterate(row.toSeq),
-          (agg1, agg2) => agg1.merge(agg2)
-        )
-        var mutualInformationMatrix: mutable.Seq[mutable.Seq[Double]] = new ArrayBuffer(corrAgg.numColumns) ++
-          List.fill(corrAgg.numColumns)(new ArrayBuffer[Double](corrAgg.numColumns) ++
-            List.fill(corrAgg.numColumns)(0d))
-        for (((i, j), corr) <- corrAgg.mutualInformation) {
-          mutualInformationMatrix(i)(j) = corr
-        }
-        val fieldNames = fields.map(_.name)
-        heatmap(mutualInformationMatrix, fieldNames, fieldNames)
-    } else {
-      showError
-    }
+    serve(createMutualInformation(dataFrame))
   }
 
   @Help(
@@ -629,6 +658,25 @@ object DDS {
     }
   }
 
+  private def createSummarize[N: ClassTag](values: RDD[N])(implicit num: Numeric[N] = null): Option[Servable] = {
+    if (num != null) {
+      Option(Table.fromStatCounter(values.stats()))
+    } else {
+      val cardinality = values.distinct.count
+      if (cardinality > 0) {
+        val valueCounts = values.map((_, 1)).reduceByKey(_ + _)
+        val (mode, modeCount) = valueCounts.max()(Ordering.by { case (value, count) => count})
+        createTable(
+          List("mode", "cardinality"),
+          List(List(mode, cardinality))
+        )
+      } else {
+        println("Summarize function requires a non-empty RDD!")
+        Option.empty
+      }
+    }
+  }
+
   @Help(
     category = "Spark Statistics",
     shortDescription = "Shows some basic summary statistics of the given dataset",
@@ -638,21 +686,7 @@ object DDS {
     parameters = "values: RDD[NumericValue]"
   )
   def summarize[N: ClassTag](values: RDD[N])(implicit num: Numeric[N] = null): Unit = {
-    if (num != null) {
-      table(Table.fromStatCounter(values.stats()))
-    } else {
-      val cardinality = values.distinct.count
-      if (cardinality > 0) {
-        val valueCounts = values.map((_, 1)).reduceByKey(_ + _)
-        val (mode, modeCount) = valueCounts.max()(Ordering.by { case (value, count) => count})
-        table(
-          List("mode", "cardinality"),
-          List(List(mode, cardinality))
-        )
-      } else {
-        println("Summarize function requires a non-empty RDD!")
-      }
-    }
+    serve(createSummarize(values))
   }
 
   @Help(
@@ -681,6 +715,42 @@ object DDS {
   )
   def groupAndSummarize[K: ClassTag, N: ClassTag](toBeGroupedValues: RDD[(K, N)])(implicit num: Numeric[N]): Unit = {
     summarizeGroups(toBeGroupedValues.groupByKey())
+  }
+
+  @Help(
+    category = "Spark Statistics",
+    shortDescription = "Gives an overview of the given data set in form of a dashboard.",
+    longDescription = "Gives an overview of the given data set in form of a dashboard. " +
+      "The dashboard contains a sample, measures for column dependencies and summary statistics for each column. " +
+      "It might make sense to cache the data set before passing it to this function.",
+    parameters = "dataFrame: DataFrame"
+  )
+  def dashboard(dataFrame: DataFrame): Unit = {
+    val rdd = dataFrame.rdd
+    val columnTypes = dataFrame.schema.fields
+
+    val summaries = for (i <- 0 to dataFrame.columns.size - 1; columnType = columnTypes(i))
+      yield {
+        def createSummarizeOf[T: ClassTag](implicit num: Numeric[T] = null) = {
+          val column = rdd.flatMap(row => {
+            Option(row(i)).map(_.asInstanceOf[T])
+          })
+          createSummarize(column)
+        }
+        columnType.dataType match {
+          case DoubleType => createSummarizeOf[Double]
+          case IntegerType => createSummarizeOf[Int]
+          case FloatType => createSummarizeOf[Float]
+          case LongType => createSummarizeOf[Long]
+          case default => createSummarizeOf[Any]
+        }
+      }
+
+    def toCell(maybeServable: Option[Servable]) = maybeServable.map(servable => List(servable)).getOrElse(List.empty)
+    serve(CompositeServable(List(
+      toCell(createShow(dataFrame, DEFAULT_SHOW_SAMPLE_SIZE)),
+      toCell(createCorrelation(dataFrame)) ++ toCell(createMutualInformation(dataFrame))
+    ) ++ summaries.map(summary => toCell(summary))))
   }
 
 }

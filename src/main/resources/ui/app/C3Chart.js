@@ -6,7 +6,8 @@ C3Chart.prototype.constructor = Visualization;
 C3Chart.prototype.parent = Visualization.prototype;
 
 C3Chart.prototype._draw = function(chart) {
-  this._chartDiv = generateDiv(document.getElementById("content"), "chart");
+  this._chartDiv = generateDiv(this._content, "chart-" + this._content.id);
+  chart.bindto = "#" + this._chartDiv.id;
   var marginForLegend = 40;
   chart.size = {
     width: this._width,

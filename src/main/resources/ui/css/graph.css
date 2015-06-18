@@ -13,53 +13,53 @@
   fill: #555;
 }
 
-#triggerNodeLabelsButton {
+.triggerNodeLabelsButton {
   margin-top:1px;
   background-image:url("/ui/img/nodeLabel.png");
 }
 
-#triggerNodeLabelsButton.visible {
+.triggerNodeLabelsButton.visible {
   background-position:0px;
 }
 
-#triggerNodeLabelsButton.hidden {
+.triggerNodeLabelsButton.hidden {
   background-position:14px;
 }
 
-#triggerNodeLabelsButton.visible:hover {
+.triggerNodeLabelsButton.visible:hover {
   background-position:14px;
 }
 
-#triggerEdgeLabelsButton {
+.triggerEdgeLabelsButton {
   margin-top:1px;
   background-image:url("/ui/img/edgeLabel.png");
 }
 
-#triggerEdgeLabelsButton.visible {
+.triggerEdgeLabelsButton.visible {
   background-position:0px;
 }
 
-#triggerEdgeLabelsButton.hidden {
+.triggerEdgeLabelsButton.hidden {
   background-position:14px;
 }
 
-#triggerEdgeLabelsButton.visible:hover {
+.triggerEdgeLabelsButton.visible:hover {
   background-position:14px;
 }
 
-#triggerDirectionsButton {
+.triggerDirectionsButton {
   margin-top:1px;
   background-image:url("/ui/img/arrowHead.png");
 }
 
-#triggerDirectionsButton.visible {
+.triggerDirectionsButton.visible {
   background-position:0px;
 }
 
-#triggerDirectionsButton.hidden {
+.triggerDirectionsButton.hidden {
   background-position:14px;
 }
 
-#triggerDirectionsButton.visible:hover {
+.triggerDirectionsButton.visible:hover {
   background-position:14px;
 }
