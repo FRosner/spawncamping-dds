@@ -63,7 +63,7 @@ package object datasets {
 
   def flights(implicit sc: SparkContext): RDD[FlightsRow] = {
     val (rawHead, rawBody) = readFlights
-    sc.parallelize(rawBody, 100).map(line => {
+    sc.parallelize(rawBody.map(line => {
       val split = line.split(",", -1).map(_.replace("\"", ""))
       FlightsRow(
         flightDate = flightDateFormat.parse(split(0)),
@@ -87,7 +87,7 @@ package object datasets {
         securityDelay = Try(split(18).toDouble).toOption,
         lateAircraftDelay = Try(split(19).toDouble).toOption
       )
-    })
+    }), 100)
   }
 
   def flights(implicit sc: SparkContext, sql: SQLContext): DataFrame = {
@@ -114,7 +114,7 @@ package object datasets {
       case "SECURITY_DELAY" => StructField("Security Delay", DoubleType, true)
       case "LATE_AIRCRAFT_DELAY" => StructField("Late Aircraft Delay", DoubleType, true)
     })
-    val data = sc.parallelize(rawBody, 100).map(line => {
+    val data = sc.parallelize(rawBody.map(line => {
       val split = line.split(",", -1).map(_.replace("\"", ""))
       Row(
         flightDateFormat.parse(split(0)),
@@ -138,7 +138,7 @@ package object datasets {
         Try(split(18).toDouble).toOption.getOrElse(null),
         Try(split(19).toDouble).toOption.getOrElse(null)
       )
-    })
+    }), 100)
     sql.createDataFrame(data, StructType(schema))
   }
 
