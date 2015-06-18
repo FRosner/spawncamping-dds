@@ -119,9 +119,10 @@ object DDS {
     helper.printMethods(methodName, System.out)
   }
 
-  // TODO create "serveMaybe" taking an optional servable and doing the foreach
+  private def serve(maybeServable: Option[Servable]): Unit =
+    maybeServable.foreach(servable => serve(servable))
 
-  private def serve(servable: Servable) = {
+  private def serve(servable: Servable): Unit = {
     logger.debug(s"Attempting to serve $servable to $server")
     if (server.isDefined) {
       server.get.serve(servable)
@@ -198,7 +199,7 @@ object DDS {
   )
   def heatmap[N](values: Seq[Seq[N]], rowNames: Seq[String] = null, colNames: Seq[String] = null)
                 (implicit num: Numeric[N]): Unit = {
-    createHeatmap(values, rowNames, colNames)(num).foreach(servable => serve(servable))
+    serve(createHeatmap(values, rowNames, colNames)(num))
   }
 
   @Help(
@@ -384,7 +385,7 @@ object DDS {
     parameters = "head: Seq[String], rows: Seq[Seq[Any]]"
   )
   def table(head: Seq[String], rows: Seq[Seq[Any]]): Unit = {
-    createTable(head, rows).foreach(servable => serve(servable))
+    serve(createTable(head, rows))
   }
 
   @Help(
@@ -465,7 +466,7 @@ object DDS {
     parameters = "rdd: DataFrame, (optional) sampleSize: Int"
   )
   def show(dataFrame: DataFrame, sampleSize: Int): Unit =
-    createShow(dataFrame, sampleSize).foreach(servable => serve(servable))
+    serve(createShow(dataFrame, sampleSize))
 
   def show(dataFrame: DataFrame): Unit =
     show(dataFrame, DEFAULT_SHOW_SAMPLE_SIZE)
@@ -593,7 +594,7 @@ object DDS {
     parameters = "dataFrame: DataFrame"
   )
   def correlation(dataFrame: DataFrame): Unit = {
-    createCorrelation(dataFrame).foreach(servable => serve(servable))
+    serve(createCorrelation(dataFrame))
   }
 
   def createMutualInformation(dataFrame: DataFrame): Option[Servable] = {
@@ -627,7 +628,7 @@ object DDS {
     parameters = "dataFrame: DataFrame"
   )
   def mutualInformation(dataFrame: DataFrame) = {
-    createMutualInformation(dataFrame).foreach(servable => serve(servable))
+    serve(createMutualInformation(dataFrame))
   }
 
   @Help(
@@ -685,7 +686,7 @@ object DDS {
     parameters = "values: RDD[NumericValue]"
   )
   def summarize[N: ClassTag](values: RDD[N])(implicit num: Numeric[N] = null): Unit = {
-    createSummarize(values).foreach(servable => serve(servable))
+    serve(createSummarize(values))
   }
 
   @Help(
