@@ -119,6 +119,8 @@ object DDS {
     helper.printMethods(methodName, System.out)
   }
 
+  // TODO create "serveMaybe" taking an optional servable and doing the foreach
+
   private def serve(servable: Servable) = {
     logger.debug(s"Attempting to serve $servable to $server")
     if (server.isDefined) {
@@ -655,6 +657,25 @@ object DDS {
     }
   }
 
+  private def createSummarize[N: ClassTag](values: RDD[N])(implicit num: Numeric[N] = null): Option[Servable] = {
+    if (num != null) {
+      Option(Table.fromStatCounter(values.stats()))
+    } else {
+      val cardinality = values.distinct.count
+      if (cardinality > 0) {
+        val valueCounts = values.map((_, 1)).reduceByKey(_ + _)
+        val (mode, modeCount) = valueCounts.max()(Ordering.by { case (value, count) => count})
+        createTable(
+          List("mode", "cardinality"),
+          List(List(mode, cardinality))
+        )
+      } else {
+        println("Summarize function requires a non-empty RDD!")
+        Option.empty
+      }
+    }
+  }
+
   @Help(
     category = "Spark Statistics",
     shortDescription = "Shows some basic summary statistics of the given dataset",
@@ -664,21 +685,7 @@ object DDS {
     parameters = "values: RDD[NumericValue]"
   )
   def summarize[N: ClassTag](values: RDD[N])(implicit num: Numeric[N] = null): Unit = {
-    if (num != null) {
-      table(Table.fromStatCounter(values.stats()))
-    } else {
-      val cardinality = values.distinct.count
-      if (cardinality > 0) {
-        val valueCounts = values.map((_, 1)).reduceByKey(_ + _)
-        val (mode, modeCount) = valueCounts.max()(Ordering.by { case (value, count) => count})
-        table(
-          List("mode", "cardinality"),
-          List(List(mode, cardinality))
-        )
-      } else {
-        println("Summarize function requires a non-empty RDD!")
-      }
-    }
+    createSummarize(values).foreach(servable => serve(servable))
   }
 
   @Help(
@@ -709,14 +716,40 @@ object DDS {
     summarizeGroups(toBeGroupedValues.groupByKey())
   }
 
+  @Help(
+    category = "Spark Statistics",
+    shortDescription = "Gives an overview of the given data set in form of a dashboard.",
+    longDescription = "Gives an overview of the given data set in form of a dashboard. " +
+      "The dashboard contains a sample, measures for column dependencies and summary statistics for each column. " +
+      "It might make sense to cache the data set before passing it to this function.",
+    parameters = "dataFrame: DataFrame"
+  )
   def dashboard(dataFrame: DataFrame): Unit = {
-    val cachedDataFrame = dataFrame.cache()
+    val rdd = dataFrame.rdd
+    val columnTypes = dataFrame.schema.fields
+
+    val summaries = for (i <- 0 to dataFrame.columns.size - 1; columnType = columnTypes(i))
+      yield {
+        def createSummarizeOf[T: ClassTag](implicit num: Numeric[T] = null) = {
+          val column = rdd.flatMap(row => {
+            Option(row(i)).map(_.asInstanceOf[T])
+          })
+          createSummarize(column)
+        }
+        columnType.dataType match {
+          case DoubleType => createSummarizeOf[Double]
+          case IntegerType => createSummarizeOf[Int]
+          case FloatType => createSummarizeOf[Float]
+          case LongType => createSummarizeOf[Long]
+          case default => createSummarizeOf[Any]
+        }
+      }
 
     def toCell(maybeServable: Option[Servable]) = maybeServable.map(servable => List(servable)).getOrElse(List.empty)
     serve(CompositeServable(List(
-      toCell(createShow(cachedDataFrame, DEFAULT_SHOW_SAMPLE_SIZE)),
-      toCell(createCorrelation(cachedDataFrame)) ++ toCell(createMutualInformation(cachedDataFrame))
-    )))
+      toCell(createShow(dataFrame, DEFAULT_SHOW_SAMPLE_SIZE)),
+      toCell(createCorrelation(dataFrame)) ++ toCell(createMutualInformation(dataFrame))
+    ) ++ summaries.map(summary => toCell(summary))))
   }
 
 }
