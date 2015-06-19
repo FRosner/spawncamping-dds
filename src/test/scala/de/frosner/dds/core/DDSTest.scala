@@ -234,7 +234,7 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     DDS.histogram(values, 4)
 
     val actualChart = mockedServer.lastServed.get.asInstanceOf[Histogram]
-    // Bug in Spark -> 3 bins don't work
+    // Bug in Spark 1.2 -> 3 bins don't work
     // Histogram(ArrayBuffer(1.0, 1.6666666666666665, 2.333333333333333, 3.0),ArrayBuffer(3.0, 1.0, 0.0))
     actualChart.bins.toList shouldBe(List(1.0, 1.5, 2.0, 2.5, 3.0))
     actualChart.frequencies.toList shouldBe List(3,0,1,2)
