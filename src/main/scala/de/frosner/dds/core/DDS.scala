@@ -317,15 +317,17 @@ object DDS {
   def pie[V: ClassTag](values: RDD[V]): Unit = {
     pie(values.map((_, 1)).reduceByKey(_ + _).collect)
   }
+  
+  private val DEFAULT_HISTOGRAM_NUM_BUCKETS = 100
 
   @Help(
     category = "Spark Core",
     shortDescription = "Plots a histogram of a numerical RDD for the given number of buckets",
     longDescription = "Plots a histogram of a numerical RDD for the given number of buckets. " +
-      "The number of buckets parameter is optional having the default value of 10.",
+      "The number of buckets parameter is optional having the default value of 100.",
     parameters = "values: RDD[NumericValue], (optional) numBuckets: Int"
   )
-  def histogram[N: ClassTag](values: RDD[N], numBuckets: Int = 100)(implicit num: Numeric[N]): Unit = {
+  def histogram[N: ClassTag](values: RDD[N], numBuckets: Int = DEFAULT_HISTOGRAM_NUM_BUCKETS)(implicit num: Numeric[N]): Unit = {
     val (buckets, frequencies) = values.map(v => num.toDouble(v)).histogram(numBuckets)
     histogram(buckets, frequencies)
   }
@@ -342,6 +344,84 @@ object DDS {
     val frequencies = values.map(v => num1.toLong(v)).histogram(buckets.map(b => num2.toDouble(b)).toArray, false)
     histogram(buckets, frequencies)
   }
+
+  @Help(
+    category = "Spark SQL",
+    shortDescription = "Plots a histogram of a single column data frame for the given buckets",
+    longDescription = "Plots a histogram of a single column data frame for the given buckets. " +
+      "If the buckets do not include the complete range of possible values, some values will be missing in the histogram. " +
+      "If the column contains null values, they will be ignored in the computation.",
+    parameters = "dataFrame: DataFrame, buckets: Seq[NumericValue]"
+  )
+  def histogram[N: ClassTag](dataFrame: DataFrame, buckets: Seq[N])(implicit num: Numeric[N]): Unit = {
+    if (dataFrame.columns.size != 1) {
+      println("Histogram function only supported on single columns.")
+      println
+      help("histogram")
+    } else {
+      val fieldType = dataFrame.schema.fields.head
+      val rdd = dataFrame.rdd
+      (fieldType.dataType, fieldType.nullable) match {
+        case (DoubleType, true) => histogram(rdd.flatMap(row =>
+          if (row.isNullAt(0)) Option.empty[Double] else Option(row.getDouble(0))
+        ), buckets)
+        case (DoubleType, false) => histogram(rdd.map(row => row.getDouble(0)), buckets)
+        case (IntegerType, true) => histogram(rdd.flatMap(row =>
+          if (row.isNullAt(0)) Option.empty[Int] else Option(row.getInt(0))
+        ), buckets)
+        case (IntegerType, false) => histogram(rdd.map(row => row.getInt(0)), buckets)
+        case (FloatType, true) => histogram(rdd.flatMap(row =>
+          if (row.isNullAt(0)) Option.empty[Float] else Option(row.getFloat(0))
+        ), buckets)
+        case (FloatType, false) => histogram(rdd.map(row => row.getFloat(0)), buckets)
+        case (LongType, true) => histogram(rdd.flatMap(row =>
+          if (row.isNullAt(0)) Option.empty[Long] else Option(row.getLong(0))
+        ), buckets)
+        case (LongType, false) => histogram(rdd.map(row => row.getLong(0)), buckets)
+        case _ => println("Histogram only supported for numerical columns.")
+      }
+    }
+  }
+
+  @Help(
+    category = "Spark SQL",
+    shortDescription = "Plots a histogram of a single column data frame for the given number of buckets",
+    longDescription = "Plots a histogram of a single column data frame for the given number of buckets. " +
+      "The number of buckets parameter is optional having the default value of 100. " +
+      "If the column contains null values, they will be ignored in the computation.",
+    parameters = "dataFrame: DataFrame, (optional) numBuckets: Int"
+  )
+  def histogram(dataFrame: DataFrame, numBuckets: Int): Unit = {
+    if (dataFrame.columns.size != 1) {
+      println("Histogram function only supported on single columns.")
+      println
+      help("histogram")
+    } else {
+      val fieldType = dataFrame.schema.fields.head
+      val rdd = dataFrame.rdd
+      (fieldType.dataType, fieldType.nullable) match {
+        case (DoubleType, true) => histogram(rdd.flatMap(row =>
+          if (row.isNullAt(0)) Option.empty[Double] else Option(row.getDouble(0))
+        ), numBuckets)
+        case (DoubleType, false) => histogram(rdd.map(row => row.getDouble(0)), numBuckets)
+        case (IntegerType, true) => histogram(rdd.flatMap(row =>
+          if (row.isNullAt(0)) Option.empty[Int] else Option(row.getInt(0))
+        ), numBuckets)
+        case (IntegerType, false) => histogram(rdd.map(row => row.getInt(0)), numBuckets)
+        case (FloatType, true) => histogram(rdd.flatMap(row =>
+          if (row.isNullAt(0)) Option.empty[Float] else Option(row.getFloat(0))
+        ), numBuckets)
+        case (FloatType, false) => histogram(rdd.map(row => row.getFloat(0)), numBuckets)
+        case (LongType, true) => histogram(rdd.flatMap(row =>
+          if (row.isNullAt(0)) Option.empty[Long] else Option(row.getLong(0))
+        ), numBuckets)
+        case (LongType, false) => histogram(rdd.map(row => row.getLong(0)), numBuckets)
+        case _ => println("Histogram only supported for numerical columns.")
+      }
+    }
+  }
+
+  def histogram(dataFrame: DataFrame): Unit = histogram(dataFrame, DEFAULT_HISTOGRAM_NUM_BUCKETS)
 
   @Help(
     category = "Spark Core",
