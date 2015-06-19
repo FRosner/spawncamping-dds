@@ -2,7 +2,7 @@ import S3._
 
 organization  := "de.frosner"
 
-version       := "2.0.0-SNAPSHOT"
+version       := "2.0.0"
 
 name          := "spawncamping-dds"
 
