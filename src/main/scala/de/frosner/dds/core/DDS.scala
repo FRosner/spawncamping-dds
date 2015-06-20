@@ -539,7 +539,7 @@ object DDS {
   }
 
   @Help(
-    category = "Spark Core",
+    category = "Spark SQL",
     shortDescription = "Shows the first rows of a DataFrame",
     longDescription = "Shows the first rows of a DataFrame. In addition to a tabular view DDS also shows visualizations" +
       "of the data. The second argument is optional and determines the sample size.",
