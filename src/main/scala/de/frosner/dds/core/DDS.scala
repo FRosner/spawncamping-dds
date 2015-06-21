@@ -317,7 +317,7 @@ object DDS {
   def pie[V: ClassTag](values: RDD[V]): Unit = {
     pie(values.map((_, 1)).reduceByKey(_ + _).collect)
   }
-  
+
   private val DEFAULT_HISTOGRAM_NUM_BUCKETS = 100
 
   @Help(
@@ -667,7 +667,7 @@ object DDS {
   }
 
   @Help(
-    category = "Spark Statistics",
+    category = "Spark SQL",
     shortDescription = "Computes pearson correlation between numerical columns",
     longDescription = "Computes pearson correlation between numerical columns. There need to be at least two numerical," +
       " non-nullable columns in the table. The columns must not be nullable.",
@@ -701,7 +701,7 @@ object DDS {
   }
 
   @Help(
-    category = "Spark Statistics",
+    category = "Spark SQL",
     shortDescription = "Computes mutual information between columns",
     longDescription = "Computes mutual information between columns. It will treat all columns as nominal variables and " +
       "thus not work well with real numerical data. Internally it uses the natural logarithm.",
@@ -712,7 +712,7 @@ object DDS {
   }
 
   @Help(
-    category = "Spark Statistics",
+    category = "Spark SQL",
     shortDescription = "Calculates the median of a numeric dataset",
     longDescription = "Calculates the median of a numeric dataset. " +
       "Note that this operation requires ordering of the elements in each partition plus lookup operations, " +
@@ -758,7 +758,7 @@ object DDS {
   }
 
   @Help(
-    category = "Spark Statistics",
+    category = "Spark Core",
     shortDescription = "Shows some basic summary statistics of the given dataset",
     longDescription = "Shows some basic summary statistics of the given dataset.\n" +
       "Statistics for numeric values are: count, sum, min, max, mean, stdev, variance\n" +
@@ -770,7 +770,7 @@ object DDS {
   }
 
   @Help(
-    category = "Spark Statistics",
+    category = "Spark Core",
     shortDescription = "Shows some basic summary statistics of the given groups",
     longDescription = "Shows some basic summary statistics of the given groups. " +
       "Statistics are: count, sum, min, max, mean, stdev, variance.",
@@ -787,7 +787,7 @@ object DDS {
   }
 
   @Help(
-    category = "Spark Statistics",
+    category = "Spark Core",
     shortDescription = "Shows some basic summary statistics of the given groups",
     longDescription = "Shows some basic summary statistics of the given groups. " +
       "Statistics are: count, sum, min, max, mean, stdev, variance.",
@@ -798,7 +798,7 @@ object DDS {
   }
 
   @Help(
-    category = "Spark Statistics",
+    category = "Spark SQL",
     shortDescription = "Gives an overview of the given data set in form of a dashboard.",
     longDescription = "Gives an overview of the given data set in form of a dashboard. " +
       "The dashboard contains a sample, measures for column dependencies and summary statistics for each column. " +
