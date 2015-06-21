@@ -239,7 +239,7 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     actualChart.xAxis shouldBe XAxis.categorical(List("1", "3", "2"))
     val actualChartData = actualChart.data.asInstanceOf[SeriesData[Int]]
     actualChartData.series.toList shouldBe List(
-      Series("data", List(3, 2, 1))
+      Series("values", List(3, 2, 1))
     )
     actualChartData.types shouldBe ChartTypes.multiple(ChartTypeEnum.Bar, 1)
   }
@@ -255,7 +255,7 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     actualChart.xAxis shouldBe XAxis.categorical(List("a", "c", "b"))
     val actualChartData = actualChart.data.asInstanceOf[SeriesData[Int]]
     actualChartData.series.toList shouldBe List(
-      Series("data", List(3, 2, 1))
+      Series("values", List(3, 2, 1))
     )
     actualChartData.types shouldBe ChartTypes.multiple(ChartTypeEnum.Bar, 1)
   }
@@ -271,7 +271,7 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     actualChart.xAxis shouldBe XAxis.categorical(List("Some(1)", "Some(3)", "None"))
     val actualChartData = actualChart.data.asInstanceOf[SeriesData[Int]]
     actualChartData.series.toList shouldBe List(
-      Series("data", List(3, 2, 1))
+      Series("values", List(3, 2, 1))
     )
     actualChartData.types shouldBe ChartTypes.multiple(ChartTypeEnum.Bar, 1)
   }
@@ -287,7 +287,7 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     actualChart.xAxis shouldBe XAxis.categorical(List("1", "3", "NA"))
     val actualChartData = actualChart.data.asInstanceOf[SeriesData[Int]]
     actualChartData.series.toList shouldBe List(
-      Series("data", List(3, 2, 1))
+      Series("values", List(3, 2, 1))
     )
     actualChartData.types shouldBe ChartTypes.multiple(ChartTypeEnum.Bar, 1)
   }

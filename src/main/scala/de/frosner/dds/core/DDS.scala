@@ -238,15 +238,20 @@ object DDS {
     indexedPlot(series, ChartTypeEnum.Line)
   }
 
+  private val DEFAULT_BAR_TITLE = "data"
+
   @Help(
     category = "Scala",
     shortDescription = "Plots a bar chart with an indexed x-axis.",
     longDescription = "Plots a bar chart with an indexed x-axis visualizing the given value sequence.",
     parameters = "values: Seq[NumericValue]"
   )
-  def bar[N](values: Seq[N])(implicit num: Numeric[N]) = {
-    bars(List("data"), List(values))
+  def bar[N](values: Seq[N], title: String)(implicit num: Numeric[N]): Unit = {
+    bars(List(title), List(values))
   }
+
+  def bar[N](values: Seq[N])(implicit num: Numeric[N]): Unit =
+    bar(values, DEFAULT_BAR_TITLE)
 
   @Help(
     category = "Scala",
@@ -254,8 +259,8 @@ object DDS {
     longDescription = "Plots a bar chart with a categorical x-axis visualizing the given value sequence.",
     parameters = "values: Seq[NumericValue], categories: Seq[String]"
   )
-  def bar[N](values: Seq[N], categories: Seq[String])(implicit num: Numeric[N]) = {
-    bars(List("data"), List(values), categories)
+  def bar[N](values: Seq[N], categories: Seq[String], title: String = DEFAULT_BAR_TITLE)(implicit num: Numeric[N]) = {
+    bars(List(title), List(values), categories)
   }
 
   @Help(
@@ -301,11 +306,13 @@ object DDS {
       "non-numeric values that have a relatively low cardinality.",
     parameters = "values: RDD[Value]"
   )
-  def bar[V: ClassTag](values: RDD[V]): Unit = {
+  def bar[V: ClassTag](values: RDD[V], title: String): Unit = {
     val (distinctValues, distinctCounts) =
       values.map((_, 1)).reduceByKey(_ + _).collect.sortBy{ case (value, count) => count }.reverse.unzip
-    bar(distinctCounts, distinctValues.map(_.toString))
+    bar(distinctCounts, distinctValues.map(_.toString), title)
   }
+
+  def bar[V: ClassTag](values: RDD[V]): Unit = bar(values, DEFAULT_BAR_TITLE)
 
   @Help(
     category = "Spark SQL",
@@ -321,16 +328,16 @@ object DDS {
       println
       help("bar")
     } else {
-      val fieldType = dataFrame.schema.fields.head
+      val field = dataFrame.schema.fields.head
       val rdd = dataFrame.rdd
-      (fieldType.nullable) match {
+      (field.nullable) match {
         case true => bar(rdd.map(row => if (nullValue == null) {
             if (row.isNullAt(0)) Option.empty[Any] else Option(row(0))
           } else {
             if (row.isNullAt(0)) nullValue else row(0)
           }
-        ))
-        case false => bar(rdd.map(row => row(0)))
+        ), field.name)
+        case false => bar(rdd.map(row => row(0)), field.name)
       }
     }
   }
