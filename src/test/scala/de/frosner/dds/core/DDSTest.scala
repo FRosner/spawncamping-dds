@@ -228,6 +228,80 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     actualChartData.types shouldBe ChartTypes.multiple(ChartTypeEnum.Bar, 1)
   }
 
+  it should "be served from a single columned non-null numerical data frame" in {
+    DDS.start(mockedServer)
+    val values = sc.makeRDD(List(Row(1), Row(1), Row(1), Row(2), Row(3), Row(3)))
+    val schema = StructType(List(StructField("values", IntegerType, false)))
+    val dataFrame = sql.createDataFrame(values, schema)
+    DDS.bar(dataFrame)
+
+    val actualChart = mockedServer.lastServed.get.asInstanceOf[Chart]
+    actualChart.xAxis shouldBe XAxis.categorical(List("1", "3", "2"))
+    val actualChartData = actualChart.data.asInstanceOf[SeriesData[Int]]
+    actualChartData.series.toList shouldBe List(
+      Series("data", List(3, 2, 1))
+    )
+    actualChartData.types shouldBe ChartTypes.multiple(ChartTypeEnum.Bar, 1)
+  }
+
+  it should "be served from a single columned non-null string data frame" in {
+    DDS.start(mockedServer)
+    val values = sc.makeRDD(List(Row("a"), Row("a"), Row("a"), Row("b"), Row("c"), Row("c")))
+    val schema = StructType(List(StructField("values", StringType, false)))
+    val dataFrame = sql.createDataFrame(values, schema)
+    DDS.bar(dataFrame)
+
+    val actualChart = mockedServer.lastServed.get.asInstanceOf[Chart]
+    actualChart.xAxis shouldBe XAxis.categorical(List("a", "c", "b"))
+    val actualChartData = actualChart.data.asInstanceOf[SeriesData[Int]]
+    actualChartData.series.toList shouldBe List(
+      Series("data", List(3, 2, 1))
+    )
+    actualChartData.types shouldBe ChartTypes.multiple(ChartTypeEnum.Bar, 1)
+  }
+
+  it should "be served from a single columned nullable data frame" in {
+    DDS.start(mockedServer)
+    val values = sc.makeRDD(List(Row(1), Row(1), Row(1), Row(null), Row(3), Row(3)))
+    val schema = StructType(List(StructField("values", IntegerType, true)))
+    val dataFrame = sql.createDataFrame(values, schema)
+    DDS.bar(dataFrame)
+
+    val actualChart = mockedServer.lastServed.get.asInstanceOf[Chart]
+    actualChart.xAxis shouldBe XAxis.categorical(List("Some(1)", "Some(3)", "None"))
+    val actualChartData = actualChart.data.asInstanceOf[SeriesData[Int]]
+    actualChartData.series.toList shouldBe List(
+      Series("data", List(3, 2, 1))
+    )
+    actualChartData.types shouldBe ChartTypes.multiple(ChartTypeEnum.Bar, 1)
+  }
+
+  it should "be served from a single columned data frame with a custom null value" in {
+    DDS.start(mockedServer)
+    val values = sc.makeRDD(List(Row(1), Row(1), Row(1), Row(null), Row(3), Row(3)))
+    val schema = StructType(List(StructField("values", IntegerType, true)))
+    val dataFrame = sql.createDataFrame(values, schema)
+    DDS.bar(dataFrame, "NA")
+
+    val actualChart = mockedServer.lastServed.get.asInstanceOf[Chart]
+    actualChart.xAxis shouldBe XAxis.categorical(List("1", "3", "NA"))
+    val actualChartData = actualChart.data.asInstanceOf[SeriesData[Int]]
+    actualChartData.series.toList shouldBe List(
+      Series("data", List(3, 2, 1))
+    )
+    actualChartData.types shouldBe ChartTypes.multiple(ChartTypeEnum.Bar, 1)
+  }
+
+  it should "not be served from a multi columned data frame" in {
+    DDS.start(mockedServer)
+    val values = sc.makeRDD(List(Row(1, 1), Row(1, 1), Row(1, 1), Row(null, null), Row(3, 3), Row(3, 3)))
+    val schema = StructType(List(StructField("values", IntegerType, true), StructField("values", IntegerType, true)))
+    val dataFrame = sql.createDataFrame(values, schema)
+    DDS.bar(dataFrame)
+
+    val actualChart = mockedServer.lastServed.isDefined shouldBe false
+  }
+
   "A correct histogram chart" should "be served from a single numeric value RDD with numBins fixed" in {
     DDS.start(mockedServer)
     val values = sc.makeRDD(List(1,1,1,2,3,3))
