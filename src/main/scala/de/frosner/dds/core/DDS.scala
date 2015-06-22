@@ -259,9 +259,12 @@ object DDS {
     longDescription = "Plots a bar chart with a categorical x-axis visualizing the given value sequence.",
     parameters = "values: Seq[NumericValue], categories: Seq[String]"
   )
-  def bar[N](values: Seq[N], categories: Seq[String], title: String = DEFAULT_BAR_TITLE)(implicit num: Numeric[N]) = {
+  def bar[N](values: Seq[N], categories: Seq[String], title: String)(implicit num: Numeric[N]): Unit = {
     bars(List(title), List(values), categories)
   }
+
+  def bar[N](values: Seq[N], categories: Seq[String])(implicit num: Numeric[N]): Unit =
+    bar(values, categories, DEFAULT_BAR_TITLE)
 
   @Help(
     category = "Scala",
