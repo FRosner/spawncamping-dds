@@ -238,25 +238,33 @@ object DDS {
     indexedPlot(series, ChartTypeEnum.Line)
   }
 
+  private val DEFAULT_BAR_TITLE = "data"
+
   @Help(
     category = "Scala",
     shortDescription = "Plots a bar chart with an indexed x-axis.",
     longDescription = "Plots a bar chart with an indexed x-axis visualizing the given value sequence.",
-    parameters = "values: Seq[NumericValue]"
+    parameters = "values: Seq[NumericValue], (optional) title: String"
   )
-  def bar[N](values: Seq[N])(implicit num: Numeric[N]) = {
-    bars(List("data"), List(values))
+  def bar[N](values: Seq[N], title: String)(implicit num: Numeric[N]): Unit = {
+    bars(List(title), List(values))
   }
+
+  def bar[N](values: Seq[N])(implicit num: Numeric[N]): Unit =
+    bar(values, DEFAULT_BAR_TITLE)
 
   @Help(
     category = "Scala",
     shortDescription = "Plots a bar chart with a categorical x-axis.",
     longDescription = "Plots a bar chart with a categorical x-axis visualizing the given value sequence.",
-    parameters = "values: Seq[NumericValue], categories: Seq[String]"
+    parameters = "values: Seq[NumericValue], categories: Seq[String], (optional) title: String"
   )
-  def bar[N](values: Seq[N], categories: Seq[String])(implicit num: Numeric[N]) = {
-    bars(List("data"), List(values), categories)
+  def bar[N](values: Seq[N], categories: Seq[String], title: String)(implicit num: Numeric[N]): Unit = {
+    bars(List(title), List(values), categories)
   }
+
+  def bar[N](values: Seq[N], categories: Seq[String])(implicit num: Numeric[N]): Unit =
+    bar(values, categories, DEFAULT_BAR_TITLE)
 
   @Help(
     category = "Scala",
@@ -299,12 +307,38 @@ object DDS {
     shortDescription = "Plots a bar chart with the counts of all distinct values in this RDD",
     longDescription = "Plots a bar chart with the counts of all distinct values in this RDD. This makes most sense for " +
       "non-numeric values that have a relatively low cardinality.",
-    parameters = "values: RDD[Value]"
+    parameters = "values: RDD[Value], (optional) title: String"
   )
-  def bar[V: ClassTag](values: RDD[V]): Unit = {
+  def bar[V: ClassTag](values: RDD[V], title: String): Unit = {
     val (distinctValues, distinctCounts) =
       values.map((_, 1)).reduceByKey(_ + _).collect.sortBy{ case (value, count) => count }.reverse.unzip
-    bar(distinctCounts, distinctValues.map(_.toString))
+    bar(distinctCounts, distinctValues.map(_.toString), title)
+  }
+
+  def bar[V: ClassTag](values: RDD[V]): Unit = bar(values, DEFAULT_BAR_TITLE)
+
+  @Help(
+    category = "Spark SQL",
+    shortDescription = "Plots a bar chart with the counts of all distinct values in this single columned data frame",
+    longDescription = "Plots a bar chart with the counts of all distinct values in this single columned data frame. " +
+      "This makes most sense for non-numeric values that have a relatively low cardinality. You can also specify an " +
+      "optional value to replace missing values with. If no missing value is specified, Scala's Option trait is used.",
+    parameters = "dataFrame: DataFrame, (optional) nullValue: Any"
+  )
+  def bar(dataFrame: DataFrame, nullValue: Any = null): Unit = {
+    requireSingleColumned(dataFrame, "bar") {
+      val field = dataFrame.schema.fields.head
+      val rdd = dataFrame.rdd
+      (field.nullable) match {
+        case true => bar(rdd.map(row => if (nullValue == null) {
+            if (row.isNullAt(0)) Option.empty[Any] else Option(row(0))
+          } else {
+            if (row.isNullAt(0)) nullValue else row(0)
+          }
+        ), field.name)
+        case false => bar(rdd.map(row => row(0)), field.name)
+      }
+    }
   }
 
   @Help(
@@ -319,13 +353,39 @@ object DDS {
   }
 
   @Help(
+    category = "Spark SQL",
+    shortDescription = "Plots a pie chart with the counts of all distinct values in this single columned data frame",
+    longDescription = "Plots a pie chart with the counts of all distinct values in this single columned data frame. " +
+      "This makes most sense for non-numeric values that have a relatively low cardinality. You can also specify an " +
+      "optional value to replace missing values with. If no missing value is specified, Scala's Option trait is used.",
+    parameters = "dataFrame: DataFrame, (optional) nullValue: Any"
+  )
+  def pie(dataFrame: DataFrame, nullValue: Any = null): Unit = {
+    requireSingleColumned(dataFrame, "pie") {
+      val field = dataFrame.schema.fields.head
+      val rdd = dataFrame.rdd
+      (field.nullable) match {
+        case true => pie(rdd.map(row => if (nullValue == null) {
+          if (row.isNullAt(0)) Option.empty[Any] else Option(row(0))
+        } else {
+          if (row.isNullAt(0)) nullValue else row(0)
+        }
+        ))
+        case false => pie(rdd.map(row => row(0)))
+      }
+    }
+  }
+
+  private val DEFAULT_HISTOGRAM_NUM_BUCKETS = 100
+
+  @Help(
     category = "Spark Core",
     shortDescription = "Plots a histogram of a numerical RDD for the given number of buckets",
     longDescription = "Plots a histogram of a numerical RDD for the given number of buckets. " +
-      "The number of buckets parameter is optional having the default value of 10.",
+      "The number of buckets parameter is optional having the default value of 100.",
     parameters = "values: RDD[NumericValue], (optional) numBuckets: Int"
   )
-  def histogram[N: ClassTag](values: RDD[N], numBuckets: Int = 100)(implicit num: Numeric[N]): Unit = {
+  def histogram[N: ClassTag](values: RDD[N], numBuckets: Int = DEFAULT_HISTOGRAM_NUM_BUCKETS)(implicit num: Numeric[N]): Unit = {
     val (buckets, frequencies) = values.map(v => num.toDouble(v)).histogram(numBuckets)
     histogram(buckets, frequencies)
   }
@@ -342,6 +402,76 @@ object DDS {
     val frequencies = values.map(v => num1.toLong(v)).histogram(buckets.map(b => num2.toDouble(b)).toArray, false)
     histogram(buckets, frequencies)
   }
+
+  @Help(
+    category = "Spark SQL",
+    shortDescription = "Plots a histogram of a single column data frame for the given buckets",
+    longDescription = "Plots a histogram of a single column data frame for the given buckets. " +
+      "If the buckets do not include the complete range of possible values, some values will be missing in the histogram. " +
+      "If the column contains null values, they will be ignored in the computation.",
+    parameters = "dataFrame: DataFrame, buckets: Seq[NumericValue]"
+  )
+  def histogram[N: ClassTag](dataFrame: DataFrame, buckets: Seq[N])(implicit num: Numeric[N]): Unit = {
+    requireSingleColumned(dataFrame, "histogram") {
+      val fieldType = dataFrame.schema.fields.head
+      val rdd = dataFrame.rdd
+      (fieldType.dataType, fieldType.nullable) match {
+        case (DoubleType, true) => histogram(rdd.flatMap(row =>
+          if (row.isNullAt(0)) Option.empty[Double] else Option(row.getDouble(0))
+        ), buckets)
+        case (DoubleType, false) => histogram(rdd.map(row => row.getDouble(0)), buckets)
+        case (IntegerType, true) => histogram(rdd.flatMap(row =>
+          if (row.isNullAt(0)) Option.empty[Int] else Option(row.getInt(0))
+        ), buckets)
+        case (IntegerType, false) => histogram(rdd.map(row => row.getInt(0)), buckets)
+        case (FloatType, true) => histogram(rdd.flatMap(row =>
+          if (row.isNullAt(0)) Option.empty[Float] else Option(row.getFloat(0))
+        ), buckets)
+        case (FloatType, false) => histogram(rdd.map(row => row.getFloat(0)), buckets)
+        case (LongType, true) => histogram(rdd.flatMap(row =>
+          if (row.isNullAt(0)) Option.empty[Long] else Option(row.getLong(0))
+        ), buckets)
+        case (LongType, false) => histogram(rdd.map(row => row.getLong(0)), buckets)
+        case _ => println("Histogram only supported for numerical columns.")
+      }
+    }
+  }
+
+  @Help(
+    category = "Spark SQL",
+    shortDescription = "Plots a histogram of a single column data frame for the given number of buckets",
+    longDescription = "Plots a histogram of a single column data frame for the given number of buckets. " +
+      "The number of buckets parameter is optional having the default value of 100. " +
+      "If the column contains null values, they will be ignored in the computation.",
+    parameters = "dataFrame: DataFrame, (optional) numBuckets: Int"
+  )
+  def histogram(dataFrame: DataFrame, numBuckets: Int): Unit = {
+    requireSingleColumned(dataFrame, "histogram") {
+      val fieldType = dataFrame.schema.fields.head
+      val rdd = dataFrame.rdd
+      (fieldType.dataType, fieldType.nullable) match {
+        case (DoubleType, true) => histogram(rdd.flatMap(row =>
+          if (row.isNullAt(0)) Option.empty[Double] else Option(row.getDouble(0))
+        ), numBuckets)
+        case (DoubleType, false) => histogram(rdd.map(row => row.getDouble(0)), numBuckets)
+        case (IntegerType, true) => histogram(rdd.flatMap(row =>
+          if (row.isNullAt(0)) Option.empty[Int] else Option(row.getInt(0))
+        ), numBuckets)
+        case (IntegerType, false) => histogram(rdd.map(row => row.getInt(0)), numBuckets)
+        case (FloatType, true) => histogram(rdd.flatMap(row =>
+          if (row.isNullAt(0)) Option.empty[Float] else Option(row.getFloat(0))
+        ), numBuckets)
+        case (FloatType, false) => histogram(rdd.map(row => row.getFloat(0)), numBuckets)
+        case (LongType, true) => histogram(rdd.flatMap(row =>
+          if (row.isNullAt(0)) Option.empty[Long] else Option(row.getLong(0))
+        ), numBuckets)
+        case (LongType, false) => histogram(rdd.map(row => row.getLong(0)), numBuckets)
+        case _ => println("Histogram only supported for numerical columns.")
+      }
+    }
+  }
+
+  def histogram(dataFrame: DataFrame): Unit = histogram(dataFrame, DEFAULT_HISTOGRAM_NUM_BUCKETS)
 
   @Help(
     category = "Spark Core",
@@ -459,7 +589,7 @@ object DDS {
   }
 
   @Help(
-    category = "Spark Core",
+    category = "Spark SQL",
     shortDescription = "Shows the first rows of a DataFrame",
     longDescription = "Shows the first rows of a DataFrame. In addition to a tabular view DDS also shows visualizations" +
       "of the data. The second argument is optional and determines the sample size.",
@@ -587,7 +717,7 @@ object DDS {
   }
 
   @Help(
-    category = "Spark Statistics",
+    category = "Spark SQL",
     shortDescription = "Computes pearson correlation between numerical columns",
     longDescription = "Computes pearson correlation between numerical columns. There need to be at least two numerical," +
       " non-nullable columns in the table. The columns must not be nullable.",
@@ -621,7 +751,7 @@ object DDS {
   }
 
   @Help(
-    category = "Spark Statistics",
+    category = "Spark SQL",
     shortDescription = "Computes mutual information between columns",
     longDescription = "Computes mutual information between columns. It will treat all columns as nominal variables and " +
       "thus not work well with real numerical data. Internally it uses the natural logarithm.",
@@ -632,7 +762,7 @@ object DDS {
   }
 
   @Help(
-    category = "Spark Statistics",
+    category = "Spark Core",
     shortDescription = "Calculates the median of a numeric dataset",
     longDescription = "Calculates the median of a numeric dataset. " +
       "Note that this operation requires ordering of the elements in each partition plus lookup operations, " +
@@ -658,6 +788,40 @@ object DDS {
     }
   }
 
+  @Help(
+    category = "Spark SQL",
+    shortDescription = "Calculates the median of a numeric data frame column",
+    longDescription = "Calculates the median of a numeric data frame column. " +
+      "Note that this operation requires ordering of the elements in each partition plus lookup operations, " +
+      "which makes it rather expensive.",
+    parameters = "dataFrame: DataFrame"
+  )
+  def median[N: ClassTag](dataFrame: DataFrame): Unit = {
+    requireSingleColumned(dataFrame, "median") {
+      val field = dataFrame.schema.fields.head
+      val rdd = dataFrame.rdd
+      (field.dataType, field.nullable) match {
+        case (DoubleType, true) => median(rdd.flatMap(row =>
+          if (row.isNullAt(0)) Option.empty[Double] else Option(row.getDouble(0))
+        ))
+        case (DoubleType, false) => median(rdd.map(row => row.getDouble(0)))
+        case (IntegerType, true) => median(rdd.flatMap(row =>
+          if (row.isNullAt(0)) Option.empty[Int] else Option(row.getInt(0))
+        ))
+        case (IntegerType, false) => median(rdd.map(row => row.getInt(0)))
+        case (FloatType, true) => median(rdd.flatMap(row =>
+          if (row.isNullAt(0)) Option.empty[Float] else Option(row.getFloat(0))
+        ))
+        case (FloatType, false) => median(rdd.map(row => row.getFloat(0)))
+        case (LongType, true) => median(rdd.flatMap(row =>
+          if (row.isNullAt(0)) Option.empty[Long] else Option(row.getLong(0))
+        ))
+        case (LongType, false) => median(rdd.map(row => row.getLong(0)))
+        case _ => println("Median only supported for numerical columns.")
+      }
+    }
+  }
+
   private def createSummarize[N: ClassTag](values: RDD[N])(implicit num: Numeric[N] = null): Option[Servable] = {
     if (num != null) {
       Option(Table.fromStatCounter(values.stats()))
@@ -678,7 +842,7 @@ object DDS {
   }
 
   @Help(
-    category = "Spark Statistics",
+    category = "Spark Core",
     shortDescription = "Shows some basic summary statistics of the given dataset",
     longDescription = "Shows some basic summary statistics of the given dataset.\n" +
       "Statistics for numeric values are: count, sum, min, max, mean, stdev, variance\n" +
@@ -690,7 +854,7 @@ object DDS {
   }
 
   @Help(
-    category = "Spark Statistics",
+    category = "Spark Core",
     shortDescription = "Shows some basic summary statistics of the given groups",
     longDescription = "Shows some basic summary statistics of the given groups. " +
       "Statistics are: count, sum, min, max, mean, stdev, variance.",
@@ -707,7 +871,7 @@ object DDS {
   }
 
   @Help(
-    category = "Spark Statistics",
+    category = "Spark Core",
     shortDescription = "Shows some basic summary statistics of the given groups",
     longDescription = "Shows some basic summary statistics of the given groups. " +
       "Statistics are: count, sum, min, max, mean, stdev, variance.",
@@ -718,7 +882,7 @@ object DDS {
   }
 
   @Help(
-    category = "Spark Statistics",
+    category = "Spark SQL",
     shortDescription = "Gives an overview of the given data set in form of a dashboard.",
     longDescription = "Gives an overview of the given data set in form of a dashboard. " +
       "The dashboard contains a sample, measures for column dependencies and summary statistics for each column. " +
@@ -751,6 +915,16 @@ object DDS {
       toCell(createShow(dataFrame, DEFAULT_SHOW_SAMPLE_SIZE)),
       toCell(createCorrelation(dataFrame)) ++ toCell(createMutualInformation(dataFrame))
     ) ++ summaries.map(summary => toCell(summary))))
+  }
+
+  private def requireSingleColumned(dataFrame: DataFrame, function: String)(toDo: => Unit): Unit = {
+    if (dataFrame.columns.size != 1) {
+      println(function + " function only supported on single columns.")
+      println
+      help(function)
+    } else {
+      toDo
+    }
   }
 
 }
