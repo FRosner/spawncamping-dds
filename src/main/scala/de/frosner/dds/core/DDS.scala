@@ -352,6 +352,30 @@ object DDS {
     pie(values.map((_, 1)).reduceByKey(_ + _).collect)
   }
 
+  @Help(
+    category = "Spark SQL",
+    shortDescription = "Plots a pie chart with the counts of all distinct values in this single columned data frame",
+    longDescription = "Plots a pie chart with the counts of all distinct values in this single columned data frame. " +
+      "This makes most sense for non-numeric values that have a relatively low cardinality. You can also specify an " +
+      "optional value to replace missing values with. If no missing value is specified, Scala's Option trait is used.",
+    parameters = "dataFrame: DataFrame, (optional) nullValue: Any"
+  )
+  def pie(dataFrame: DataFrame, nullValue: Any = null): Unit = {
+    requireSingleColumned(dataFrame, "pie") {
+      val field = dataFrame.schema.fields.head
+      val rdd = dataFrame.rdd
+      (field.nullable) match {
+        case true => pie(rdd.map(row => if (nullValue == null) {
+          if (row.isNullAt(0)) Option.empty[Any] else Option(row(0))
+        } else {
+          if (row.isNullAt(0)) nullValue else row(0)
+        }
+        ))
+        case false => pie(rdd.map(row => row(0)))
+      }
+    }
+  }
+
   private val DEFAULT_HISTOGRAM_NUM_BUCKETS = 100
 
   @Help(
