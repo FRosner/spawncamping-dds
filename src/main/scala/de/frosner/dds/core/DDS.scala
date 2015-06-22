@@ -326,11 +326,7 @@ object DDS {
     parameters = "dataFrame: DataFrame, (optional) nullValue: Any"
   )
   def bar(dataFrame: DataFrame, nullValue: Any = null): Unit = {
-    if (dataFrame.columns.size != 1) {
-      println("Bar function only supported on single columns.")
-      println
-      help("bar")
-    } else {
+    requireSingleColumned(dataFrame, "bar") {
       val field = dataFrame.schema.fields.head
       val rdd = dataFrame.rdd
       (field.nullable) match {
@@ -392,11 +388,7 @@ object DDS {
     parameters = "dataFrame: DataFrame, buckets: Seq[NumericValue]"
   )
   def histogram[N: ClassTag](dataFrame: DataFrame, buckets: Seq[N])(implicit num: Numeric[N]): Unit = {
-    if (dataFrame.columns.size != 1) {
-      println("Histogram function only supported on single columns.")
-      println
-      help("histogram")
-    } else {
+    requireSingleColumned(dataFrame, "histogram") {
       val fieldType = dataFrame.schema.fields.head
       val rdd = dataFrame.rdd
       (fieldType.dataType, fieldType.nullable) match {
@@ -430,11 +422,7 @@ object DDS {
     parameters = "dataFrame: DataFrame, (optional) numBuckets: Int"
   )
   def histogram(dataFrame: DataFrame, numBuckets: Int): Unit = {
-    if (dataFrame.columns.size != 1) {
-      println("Histogram function only supported on single columns.")
-      println
-      help("histogram")
-    } else {
+    requireSingleColumned(dataFrame, "histogram") {
       val fieldType = dataFrame.schema.fields.head
       val rdd = dataFrame.rdd
       (fieldType.dataType, fieldType.nullable) match {
@@ -869,6 +857,16 @@ object DDS {
       toCell(createShow(dataFrame, DEFAULT_SHOW_SAMPLE_SIZE)),
       toCell(createCorrelation(dataFrame)) ++ toCell(createMutualInformation(dataFrame))
     ) ++ summaries.map(summary => toCell(summary))))
+  }
+
+  private def requireSingleColumned(dataFrame: DataFrame, function: String)(toDo: => Unit): Unit = {
+    if (dataFrame.columns.size != 1) {
+      println(function + " function only supported on single columns.")
+      println
+      help(function)
+    } else {
+      toDo
+    }
   }
 
 }
