@@ -244,7 +244,7 @@ object DDS {
     category = "Scala",
     shortDescription = "Plots a bar chart with an indexed x-axis.",
     longDescription = "Plots a bar chart with an indexed x-axis visualizing the given value sequence.",
-    parameters = "values: Seq[NumericValue]"
+    parameters = "values: Seq[NumericValue], (optional) title: String"
   )
   def bar[N](values: Seq[N], title: String)(implicit num: Numeric[N]): Unit = {
     bars(List(title), List(values))
@@ -257,7 +257,7 @@ object DDS {
     category = "Scala",
     shortDescription = "Plots a bar chart with a categorical x-axis.",
     longDescription = "Plots a bar chart with a categorical x-axis visualizing the given value sequence.",
-    parameters = "values: Seq[NumericValue], categories: Seq[String]"
+    parameters = "values: Seq[NumericValue], categories: Seq[String], (optional) title: String"
   )
   def bar[N](values: Seq[N], categories: Seq[String], title: String)(implicit num: Numeric[N]): Unit = {
     bars(List(title), List(values), categories)
@@ -307,7 +307,7 @@ object DDS {
     shortDescription = "Plots a bar chart with the counts of all distinct values in this RDD",
     longDescription = "Plots a bar chart with the counts of all distinct values in this RDD. This makes most sense for " +
       "non-numeric values that have a relatively low cardinality.",
-    parameters = "values: RDD[Value]"
+    parameters = "values: RDD[Value], (optional) title: String"
   )
   def bar[V: ClassTag](values: RDD[V], title: String): Unit = {
     val (distinctValues, distinctCounts) =
