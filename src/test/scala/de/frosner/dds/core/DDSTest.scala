@@ -499,6 +499,50 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     val resultTable = mockedServer.lastServed.isEmpty shouldBe true
   }
 
+  it should "be served from a single columned non-null numerical data frame" in {
+    DDS.start(mockedServer)
+    val values = sc.makeRDD(List(Row(1), Row(2), Row(1), Row(1), Row(3)))
+    val schema = StructType(List(StructField("values", IntegerType, false)))
+    val dataFrame = sql.createDataFrame(values, schema)
+    DDS.median(dataFrame)
+
+    val resultTable = mockedServer.lastServed.get.asInstanceOf[Table]
+    resultTable.head.toList shouldBe List("median")
+    resultTable.rows.toList shouldBe List(List(1))
+  }
+
+  it should "be served from a single columned nullable numerical data frame" in {
+    DDS.start(mockedServer)
+    val values = sc.makeRDD(List(Row(null), Row(2), Row(null), Row(1), Row(3)))
+    val schema = StructType(List(StructField("values", IntegerType, true)))
+    val dataFrame = sql.createDataFrame(values, schema)
+    DDS.median(dataFrame)
+
+    val resultTable = mockedServer.lastServed.get.asInstanceOf[Table]
+    resultTable.head.toList shouldBe List("median")
+    resultTable.rows.toList shouldBe List(List(2))
+  }
+
+  it should "not be served from a single columned nominal data frame" in {
+    DDS.start(mockedServer)
+    val values = sc.makeRDD(List(Row("a"), Row("b"), Row("a"), Row("b"), Row("a")))
+    val schema = StructType(List(StructField("values", StringType, false)))
+    val dataFrame = sql.createDataFrame(values, schema)
+    DDS.median(dataFrame)
+
+    val resultTable = mockedServer.lastServed.isEmpty shouldBe true
+  }
+
+  it should "not be served from a multi columned data frame" in {
+    DDS.start(mockedServer)
+    val values = sc.makeRDD(List(Row(1, 1), Row(1, 1), Row(1, 1), Row(null, null), Row(3, 3), Row(3, 3)))
+    val schema = StructType(List(StructField("values", IntegerType, true), StructField("values", IntegerType, true)))
+    val dataFrame = sql.createDataFrame(values, schema)
+    DDS.median(dataFrame)
+
+    val actualChart = mockedServer.lastServed.isDefined shouldBe false
+  }
+
   "A correct summary table from a single value RDD" should "be served for numeric values" in {
     DDS.start(mockedServer)
     val valueRdd = sc.makeRDD(List(1,2,3))

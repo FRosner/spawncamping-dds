@@ -764,6 +764,40 @@ object DDS {
     }
   }
 
+  @Help(
+    category = "Spark SQL",
+    shortDescription = "Calculates the median of a numeric data frame column",
+    longDescription = "Calculates the median of a numeric data frame column. " +
+      "Note that this operation requires ordering of the elements in each partition plus lookup operations, " +
+      "which makes it rather expensive.",
+    parameters = "dataFrame: DataFrame"
+  )
+  def median[N: ClassTag](dataFrame: DataFrame): Unit = {
+    requireSingleColumned(dataFrame, "median") {
+      val field = dataFrame.schema.fields.head
+      val rdd = dataFrame.rdd
+      (field.dataType, field.nullable) match {
+        case (DoubleType, true) => median(rdd.flatMap(row =>
+          if (row.isNullAt(0)) Option.empty[Double] else Option(row.getDouble(0))
+        ))
+        case (DoubleType, false) => median(rdd.map(row => row.getDouble(0)))
+        case (IntegerType, true) => median(rdd.flatMap(row =>
+          if (row.isNullAt(0)) Option.empty[Int] else Option(row.getInt(0))
+        ))
+        case (IntegerType, false) => median(rdd.map(row => row.getInt(0)))
+        case (FloatType, true) => median(rdd.flatMap(row =>
+          if (row.isNullAt(0)) Option.empty[Float] else Option(row.getFloat(0))
+        ))
+        case (FloatType, false) => median(rdd.map(row => row.getFloat(0)))
+        case (LongType, true) => median(rdd.flatMap(row =>
+          if (row.isNullAt(0)) Option.empty[Long] else Option(row.getLong(0))
+        ))
+        case (LongType, false) => median(rdd.map(row => row.getLong(0)))
+        case _ => println("Median only supported for numerical columns.")
+      }
+    }
+  }
+
   private def createSummarize[N: ClassTag](values: RDD[N])(implicit num: Numeric[N] = null): Option[Servable] = {
     if (num != null) {
       Option(Table.fromStatCounter(values.stats()))
