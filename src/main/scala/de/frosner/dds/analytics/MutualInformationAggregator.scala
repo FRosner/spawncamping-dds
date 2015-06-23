@@ -78,4 +78,18 @@ class MutualInformationAggregator(val numColumns: Int) extends Serializable {
     (mutualColumnInformation ++ otherHalfMutualColumnInfo).toMap
   }
 
+  def mutualInformationMetric: Map[(Int, Int), Double] = {
+    val mutualInformationMatrix = mutualInformation
+    for (((i, j), mi) <- mutualInformationMatrix)
+      yield ((i, j), (mi / Math.max(mutualInformationMatrix(i,i), mutualInformationMatrix(j,j))))
+  }
+
+}
+
+object MutualInformationAggregator {
+  val NO_NORMALIZATION = "none"
+  val METRIC_NORMALIZATION = "metric"
+  val DEFAULT_NORMALIZATION = METRIC_NORMALIZATION
+
+  def isValidNormalization(normalization: String) = Set(NO_NORMALIZATION, METRIC_NORMALIZATION).contains(normalization)
 }

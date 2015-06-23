@@ -727,21 +727,36 @@ object DDS {
     serve(createCorrelation(dataFrame))
   }
 
-  def createMutualInformation(dataFrame: DataFrame): Option[Servable] = {
+  private def createMutualInformation(dataFrame: DataFrame,
+                                      normalization: String = MutualInformationAggregator.DEFAULT_NORMALIZATION): Option[Servable] = {
+    import MutualInformationAggregator._
     def showError = println("Mutual information only supported for RDDs with at least one column.")
     val schema = dataFrame.schema
     val fields = schema.fields
     if (fields.size >= 1) {
-      val corrAgg = dataFrame.rdd.aggregate(new MutualInformationAggregator(fields.size)) (
+      val miAgg = dataFrame.rdd.aggregate(new MutualInformationAggregator(fields.size)) (
         (agg, row) => agg.iterate(row.toSeq),
         (agg1, agg2) => agg1.merge(agg2)
       )
-      var mutualInformationMatrix: mutable.Seq[mutable.Seq[Double]] = new ArrayBuffer(corrAgg.numColumns) ++
-        List.fill(corrAgg.numColumns)(new ArrayBuffer[Double](corrAgg.numColumns) ++
-          List.fill(corrAgg.numColumns)(0d))
-      for (((i, j), corr) <- corrAgg.mutualInformation) {
-        mutualInformationMatrix(i)(j) = corr
+      var mutualInformationMatrix: mutable.Seq[mutable.Seq[Double]] = new ArrayBuffer(miAgg.numColumns) ++
+        List.fill(miAgg.numColumns)(
+          new ArrayBuffer[Double](miAgg.numColumns) ++ List.fill(miAgg.numColumns)(0d)
+        )
+
+      val actualNormalization = if (isValidNormalization(normalization)) {
+        normalization
+      } else {
+        println(s"""Not a valid normalization method: $normalization. Falling back to $DEFAULT_NORMALIZATION.""")
+        DEFAULT_NORMALIZATION
       }
+
+      for (((i, j), mi) <- actualNormalization match {
+        case METRIC_NORMALIZATION => miAgg.mutualInformationMetric
+        case NO_NORMALIZATION => miAgg.mutualInformation
+      }) {
+        mutualInformationMatrix(i)(j) = mi
+      }
+
       val fieldNames = fields.map(_.name)
       createHeatmap(mutualInformationMatrix, fieldNames, fieldNames)
     } else {
@@ -754,11 +769,13 @@ object DDS {
     category = "Spark SQL",
     shortDescription = "Computes mutual information between columns",
     longDescription = "Computes mutual information between columns. It will treat all columns as nominal variables and " +
-      "thus not work well with real numerical data. Internally it uses the natural logarithm.",
-    parameters = "dataFrame: DataFrame"
+      "thus not work well with real numerical data. Internally it uses the natural logarithm. It offers the pure " +
+      "mutual information as well as a metric variant.\n\n" +
+      "Possible normalization options: \"metric\" (default), \"none\".",
+    parameters = "dataFrame: DataFrame, (optional) normalization: String"
   )
-  def mutualInformation(dataFrame: DataFrame) = {
-    serve(createMutualInformation(dataFrame))
+  def mutualInformation(dataFrame: DataFrame, normalization: String = MutualInformationAggregator.DEFAULT_NORMALIZATION) = {
+    serve(createMutualInformation(dataFrame, normalization))
   }
 
   @Help(
