@@ -311,13 +311,18 @@ object DDS {
     category = "Spark Core",
     shortDescription = "Plots a histogram of a numerical RDD for the given number of buckets",
     longDescription = "Plots a histogram of a numerical RDD for the given number of buckets. " +
-      "The number of buckets parameter is optional - if zero, Sturge's formula is used to determine an optimum number of bins",
+      "The number of buckets parameter is optional - if omitted, Sturge's formula is used to determine an optimum number of bins",
     parameters = "values: RDD[NumericValue], numBuckets: Int"
   )
-  def histogram[N: ClassTag](values: RDD[N], numBuckets: Integer)(implicit num: Numeric[N]): Unit = {
-    val localNumBuckets :Int = if (numBuckets == 0) lg_2_int_ceil(values.count)+1 else numBuckets
-    val (buckets, frequencies) = values.map(v => num.toDouble(v)).histogram(localNumBuckets)
-    histogram(buckets, frequencies)
+  def histogram[N: ClassTag](values: RDD[N], numBuckets: Integer = null)(implicit num: Numeric[N]): Unit = {
+    if (numBuckets<2){
+      println("Number of Buckets must be greater than or equal to 2")
+    }
+    else {
+      val localNumBuckets: Int = if (numBuckets == null) lg2IntCeil(values.count) + 1 else numBuckets
+      val (buckets, frequencies) = values.map(v => num.toDouble(v)).histogram(localNumBuckets)
+      histogram(buckets, frequencies)
+    }
   }
 
   @Help(
@@ -643,12 +648,12 @@ object DDS {
     summarizeGroups(toBeGroupedValues.groupByKey())
   }
 
-  def lg_2_int_ceil(count:Long) : Integer = {
+  private[core] def lg2IntCeil(count:Long) : Integer = {
     //integer lg_2 can be calculated by bitshifting
     var log = 0
-    var count_down = count
-    while (count_down> 1) {
-      count_down = count_down >> 1
+    var countDown = count
+    while (countDown> 1) {
+      countDown = countDown >> 1
       log += 1
     }
     //ceiling by checking whether each LSB was zero, adding 1 if not.

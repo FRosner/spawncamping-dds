@@ -254,7 +254,7 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
   it should "be served from a single numeric value RDD, binned according to Sturge's formula" in {
     DDS.start(mockedServer)
     val values = sc.makeRDD(List(0,5,15,3,8))
-    DDS.histogram(values, 0)
+    DDS.histogram(values, null.asInstanceOf[Int])
 
     val actualChart = mockedServer.lastServed.get.asInstanceOf[Histogram]
     actualChart.bins.toList shouldBe List(0,3.75,7.5,11.25,15.0)
@@ -851,7 +851,7 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
   "An integer ceiling-rounded logarithm dualis" should "be returned for every positive integer value" in {
     val testValues = List(0,1,3,5,8,12,16)
     val expectedValues = List(0,0,2,3,3,4,4)
-    testValues.map(a => DDS.lg_2_int_ceil(a)) shouldBe expectedValues
+    testValues.map(a => DDS.lg2IntCeil(a)) shouldBe expectedValues
   }
 
 }
