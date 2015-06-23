@@ -737,8 +737,9 @@ object DDS {
         (agg1, agg2) => agg1.merge(agg2)
       )
       var mutualInformationMatrix: mutable.Seq[mutable.Seq[Double]] = new ArrayBuffer(corrAgg.numColumns) ++
-        List.fill(corrAgg.numColumns)(new ArrayBuffer[Double](corrAgg.numColumns) ++
-          List.fill(corrAgg.numColumns)(0d))
+        List.fill(corrAgg.numColumns)(
+          new ArrayBuffer[Double](corrAgg.numColumns) ++ List.fill(corrAgg.numColumns)(0d)
+        )
       for (((i, j), corr) <- corrAgg.mutualInformation) {
         mutualInformationMatrix(i)(j) = corr
       }
