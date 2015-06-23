@@ -25,7 +25,8 @@ Composite.prototype._draw = function(composite) {
   var cells = rows.selectAll("div")
     .data(function(row) {
       if (row.length > 12) {
-        console.warn("The following row has more than 12 cells which is not properly supported by grid layout: " + JSON.stringify(row));
+        console.warn("The following row has more than 12 cells which is not properly supported by grid layout: " +
+          JSON.stringify(row));
       }
       var enhancedRow = row.map(function(cell) {
         var enhancedCell = cell;
@@ -45,32 +46,35 @@ Composite.prototype._draw = function(composite) {
         }
         return enhancedCell;
       });
-    return enhancedRow;
-  }).enter();
+      return enhancedRow;
+    })
+    .enter();
   var container = cells.append("div")
-  .attr("class", function(cell) {
-    return cell.cssClass;
-  })
-  .attr("id", function(cell) {
-    return cell.containerId;
-  });
+    .attr("class", function(cell) {
+      return cell.cssClass;
+    })
+    .attr("id", function(cell) {
+      return cell.containerId;
+    });
   var header = container.append("div")
-  .attr("class", "header")
-  .attr("id", function(cell) {
-    return cell.headerId;
-  });
+    .attr("class", "header")
+    .attr("id", function(cell) {
+      return cell.headerId;
+    });
   var content = container.append("div")
-  .attr("id", function(cell) {
-    return cell.contentId;
-  }).style({height: 500})
-  .each(function(cell) {
-    var servable = cell;
-    var contentId = cell.contentId;
-    var headerId = cell.headerId;
-    servedComponents.push(drawServable(cell, headerId, contentId));
-  });
+    .attr("id", function(cell) {
+      return cell.contentId;
+    })
+    .style({
+      height: 500
+    })
+    .each(function(cell) {
+      var servable = cell;
+      var contentId = cell.contentId;
+      var headerId = cell.headerId;
+      servedComponents.push(drawServable(cell, headerId, contentId));
+    });
   this._servedComponents = servedComponents;
 }
 
-Composite.prototype.clearHeader = function() {
-}
+Composite.prototype.clearHeader = function() {}

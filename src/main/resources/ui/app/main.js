@@ -18,6 +18,7 @@ $(document)
   .ready(toggleUpdating);
 
 document.servablesCache = {};
+
 function getCache(id) {
   if (!document.servablesCache[id]) {
     // lazy initialization
