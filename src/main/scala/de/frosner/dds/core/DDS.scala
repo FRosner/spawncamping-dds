@@ -727,7 +727,8 @@ object DDS {
     serve(createCorrelation(dataFrame))
   }
 
-  private def createMutualInformation(dataFrame: DataFrame): Option[Servable] = {
+  private def createMutualInformation(dataFrame: DataFrame,
+                                      normalization: String = MutualInformationAggregator.DEFAULT_NORMALIZATION): Option[Servable] = {
     def showError = println("Mutual information only supported for RDDs with at least one column.")
     val schema = dataFrame.schema
     val fields = schema.fields
@@ -740,7 +741,10 @@ object DDS {
         List.fill(miAgg.numColumns)(
           new ArrayBuffer[Double](miAgg.numColumns) ++ List.fill(miAgg.numColumns)(0d)
         )
-      for (((i, j), mi) <- miAgg.mutualInformation) {
+      for (((i, j), mi) <- normalization match {
+        case MutualInformationAggregator.METRIC_NORMALIZATION => miAgg.mutualInformationMetric
+        case _ => miAgg.mutualInformation
+      }) {
         mutualInformationMatrix(i)(j) = mi
       }
       val fieldNames = fields.map(_.name)
@@ -755,11 +759,13 @@ object DDS {
     category = "Spark SQL",
     shortDescription = "Computes mutual information between columns",
     longDescription = "Computes mutual information between columns. It will treat all columns as nominal variables and " +
-      "thus not work well with real numerical data. Internally it uses the natural logarithm.",
-    parameters = "dataFrame: DataFrame"
+      "thus not work well with real numerical data. Internally it uses the natural logarithm. It offers the pure " +
+      "mutual information as well as a metric variant.\n\n" +
+      "Possible normalization options: \"metric\" (default), \"none\".",
+    parameters = "dataFrame: DataFrame, (optional) normalization: String"
   )
-  def mutualInformation(dataFrame: DataFrame) = {
-    serve(createMutualInformation(dataFrame))
+  def mutualInformation(dataFrame: DataFrame, normalization: String = MutualInformationAggregator.DEFAULT_NORMALIZATION) = {
+    serve(createMutualInformation(dataFrame, normalization))
   }
 
   @Help(

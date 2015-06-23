@@ -185,4 +185,18 @@ class MutualInformationAggregatorTest extends FlatSpec with Matchers {
     result((2, 2)) should be (1.098612 +- epsilon)
   }
 
+  it should "have a correct metric variant" in {
+    val agg = new MutualInformationAggregator(3)
+    agg.iterate(List("a", "a", "a"))
+    agg.iterate(List("a", null, null))
+    agg.iterate(List(null, null, "c"))
+    val result = agg.mutualInformationMetric
+    result((0, 0)) should be (1d +- epsilon)
+    result((0, 1)) should be (0.2740174 +- epsilon)
+    result((0, 2)) should be (0.5793803 +- epsilon)
+    result((1, 1)) should be (1d +- epsilon)
+    result((1, 2)) should be (0.5793803 +- epsilon)
+    result((2, 2)) should be (1d +- epsilon)
+  }
+
 }
