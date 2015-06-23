@@ -90,4 +90,6 @@ object MutualInformationAggregator {
   val NO_NORMALIZATION = "none"
   val METRIC_NORMALIZATION = "metric"
   val DEFAULT_NORMALIZATION = METRIC_NORMALIZATION
+
+  def isValidNormalization(normalization: String) = Set(NO_NORMALIZATION, METRIC_NORMALIZATION).contains(normalization)
 }

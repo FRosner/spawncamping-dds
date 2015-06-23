@@ -729,6 +729,7 @@ object DDS {
 
   private def createMutualInformation(dataFrame: DataFrame,
                                       normalization: String = MutualInformationAggregator.DEFAULT_NORMALIZATION): Option[Servable] = {
+    import MutualInformationAggregator._
     def showError = println("Mutual information only supported for RDDs with at least one column.")
     val schema = dataFrame.schema
     val fields = schema.fields
@@ -741,12 +742,21 @@ object DDS {
         List.fill(miAgg.numColumns)(
           new ArrayBuffer[Double](miAgg.numColumns) ++ List.fill(miAgg.numColumns)(0d)
         )
-      for (((i, j), mi) <- normalization match {
-        case MutualInformationAggregator.METRIC_NORMALIZATION => miAgg.mutualInformationMetric
-        case _ => miAgg.mutualInformation
+
+      val actualNormalization = if (isValidNormalization(normalization)) {
+        normalization
+      } else {
+        println(s"""Not a valid normalization method: $normalization. Falling back to $DEFAULT_NORMALIZATION.""")
+        DEFAULT_NORMALIZATION
+      }
+
+      for (((i, j), mi) <- actualNormalization match {
+        case METRIC_NORMALIZATION => miAgg.mutualInformationMetric
+        case NO_NORMALIZATION => miAgg.mutualInformation
       }) {
         mutualInformationMatrix(i)(j) = mi
       }
+
       val fieldNames = fields.map(_.name)
       createHeatmap(mutualInformationMatrix, fieldNames, fieldNames)
     } else {

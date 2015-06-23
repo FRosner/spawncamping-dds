@@ -1158,6 +1158,31 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     miMatrix(2)(2) should be (1d +- epsilon)
   }
 
+  it should "use default normalization if wrong normalization is specified" in {
+    DDS.start(mockedServer)
+    val rdd = sc.makeRDD(List(Row(1, "a", 1d), Row(1, "b", 2d), Row(2, "b", 3d)))
+    val dataFrame = sql.createDataFrame(rdd, StructType(List(
+      StructField("first", IntegerType, false),
+      StructField("second", StringType, false),
+      StructField("third", DoubleType, false)
+    )))
+    DDS.mutualInformation(dataFrame, "dasaasfsdgsrwefsdf")
+
+    val resultMatrix = mockedServer.lastServed.get.asInstanceOf[Matrix2D]
+    resultMatrix.colNames.toList shouldBe List("first", "second", "third")
+    resultMatrix.rowNames.toList shouldBe List("first", "second", "third")
+    val miMatrix = resultMatrix.entries.map(_.toSeq)
+    miMatrix(0)(0) should be (1d +- epsilon)
+    miMatrix(0)(1) should be (0.2740174 +- epsilon)
+    miMatrix(0)(2) should be (0.5793803 +- epsilon)
+    miMatrix(1)(0) should be (0.2740174 +- epsilon)
+    miMatrix(1)(1) should be (1d +- epsilon)
+    miMatrix(1)(2) should be (0.5793803 +- epsilon)
+    miMatrix(2)(0) should be (0.5793803 +- epsilon)
+    miMatrix(2)(1) should be (0.5793803 +- epsilon)
+    miMatrix(2)(2) should be (1d +- epsilon)
+  }
+
   "A correct dashboard" should "be served" in {
     DDS.start(mockedServer)
     val rdd = sc.parallelize(List(Row(1, "5", 5d), Row(3, "g", 5d), Row(5, "g", 6d)))
