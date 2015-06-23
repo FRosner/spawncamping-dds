@@ -27,85 +27,71 @@ function getCache(id) {
 }
 
 function drawServable(servable, headerId, contentId) {
+  var toDraw;
   if (servable.type == "composite") {
-    return new Composite()
-      .header(headerId)
-      .content(contentId)
+    toDraw = new Composite()
       .margin({
         top: 30,
         right: 0,
         bottom: 0,
         left: 0
       })
-      .data(servable.content)
-      .draw();
+      .data(servable.content);
   } else if (servable.type == "chart") {
-    return new C3Chart()
-      .header(headerId)
-      .content(contentId)
+    toDraw = new C3Chart()
       .margin({
         top: 5,
         right: 15,
         left: 60
       })
-      .data(servable.content)
-      .draw();
+      .data(servable.content);
   } else if (servable.type == "table") {
-    return new Table()
-      .header(headerId)
-      .content(contentId)
+    toDraw = new Table()
       .margin({
         top: 30,
         right: 0,
         bottom: 0,
         left: 0
       })
-      .data(servable.content)
-      .draw();
+      .data(servable.content);
   } else if (servable.type == "histogram") {
-    return new Histogram()
-      .header(headerId)
-      .content(contentId)
+    toDraw = new Histogram()
       .margin({
         top: 20,
         right: 60,
         bottom: 60,
         left: 60
       })
-      .data(servable.content)
-      .draw();
+      .data(servable.content);
   } else if (servable.type == "graph") {
-    return new Graph()
-      .header(headerId)
-      .content(contentId)
-      .data(servable.content)
-      .draw();
+    toDraw = new Graph()
+      .data(servable.content);
   } else if (servable.type == "points-2d") {
-    return new Scatter2D()
-      .header(headerId)
-      .content(contentId)
+    toDraw = new Scatter2D()
       .margin({
         top: 10,
         right: 15,
         bottom: 60,
         left: 60
       })
-      .data(servable.content)
-      .draw();
+      .data(servable.content);
   } else if (servable.type == "matrix") {
-    return new Matrix()
-      .header(headerId)
-      .content(contentId)
+    toDraw = new Matrix()
       .margin({
         top: 10,
         right: 15,
         bottom: 60,
         left: 60
       })
-      .data(servable.content)
-      .draw();
+      .data(servable.content);
   } else {
     console.error("Unrecognized response: " + response);
+  }
+  if (toDraw != null) {
+    toDraw = toDraw.header(headerId)
+      .content(contentId)
+      .draw();
+    return toDraw;
   }
 }
 
