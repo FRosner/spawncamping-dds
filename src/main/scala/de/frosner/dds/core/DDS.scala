@@ -727,7 +727,7 @@ object DDS {
     serve(createCorrelation(dataFrame))
   }
 
-  def createMutualInformation(dataFrame: DataFrame): Option[Servable] = {
+  private def createMutualInformation(dataFrame: DataFrame): Option[Servable] = {
     def showError = println("Mutual information only supported for RDDs with at least one column.")
     val schema = dataFrame.schema
     val fields = schema.fields
