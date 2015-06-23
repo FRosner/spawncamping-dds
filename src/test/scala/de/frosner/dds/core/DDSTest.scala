@@ -1095,12 +1095,12 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
   "A correct mutual information heatmap" should "be served from an RDD with three columns" in {
     DDS.start(mockedServer)
     val rdd = sc.makeRDD(List(Row(1, "a", 1d), Row(1, "b", 2d), Row(2, "b", 3d)))
-    val schemaRdd = sql.createDataFrame(rdd, StructType(List(
+    val dataFrame = sql.createDataFrame(rdd, StructType(List(
       StructField("first", IntegerType, false),
       StructField("second", StringType, false),
       StructField("third", DoubleType, false)
     )))
-    DDS.mutualInformation(schemaRdd)
+    DDS.mutualInformation(dataFrame)
 
     val resultMatrix = mockedServer.lastServed.get.asInstanceOf[Matrix2D]
     resultMatrix.colNames.toList shouldBe List("first", "second", "third")
@@ -1120,10 +1120,10 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
   it should "be served from an RDD with one column" in {
     DDS.start(mockedServer)
     val rdd = sc.makeRDD(List(Row(1), Row(1), Row(2)))
-    val schemaRdd = sql.createDataFrame(rdd, StructType(List(
+    val dataFrame = sql.createDataFrame(rdd, StructType(List(
       StructField("first", IntegerType, false)
     )))
-    DDS.mutualInformation(schemaRdd)
+    DDS.mutualInformation(dataFrame)
 
     val resultMatrix = mockedServer.lastServed.get.asInstanceOf[Matrix2D]
     resultMatrix.colNames.toList shouldBe List("first")
