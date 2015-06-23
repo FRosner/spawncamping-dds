@@ -91,6 +91,7 @@ function drawServable(servable, headerId, contentId) {
   if (toDraw != null) {
     toDraw = toDraw.header(headerId)
       .content(contentId)
+      .title(servable.title)
       .draw();
     return toDraw;
   }
@@ -107,7 +108,7 @@ function checkForUpdate() {
           var contentId = "content";
           var headerId = "header";
           if (document.lastServed) {
-            document.lastServed.clearHeader();
+            document.lastServed.clear();
           }
           document.getElementById(contentId)
             .innerHTML = "";

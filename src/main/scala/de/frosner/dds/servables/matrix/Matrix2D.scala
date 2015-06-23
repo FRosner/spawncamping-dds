@@ -6,7 +6,10 @@ import spray.json._
 /**
  * Representation of a matrix. `entries(i)(j)` corresponds to the element in the `i`th row and `j`th column.
  */
-case class Matrix2D(entries: Seq[Seq[Double]], rowNames: Seq[String], colNames: Seq[String]) extends Servable {
+case class Matrix2D(entries: Seq[Seq[Double]],
+                    rowNames: Seq[String],
+                    colNames: Seq[String],
+                    title: String = "Matrix") extends Servable {
 
   override val servableType: String = "matrix"
 

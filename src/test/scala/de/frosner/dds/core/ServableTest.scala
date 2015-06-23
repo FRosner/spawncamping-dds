@@ -9,6 +9,7 @@ class ServableTest extends FlatSpec with Matchers {
     val servable = new Servable {
       override protected def contentAsJson: JsValue = JsString("test-content")
       override val servableType: String = "test-type"
+      override val title: String = "test-title"
     }
     servable.toJson shouldBe JsObject(
       ("type", JsString("test-type")),

@@ -376,9 +376,9 @@ Table.prototype._draw = function(tableAndTypes) {
   };
 }
 
-Table.prototype.clearHeader = function() {
+Table.prototype._clear = function() {
   removeElementIfExists(this._hideLabelButton);
   if (this._scatter != null) {
-    this._scatter.clearHeader();
+    this._scatter.clear();
   }
 }

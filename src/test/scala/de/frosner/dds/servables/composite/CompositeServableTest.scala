@@ -25,6 +25,8 @@ case class DummyServable(number: Int) extends Servable {
 
   val servableType = "dummy"
 
+  val title = "dummy"
+
   def contentAsJson: JsValue = JsNumber(number)
 
 }

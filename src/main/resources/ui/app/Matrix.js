@@ -182,7 +182,7 @@ Matrix.prototype._draw = function(matrixAndNames) {
   this._pRGnButton = pRGnButton;
 }
 
-Matrix.prototype.clearHeader = function() {
+Matrix.prototype._clear = function() {
   removeElementIfExists(this._lowerBoundInput);
   removeElementIfExists(this._upperBoundInput);
   removeElementIfExists(this._boundArea);

@@ -89,4 +89,4 @@ Histogram.prototype._draw = function(bins) {
       .orient("left"));
 }
 
-Histogram.prototype.clearHeader = function() {}
+Histogram.prototype._clear = function() {}
