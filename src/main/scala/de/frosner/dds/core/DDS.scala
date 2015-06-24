@@ -567,7 +567,9 @@ object DDS {
   def show[V](rdd: RDD[V])(implicit tag: TypeTag[V]): Unit =
     show(rdd, DEFAULT_SHOW_SAMPLE_SIZE)(tag)
 
-  private def createShow(dataFrame: DataFrame, sampleSize: Int): Option[Servable] = {
+  private def createShow(dataFrame: DataFrame,
+                         sampleSize: Int,
+                         title: String = Servable.DEFAULT_TITLE): Option[Servable] = {
     val fields = dataFrame.schema.fields
     val nullableColumns = (0 to fields.size - 1).zip(fields).filter {
       case (index, field) => field.nullable
@@ -585,7 +587,7 @@ object DDS {
     val fieldNames = dataFrame.schema.fields.map(field => {
       s"""${field.name} [${field.dataType.toString.replace("Type", "")}${if (field.nullable) "*" else ""}]"""
     })
-    createTable(fieldNames, values)
+    createTable(fieldNames, values, title)
   }
 
   @Help(
@@ -931,7 +933,7 @@ object DDS {
 
     def toCell(maybeServable: Option[Servable]) = maybeServable.map(servable => List(servable)).getOrElse(List.empty)
     serve(CompositeServable(List(
-      toCell(createShow(dataFrame, DEFAULT_SHOW_SAMPLE_SIZE)),
+      toCell(createShow(dataFrame, DEFAULT_SHOW_SAMPLE_SIZE, "Data Sample")),
       toCell(createCorrelation(dataFrame)) ++ toCell(createMutualInformation(dataFrame))
     ) ++ summaries.map(summary => toCell(summary))))
   }

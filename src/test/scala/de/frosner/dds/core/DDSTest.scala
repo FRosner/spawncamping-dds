@@ -1209,6 +1209,7 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
       List(3, "g", 5d),
       List(5, "g", 6d)
     )
+    table.title shouldBe "Data Sample"
 
     val correlationServable = resultServables(1)(0).asInstanceOf[Matrix2D]
     correlationServable.colNames.toList shouldBe List("first", "third")
