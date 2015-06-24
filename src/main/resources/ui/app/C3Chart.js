@@ -17,4 +17,4 @@ C3Chart.prototype._draw = function(chart) {
   c3.generate(chart);
 }
 
-C3Chart.prototype.clearHeader = function() {}
+C3Chart.prototype._clear = function() {}

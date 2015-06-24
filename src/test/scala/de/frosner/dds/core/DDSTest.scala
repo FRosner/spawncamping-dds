@@ -1209,30 +1209,36 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
       List(3, "g", 5d),
       List(5, "g", 6d)
     )
+    table.title shouldBe "Data Sample"
 
     val correlationServable = resultServables(1)(0).asInstanceOf[Matrix2D]
     correlationServable.colNames.toList shouldBe List("first", "third")
     correlationServable.rowNames.toList shouldBe List("first", "third")
     correlationServable.entries.size shouldBe 2
     correlationServable.entries.foreach(row => row.size shouldBe 2)
+    correlationServable.title shouldBe "Pearson Correlation"
 
     val mutualInformationServable = resultServables(1)(1).asInstanceOf[Matrix2D]
     mutualInformationServable.colNames.toList shouldBe List("first", "second", "third")
     mutualInformationServable.rowNames.toList shouldBe List("first", "second", "third")
     mutualInformationServable.entries.size shouldBe 3
     mutualInformationServable.entries.foreach(row => row.size shouldBe 3)
+    mutualInformationServable.title shouldBe "Mutual Information"
 
     val column1Summary = resultServables(2)(0).asInstanceOf[Table]
     column1Summary.head.toList shouldBe List("count", "sum", "min", "max", "mean", "stdev", "variance")
     column1Summary.rows(0)(1) shouldBe 9d // sum of 9 for first column
+    column1Summary.title shouldBe "first"
 
     val column2Summary = resultServables(3)(0).asInstanceOf[Table]
     column2Summary.head.toList shouldBe List("mode", "cardinality")
     column2Summary.rows(0)(0) shouldBe "g" // mode of "g" for second column
+    column2Summary.title shouldBe "second"
 
     val column3Summary = resultServables(4)(0).asInstanceOf[Table]
     column3Summary.head.toList shouldBe List("count", "sum", "min", "max", "mean", "stdev", "variance")
     column3Summary.rows(0)(1) shouldBe 16d // sum of 16 for third column
+    column3Summary.title shouldBe "third"
   }
 
   "Help" should "work" in {

@@ -158,18 +158,18 @@ Table.prototype._draw = function(tableAndTypes) {
       .selectAll("text");
     var button = this._hideLabelButton;
     button.onclick = function() {
-        if (cache.tickLabelsHidden) {
-          labels.attr("visibility", "visible");
-          button.setAttribute("class", "hideLabelButton headerButton unhidden");
-          button.setAttribute("title", "Hide Ticks Labels");
-          cache.tickLabelsHidden = false;
-        } else {
-          labels.attr("visibility", "hidden");
-          button.setAttribute("class", "hideLabelButton headerButton hidden");
-          button.setAttribute("title", "Show Ticks Labels");
-          cache.tickLabelsHidden = true;
-        }
-      };
+      if (cache.tickLabelsHidden) {
+        labels.attr("visibility", "visible");
+        button.setAttribute("class", "hideLabelButton headerButton unhidden");
+        button.setAttribute("title", "Hide Ticks Labels");
+        cache.tickLabelsHidden = false;
+      } else {
+        labels.attr("visibility", "hidden");
+        button.setAttribute("class", "hideLabelButton headerButton hidden");
+        button.setAttribute("title", "Show Ticks Labels");
+        cache.tickLabelsHidden = true;
+      }
+    };
     if (!cache.tickLabelsHidden) {
       labels.attr("visibility", "visible");
       button.setAttribute("class", "hideLabelButton headerButton unhidden");
@@ -376,9 +376,9 @@ Table.prototype._draw = function(tableAndTypes) {
   };
 }
 
-Table.prototype.clearHeader = function() {
+Table.prototype._clear = function() {
   removeElementIfExists(this._hideLabelButton);
   if (this._scatter != null) {
-    this._scatter.clearHeader();
+    this._scatter.clear();
   }
 }

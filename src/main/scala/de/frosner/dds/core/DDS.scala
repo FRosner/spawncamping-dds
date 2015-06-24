@@ -177,7 +177,8 @@ object DDS {
     serve(Points2D(values)(num1, num2))
   }
 
-  private def createHeatmap[N](values: Seq[Seq[N]], rowNames: Seq[String] = null, colNames: Seq[String] = null)
+  private def createHeatmap[N](values: Seq[Seq[N]], rowNames: Seq[String] = null,
+                               colNames: Seq[String] = null, title: String = Servable.DEFAULT_TITLE)
                               (implicit num: Numeric[N]): Option[Servable] = {
     if (values.size == 0 || values.head.size == 0) {
       println("Can't show empty heatmap!")
@@ -185,7 +186,7 @@ object DDS {
     } else {
       val actualRowNames: Seq[String] = if (rowNames != null) rowNames else (1 to values.size).map(_.toString)
       val actualColNames: Seq[String] = if (colNames != null) colNames else (1 to values.head.size).map(_.toString)
-      Option(Matrix2D(values.map(_.map(entry => num.toDouble(entry))), actualRowNames, actualColNames))
+      Option(Matrix2D(values.map(_.map(entry => num.toDouble(entry))), actualRowNames, actualColNames, title))
     }
   }
 
@@ -503,8 +504,8 @@ object DDS {
     serve(table)
   }
 
-  private def createTable(head: Seq[String], rows: Seq[Seq[Any]]): Option[Servable] = {
-    Option(Table(head, rows))
+  private def createTable(head: Seq[String], rows: Seq[Seq[Any]], title: String = Servable.DEFAULT_TITLE): Option[Servable] = {
+    Option(Table(head, rows, title))
   }
 
   @Help(
@@ -567,7 +568,9 @@ object DDS {
   def show[V](rdd: RDD[V])(implicit tag: TypeTag[V]): Unit =
     show(rdd, DEFAULT_SHOW_SAMPLE_SIZE)(tag)
 
-  private def createShow(dataFrame: DataFrame, sampleSize: Int): Option[Servable] = {
+  private def createShow(dataFrame: DataFrame,
+                         sampleSize: Int,
+                         title: String = Servable.DEFAULT_TITLE): Option[Servable] = {
     val fields = dataFrame.schema.fields
     val nullableColumns = (0 to fields.size - 1).zip(fields).filter {
       case (index, field) => field.nullable
@@ -585,7 +588,7 @@ object DDS {
     val fieldNames = dataFrame.schema.fields.map(field => {
       s"""${field.name} [${field.dataType.toString.replace("Type", "")}${if (field.nullable) "*" else ""}]"""
     })
-    createTable(fieldNames, values)
+    createTable(fieldNames, values, title)
   }
 
   @Help(
@@ -664,7 +667,7 @@ object DDS {
     )
   }
 
-  private def createCorrelation(dataFrame: DataFrame): Option[Servable] = {
+  private def createCorrelation(dataFrame: DataFrame, title: String = Servable.DEFAULT_TITLE): Option[Servable] = {
     def showError = println("Correlation only supported for RDDs with multiple numerical columns.")
     val schema = dataFrame.schema
     val fields = schema.fields
@@ -705,7 +708,7 @@ object DDS {
           corrMatrix(i)(j) = corr
         }
         val fieldNames = numericalFields.map{ case (field, idx) => field.name }
-        createHeatmap(corrMatrix, fieldNames, fieldNames)
+        createHeatmap(corrMatrix, fieldNames, fieldNames, title)
       } else {
         showError
         Option.empty
@@ -728,7 +731,8 @@ object DDS {
   }
 
   private def createMutualInformation(dataFrame: DataFrame,
-                                      normalization: String = MutualInformationAggregator.DEFAULT_NORMALIZATION): Option[Servable] = {
+                                      normalization: String = MutualInformationAggregator.DEFAULT_NORMALIZATION,
+                                      title: String = Servable.DEFAULT_TITLE): Option[Servable] = {
     import MutualInformationAggregator._
     def showError = println("Mutual information only supported for RDDs with at least one column.")
     val schema = dataFrame.schema
@@ -758,7 +762,7 @@ object DDS {
       }
 
       val fieldNames = fields.map(_.name)
-      createHeatmap(mutualInformationMatrix, fieldNames, fieldNames)
+      createHeatmap(mutualInformationMatrix, fieldNames, fieldNames, title)
     } else {
       showError
       Option.empty
@@ -839,9 +843,10 @@ object DDS {
     }
   }
 
-  private def createSummarize[N: ClassTag](values: RDD[N])(implicit num: Numeric[N] = null): Option[Servable] = {
+  private def createSummarize[N: ClassTag](values: RDD[N], title: String = Servable.DEFAULT_TITLE)
+                                          (implicit num: Numeric[N] = null): Option[Servable] = {
     if (num != null) {
-      Option(Table.fromStatCounter(values.stats()))
+      Option(Table.fromStatCounter(values.stats(), title))
     } else {
       val cardinality = values.distinct.count
       if (cardinality > 0) {
@@ -849,7 +854,8 @@ object DDS {
         val (mode, modeCount) = valueCounts.max()(Ordering.by { case (value, count) => count})
         createTable(
           List("mode", "cardinality"),
-          List(List(mode, cardinality))
+          List(List(mode, cardinality)),
+          title
         )
       } else {
         println("Summarize function requires a non-empty RDD!")
@@ -908,17 +914,17 @@ object DDS {
   )
   def dashboard(dataFrame: DataFrame): Unit = {
     val rdd = dataFrame.rdd
-    val columnTypes = dataFrame.schema.fields
+    val fields = dataFrame.schema.fields
 
-    val summaries = for (i <- 0 to dataFrame.columns.size - 1; columnType = columnTypes(i))
+    val summaries = for (i <- 0 to dataFrame.columns.size - 1; field = fields(i))
       yield {
         def createSummarizeOf[T: ClassTag](implicit num: Numeric[T] = null) = {
           val column = rdd.flatMap(row => {
             Option(row(i)).map(_.asInstanceOf[T])
           })
-          createSummarize(column)
+          createSummarize(column, field.name)
         }
-        columnType.dataType match {
+        field.dataType match {
           case DoubleType => createSummarizeOf[Double]
           case IntegerType => createSummarizeOf[Int]
           case FloatType => createSummarizeOf[Float]
@@ -929,8 +935,8 @@ object DDS {
 
     def toCell(maybeServable: Option[Servable]) = maybeServable.map(servable => List(servable)).getOrElse(List.empty)
     serve(CompositeServable(List(
-      toCell(createShow(dataFrame, DEFAULT_SHOW_SAMPLE_SIZE)),
-      toCell(createCorrelation(dataFrame)) ++ toCell(createMutualInformation(dataFrame))
+      toCell(createShow(dataFrame, DEFAULT_SHOW_SAMPLE_SIZE, "Data Sample")),
+      toCell(createCorrelation(dataFrame, "Pearson Correlation")) ++ toCell(createMutualInformation(dataFrame, title = "Mutual Information"))
     ) ++ summaries.map(summary => toCell(summary))))
   }
 

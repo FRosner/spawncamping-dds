@@ -14,10 +14,16 @@ trait Servable {
   val servableType: String
 
   /**
+   * Title of the [[Servable]]. This is shown in the front-end.
+   */
+  val title: String
+
+  /**
    * @return JSON representation of this [[Servable]]. It contains the type as well as the content.
    */
   def toJson: JsObject = JsObject(
     ("type", JsString(servableType)),
+    ("title", JsString(title)),
     ("content", contentAsJson)
   )
 
@@ -31,5 +37,11 @@ trait Servable {
    * @return Stringified JSON representation to put into the HTTP response.
    */
   def toJsonString: String = toJson.prettyPrint
+
+}
+
+object Servable {
+
+  val DEFAULT_TITLE = ""
 
 }
