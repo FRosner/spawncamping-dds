@@ -1216,6 +1216,7 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     correlationServable.rowNames.toList shouldBe List("first", "third")
     correlationServable.entries.size shouldBe 2
     correlationServable.entries.foreach(row => row.size shouldBe 2)
+    correlationServable.title shouldBe "Pearson Correlation"
 
     val mutualInformationServable = resultServables(1)(1).asInstanceOf[Matrix2D]
     mutualInformationServable.colNames.toList shouldBe List("first", "second", "third")

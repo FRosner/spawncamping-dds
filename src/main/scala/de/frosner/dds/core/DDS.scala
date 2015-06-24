@@ -177,7 +177,8 @@ object DDS {
     serve(Points2D(values)(num1, num2))
   }
 
-  private def createHeatmap[N](values: Seq[Seq[N]], rowNames: Seq[String] = null, colNames: Seq[String] = null)
+  private def createHeatmap[N](values: Seq[Seq[N]], rowNames: Seq[String] = null,
+                               colNames: Seq[String] = null, title: String = Servable.DEFAULT_TITLE)
                               (implicit num: Numeric[N]): Option[Servable] = {
     if (values.size == 0 || values.head.size == 0) {
       println("Can't show empty heatmap!")
@@ -185,7 +186,7 @@ object DDS {
     } else {
       val actualRowNames: Seq[String] = if (rowNames != null) rowNames else (1 to values.size).map(_.toString)
       val actualColNames: Seq[String] = if (colNames != null) colNames else (1 to values.head.size).map(_.toString)
-      Option(Matrix2D(values.map(_.map(entry => num.toDouble(entry))), actualRowNames, actualColNames))
+      Option(Matrix2D(values.map(_.map(entry => num.toDouble(entry))), actualRowNames, actualColNames, title))
     }
   }
 
@@ -666,7 +667,7 @@ object DDS {
     )
   }
 
-  private def createCorrelation(dataFrame: DataFrame): Option[Servable] = {
+  private def createCorrelation(dataFrame: DataFrame, title: String = Servable.DEFAULT_TITLE): Option[Servable] = {
     def showError = println("Correlation only supported for RDDs with multiple numerical columns.")
     val schema = dataFrame.schema
     val fields = schema.fields
@@ -707,7 +708,7 @@ object DDS {
           corrMatrix(i)(j) = corr
         }
         val fieldNames = numericalFields.map{ case (field, idx) => field.name }
-        createHeatmap(corrMatrix, fieldNames, fieldNames)
+        createHeatmap(corrMatrix, fieldNames, fieldNames, title)
       } else {
         showError
         Option.empty
@@ -934,7 +935,7 @@ object DDS {
     def toCell(maybeServable: Option[Servable]) = maybeServable.map(servable => List(servable)).getOrElse(List.empty)
     serve(CompositeServable(List(
       toCell(createShow(dataFrame, DEFAULT_SHOW_SAMPLE_SIZE, "Data Sample")),
-      toCell(createCorrelation(dataFrame)) ++ toCell(createMutualInformation(dataFrame))
+      toCell(createCorrelation(dataFrame, "Pearson Correlation")) ++ toCell(createMutualInformation(dataFrame))
     ) ++ summaries.map(summary => toCell(summary))))
   }
 
