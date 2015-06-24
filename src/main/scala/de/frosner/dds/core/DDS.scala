@@ -908,9 +908,9 @@ object DDS {
   )
   def dashboard(dataFrame: DataFrame): Unit = {
     val rdd = dataFrame.rdd
-    val columnTypes = dataFrame.schema.fields
+    val fields = dataFrame.schema.fields
 
-    val summaries = for (i <- 0 to dataFrame.columns.size - 1; columnType = columnTypes(i))
+    val summaries = for (i <- 0 to dataFrame.columns.size - 1; field = fields(i))
       yield {
         def createSummarizeOf[T: ClassTag](implicit num: Numeric[T] = null) = {
           val column = rdd.flatMap(row => {
@@ -918,7 +918,7 @@ object DDS {
           })
           createSummarize(column)
         }
-        columnType.dataType match {
+        field.dataType match {
           case DoubleType => createSummarizeOf[Double]
           case IntegerType => createSummarizeOf[Int]
           case FloatType => createSummarizeOf[Float]
