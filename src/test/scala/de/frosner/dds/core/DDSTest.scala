@@ -1223,6 +1223,7 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     mutualInformationServable.rowNames.toList shouldBe List("first", "second", "third")
     mutualInformationServable.entries.size shouldBe 3
     mutualInformationServable.entries.foreach(row => row.size shouldBe 3)
+    mutualInformationServable.title shouldBe "Mutual Information"
 
     val column1Summary = resultServables(2)(0).asInstanceOf[Table]
     column1Summary.head.toList shouldBe List("count", "sum", "min", "max", "mean", "stdev", "variance")

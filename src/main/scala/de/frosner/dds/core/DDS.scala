@@ -731,7 +731,8 @@ object DDS {
   }
 
   private def createMutualInformation(dataFrame: DataFrame,
-                                      normalization: String = MutualInformationAggregator.DEFAULT_NORMALIZATION): Option[Servable] = {
+                                      normalization: String = MutualInformationAggregator.DEFAULT_NORMALIZATION,
+                                      title: String = Servable.DEFAULT_TITLE): Option[Servable] = {
     import MutualInformationAggregator._
     def showError = println("Mutual information only supported for RDDs with at least one column.")
     val schema = dataFrame.schema
@@ -761,7 +762,7 @@ object DDS {
       }
 
       val fieldNames = fields.map(_.name)
-      createHeatmap(mutualInformationMatrix, fieldNames, fieldNames)
+      createHeatmap(mutualInformationMatrix, fieldNames, fieldNames, title)
     } else {
       showError
       Option.empty
@@ -935,7 +936,7 @@ object DDS {
     def toCell(maybeServable: Option[Servable]) = maybeServable.map(servable => List(servable)).getOrElse(List.empty)
     serve(CompositeServable(List(
       toCell(createShow(dataFrame, DEFAULT_SHOW_SAMPLE_SIZE, "Data Sample")),
-      toCell(createCorrelation(dataFrame, "Pearson Correlation")) ++ toCell(createMutualInformation(dataFrame))
+      toCell(createCorrelation(dataFrame, "Pearson Correlation")) ++ toCell(createMutualInformation(dataFrame, title = "Mutual Information"))
     ) ++ summaries.map(summary => toCell(summary))))
   }
 
