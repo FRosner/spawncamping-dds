@@ -503,8 +503,8 @@ object DDS {
     serve(table)
   }
 
-  private def createTable(head: Seq[String], rows: Seq[Seq[Any]]): Option[Servable] = {
-    Option(Table(head, rows))
+  private def createTable(head: Seq[String], rows: Seq[Seq[Any]], title: String = Servable.DEFAULT_TITLE): Option[Servable] = {
+    Option(Table(head, rows, title))
   }
 
   @Help(
@@ -839,9 +839,10 @@ object DDS {
     }
   }
 
-  private def createSummarize[N: ClassTag](values: RDD[N])(implicit num: Numeric[N] = null): Option[Servable] = {
+  private def createSummarize[N: ClassTag](values: RDD[N], title: String = Servable.DEFAULT_TITLE)
+                                          (implicit num: Numeric[N] = null): Option[Servable] = {
     if (num != null) {
-      Option(Table.fromStatCounter(values.stats()))
+      Option(Table.fromStatCounter(values.stats(), title))
     } else {
       val cardinality = values.distinct.count
       if (cardinality > 0) {
@@ -849,7 +850,8 @@ object DDS {
         val (mode, modeCount) = valueCounts.max()(Ordering.by { case (value, count) => count})
         createTable(
           List("mode", "cardinality"),
-          List(List(mode, cardinality))
+          List(List(mode, cardinality)),
+          title
         )
       } else {
         println("Summarize function requires a non-empty RDD!")
@@ -916,7 +918,7 @@ object DDS {
           val column = rdd.flatMap(row => {
             Option(row(i)).map(_.asInstanceOf[T])
           })
-          createSummarize(column)
+          createSummarize(column, field.name)
         }
         field.dataType match {
           case DoubleType => createSummarizeOf[Double]

@@ -5,7 +5,7 @@ import de.frosner.dds.servables.tabular.Table._
 import org.apache.spark.util.StatCounter
 import spray.json._
 
-case class Table(head: Seq[String], rows: Seq[Seq[Any]], title: String = "") extends Servable {
+case class Table(head: Seq[String], rows: Seq[Seq[Any]], title: String = Servable.DEFAULT_TITLE) extends Servable {
 
   val servableType = "table"
 
@@ -60,9 +60,10 @@ object Table {
 
   val NULL_TYPE = "null"
 
-  def fromStatCounter(stat: StatCounter): Table = fromStatCounters(List.empty, List(stat))
+  def fromStatCounter(stat: StatCounter, title: String = Servable.DEFAULT_TITLE): Table =
+    fromStatCounters(List.empty, List(stat), title)
 
-  def fromStatCounters(labels: Seq[String], stats: Seq[StatCounter]) = {
+  def fromStatCounters(labels: Seq[String], stats: Seq[StatCounter], title: String = Servable.DEFAULT_TITLE) = {
     val optionalLabelHead = if (labels.size > 0) List("label") else List.empty
     val head = optionalLabelHead ++ List(
       "count", "sum", "min", "max", "mean", "stdev", "variance"
@@ -74,7 +75,7 @@ object Table {
     } else {
       stats.map(stats => List(stats.count, stats.sum, stats.min, stats.max, stats.mean, stats.stdev, stats.variance))
     }
-    Table(head, rows)
+    Table(head, rows, title)
   }
 
 }

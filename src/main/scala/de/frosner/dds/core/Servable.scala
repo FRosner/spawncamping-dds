@@ -39,3 +39,9 @@ trait Servable {
   def toJsonString: String = toJson.prettyPrint
 
 }
+
+object Servable {
+
+  val DEFAULT_TITLE = ""
+
+}

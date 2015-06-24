@@ -3,7 +3,7 @@ package de.frosner.dds.servables.histogram
 import de.frosner.dds.core.Servable
 import spray.json.{JsArray, JsNumber, JsObject, JsValue}
 
-case class Histogram(bins: Seq[Double], frequencies: Seq[Long], title: String = "") extends Servable {
+case class Histogram(bins: Seq[Double], frequencies: Seq[Long], title: String = Servable.DEFAULT_TITLE) extends Servable {
 
   require(bins.size == frequencies.size + 1)
 
