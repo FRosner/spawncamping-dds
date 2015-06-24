@@ -12,7 +12,7 @@ class CompositeServableTest extends FlatSpec with Matchers {
       List(DummyServable(4))
     )).toJson shouldBe JsObject(
       ("type", JsString("composite")),
-      ("title", JsString("dummy")),
+      ("title", JsString("")),
       ("content", JsArray(Vector(
         JsArray(Vector(DummyServable(1).toJson, DummyServable(2).toJson, DummyServable(3).toJson)),
         JsArray(Vector(DummyServable(4).toJson))
