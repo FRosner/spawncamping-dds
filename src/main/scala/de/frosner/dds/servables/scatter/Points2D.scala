@@ -4,7 +4,7 @@ import de.frosner.dds.core.Servable
 import de.frosner.dds.servables.tabular.{Table, OrderedMap}
 import spray.json.{JsString, JsNumber, JsObject, JsArray}
 
-case class Points2D[XT, YT](points: Seq[(XT, YT)], title: String = "Points")
+case class Points2D[XT, YT](points: Seq[(XT, YT)], title: String = "")
                            (implicit numX: Numeric[XT] = null, numY: Numeric[YT] = null) extends Servable {
 
   override val servableType: String = "points-2d"

@@ -9,7 +9,7 @@ import spray.json._
  *
  * @param data to plot in the chart
  */
-case class Chart(data: Data, xAxis: XAxis = XAxis.indexed, title: String = "Chart") extends Servable {
+case class Chart(data: Data, xAxis: XAxis = XAxis.indexed, title: String = "") extends Servable {
 
   val servableType = "chart"
 

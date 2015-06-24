@@ -13,6 +13,7 @@ class ServableTest extends FlatSpec with Matchers {
     }
     servable.toJson shouldBe JsObject(
       ("type", JsString("test-type")),
+      ("title", JsString("test-title")),
       ("content", JsString("test-content"))
     )
   }

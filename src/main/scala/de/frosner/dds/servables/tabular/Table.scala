@@ -5,7 +5,7 @@ import de.frosner.dds.servables.tabular.Table._
 import org.apache.spark.util.StatCounter
 import spray.json._
 
-case class Table(head: Seq[String], rows: Seq[Seq[Any]], title: String = "Table") extends Servable {
+case class Table(head: Seq[String], rows: Seq[Seq[Any]], title: String = "") extends Servable {
 
   val servableType = "table"
 

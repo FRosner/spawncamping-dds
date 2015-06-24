@@ -9,7 +9,7 @@ import spray.json._
 case class Matrix2D(entries: Seq[Seq[Double]],
                     rowNames: Seq[String],
                     colNames: Seq[String],
-                    title: String = "Matrix") extends Servable {
+                    title: String = "") extends Servable {
 
   override val servableType: String = "matrix"
 
