@@ -153,6 +153,7 @@ Visualization.prototype.draw = function() {
   this._verify();
   var titleSpan = generateSpan(this._header, this._content.id + "-title")
   titleSpan.innerHTML = this._title;
+  titleSpan.className = "servable-title";
   this._titleSpan = titleSpan;
   this._draw(this._data);
   return this;

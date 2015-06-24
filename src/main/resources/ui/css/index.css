@@ -17,6 +17,10 @@ body {
   width:30%;
 }
 
+.servable-title {
+  font: 11px sans-serif;
+}
+
 .headerElement {
   margin-right:10px;
   float:right;
