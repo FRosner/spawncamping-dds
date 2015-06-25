@@ -52,7 +52,7 @@ class NumericColumnStatisticsAggregatorTest extends FlatSpec with Matchers {
     agg.totalCount shouldBe 3l
   }
 
-  it should "compute the missing value count" in {
+  it should "compute the missing value count correctly" in {
     val agg = new NumericColumnStatisticsAggregator[Float]
     agg.iterate(Option(5f))
     agg.missingCount shouldBe 0l
