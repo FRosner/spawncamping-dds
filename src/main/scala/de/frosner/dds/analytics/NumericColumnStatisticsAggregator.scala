@@ -1,7 +1,5 @@
 package de.frosner.dds.analytics
 
-import scala.math.Integral
-
 class NumericColumnStatisticsAggregator[N](implicit num: Numeric[N]) extends Serializable {
 
   private[analytics] var totalCount = 0l
