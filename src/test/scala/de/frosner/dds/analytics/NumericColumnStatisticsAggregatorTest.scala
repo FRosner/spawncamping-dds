@@ -12,6 +12,8 @@ class NumericColumnStatisticsAggregatorTest extends FlatSpec with Matchers {
     agg.missingCount shouldBe 0
     agg.sum shouldBe 0
     agg.sumOfSquares shouldBe 0
+    agg.min shouldBe Option.empty[Int]
+    agg.max shouldBe Option.empty[Int]
   }
 
   it should "be initialized properly for BigDecimal" in {
@@ -20,6 +22,8 @@ class NumericColumnStatisticsAggregatorTest extends FlatSpec with Matchers {
     agg.missingCount shouldBe BigDecimal(0)
     agg.sum shouldBe BigDecimal(0)
     agg.sumOfSquares shouldBe BigDecimal(0)
+    agg.min shouldBe Option.empty[BigDecimal]
+    agg.max shouldBe Option.empty[BigDecimal]
   }
 
   it should "compute the correct sums" in {
@@ -62,6 +66,30 @@ class NumericColumnStatisticsAggregatorTest extends FlatSpec with Matchers {
     agg.missingCount shouldBe 1l
   }
 
+  it should "compute the min correctly" in {
+    val agg = new NumericColumnStatisticsAggregator[Float]
+    agg.iterate(Option.empty)
+    agg.min shouldBe Option.empty[Float]
+    agg.iterate(Option(5f))
+    agg.min shouldBe Option(5f)
+    agg.iterate(Option(2f))
+    agg.min shouldBe Option(2f)
+    agg.iterate(Option(10f))
+    agg.min shouldBe Option(2f)
+  }
+
+  it should "compute the max correctly" in {
+    val agg = new NumericColumnStatisticsAggregator[Float]
+    agg.iterate(Option.empty)
+    agg.max shouldBe Option.empty[Float]
+    agg.iterate(Option(5f))
+    agg.max shouldBe Option(5f)
+    agg.iterate(Option(2f))
+    agg.max shouldBe Option(5f)
+    agg.iterate(Option(10f))
+    agg.max shouldBe Option(10f)
+  }
+
   it should "merge two sums correctly" in {
     val agg1 = new NumericColumnStatisticsAggregator[Byte]
     agg1.iterate(Option(1.toByte))
@@ -92,6 +120,22 @@ class NumericColumnStatisticsAggregatorTest extends FlatSpec with Matchers {
     val agg2 = new NumericColumnStatisticsAggregator[Int]
     agg2.iterate(Option.empty)
     agg1.merge(agg2).missingCount shouldBe 1
+  }
+
+  it should "merge two mins correctly" in {
+    val agg1 = new NumericColumnStatisticsAggregator[Int]
+    agg1.iterate(Option(1))
+    val agg2 = new NumericColumnStatisticsAggregator[Int]
+    agg2.iterate(Option(2))
+    agg1.merge(agg2).min shouldBe Option(1)
+  }
+
+  it should "merge two maxs correctly" in {
+    val agg1 = new NumericColumnStatisticsAggregator[Int]
+    agg1.iterate(Option(1))
+    val agg2 = new NumericColumnStatisticsAggregator[Int]
+    agg2.iterate(Option(2))
+    agg1.merge(agg2).max shouldBe Option(2)
   }
 
 }
