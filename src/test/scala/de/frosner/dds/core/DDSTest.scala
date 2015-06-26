@@ -254,7 +254,7 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
   it should "be served from a single numeric value RDD, binned according to Sturge's formula" in {
     DDS.start(mockedServer)
     val values = sc.makeRDD(List(0,5,15,3,8))
-    DDS.histogram(values, null.asInstanceOf[Int])
+    DDS.histogram(values)
 
     val actualChart = mockedServer.lastServed.get.asInstanceOf[Histogram]
     actualChart.bins.toList shouldBe List(0,3.75,7.5,11.25,15.0)

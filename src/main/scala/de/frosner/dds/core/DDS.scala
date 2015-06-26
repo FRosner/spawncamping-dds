@@ -312,14 +312,14 @@ object DDS {
     shortDescription = "Plots a histogram of a numerical RDD for the given number of buckets",
     longDescription = "Plots a histogram of a numerical RDD for the given number of buckets. " +
       "The number of buckets parameter is optional - if omitted, Sturge's formula is used to determine an optimum number of bins",
-    parameters = "values: RDD[NumericValue], numBuckets: Int"
+    parameters = "values: RDD[NumericValue], numBuckets: Integer"
   )
-  def histogram[N: ClassTag](values: RDD[N], numBuckets: Integer = null)(implicit num: Numeric[N]): Unit = {
-    if (numBuckets<2){
+  def histogram[N: ClassTag](values: RDD[N], numBuckets: Integer = null.asInstanceOf[Integer])(implicit num: Numeric[N]): Unit = {
+    if (numBuckets != null && numBuckets<2){
       println("Number of Buckets must be greater than or equal to 2")
     }
     else {
-      val localNumBuckets: Int = if (numBuckets == null) lg2IntCeil(values.count) + 1 else numBuckets
+      val localNumBuckets: Integer = if (numBuckets == null) lg2IntCeil(values.count) + 1 else numBuckets
       val (buckets, frequencies) = values.map(v => num.toDouble(v)).histogram(localNumBuckets)
       histogram(buckets, frequencies)
     }
