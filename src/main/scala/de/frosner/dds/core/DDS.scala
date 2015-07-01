@@ -870,7 +870,7 @@ object DDS {
     longDescription = "Shows some basic summary statistics of the given dataset.\n" +
       "Statistics for numeric values are: count, sum, min, max, mean, stdev, variance\n" +
       "Statistics for nominal values are: mode, cardinality",
-    parameters = "values: RDD[NumericValue]"
+    parameters = "values: RDD[Value]"
   )
   def summarize[N: ClassTag](values: RDD[N])(implicit num: Numeric[N] = null): Unit = {
     serve(createSummarize(values))
