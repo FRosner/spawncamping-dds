@@ -1241,6 +1241,10 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     column3Summary.title shouldBe "third"
   }
 
+  "A correct column statistics" should "be served" in {
+    "the test" shouldBe "implemented"
+  }
+
   "Help" should "work" in {
     DDS.help()
     DDS.help("start")

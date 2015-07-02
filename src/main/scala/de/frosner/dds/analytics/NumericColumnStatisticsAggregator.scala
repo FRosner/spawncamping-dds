@@ -1,42 +1,58 @@
 package de.frosner.dds.analytics
 
-class NumericColumnStatisticsAggregator[N](implicit num: Numeric[N]) extends Serializable {
+class NumericColumnStatisticsAggregator extends Serializable {
 
-  private[analytics] var totalCount = 0l
-  private[analytics] var missingCount = 0l
-  private[analytics] var min = Option.empty[N]
-  private[analytics] var max = Option.empty[N]
-  private[analytics] var sum = num.zero
-  private[analytics] var sumOfSquares = num.zero
+  private var counts: NominalColumnStatisticsAggregator = new NominalColumnStatisticsAggregator()
+  private var runningMin = Double.PositiveInfinity
+  private var runningMax = Double.NegativeInfinity
+  private var runningSum = 0d
+  private var runningMean = 0d
+  private var runningMeanSquareDif = 0d
 
-  def iterate(value: Option[N]): NumericColumnStatisticsAggregator[N] = {
-    totalCount = totalCount + 1
-    if (value.isEmpty) {
-      missingCount = missingCount + 1
-    } else {
+  def iterate(value: Option[Double]): NumericColumnStatisticsAggregator = {
+    counts = counts.iterate(value)
+    if (value.isDefined) {
       val actualValue = value.get
-      sum = num.plus(sum, actualValue)
-      sumOfSquares = num.plus(sumOfSquares, num.times(actualValue, actualValue))
-      min = if (min.isDefined) Option(num.min(min.get, actualValue)) else Option(actualValue)
-      max = if (max.isDefined) Option(num.max(max.get, actualValue)) else Option(actualValue)
+      val delta = actualValue - runningMean
+      runningSum = runningSum + actualValue
+      runningMean = runningMean + delta / nonMissingCount
+      runningMeanSquareDif = runningMeanSquareDif + delta * (actualValue - runningMean)
+      runningMin = Math.min(runningMin, actualValue)
+      runningMax = Math.max(runningMax, actualValue)
     }
     this
   }
 
-  def merge(intermediateAggregator: NumericColumnStatisticsAggregator[N]): NumericColumnStatisticsAggregator[N] = {
-    totalCount = totalCount + intermediateAggregator.totalCount
-    missingCount = missingCount + intermediateAggregator.missingCount
-    sum = num.plus(sum, intermediateAggregator.sum)
-    sumOfSquares = num.plus(sumOfSquares, intermediateAggregator.sumOfSquares)
-    if (min.isEmpty)
-      min = intermediateAggregator.min
-    else if (intermediateAggregator.min.isDefined)
-      min = min.map(num.min(_, intermediateAggregator.min.get))
-    if (max.isEmpty)
-      max = intermediateAggregator.max
-    else if (intermediateAggregator.max.isDefined)
-      max = max.map(num.max(_, intermediateAggregator.max.get))
+  def merge(that: NumericColumnStatisticsAggregator): NumericColumnStatisticsAggregator = {
+    runningSum = runningSum + that.runningSum
+    val delta = that.runningMean - runningMean
+    runningMin = Math.min(runningMin, that.runningMin)
+    runningMax = Math.max(runningMax, that.runningMax)
+    runningMean = (runningMean * nonMissingCount + that.runningMean * that.nonMissingCount) /
+      (nonMissingCount + that.nonMissingCount)
+    runningMeanSquareDif = runningMeanSquareDif + that.runningMeanSquareDif +
+      (delta * delta * nonMissingCount * that.nonMissingCount) /
+      (nonMissingCount + that.nonMissingCount)
+    counts = counts.merge(that.counts)
     this
   }
+
+  def totalCount = counts.totalCount
+
+  def missingCount = counts.missingCount
+
+  def nonMissingCount = counts.nonMissingCount
+
+  def sum = runningSum
+
+  def min = runningMin
+
+  def max = runningMax
+
+  def mean = if (nonMissingCount > 0) runningMean else Double.NaN
+
+  def variance = if (nonMissingCount > 1) runningMeanSquareDif / nonMissingCount else Double.NaN
+
+  def stdev = Math.sqrt(variance)
 
 }

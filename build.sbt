@@ -6,7 +6,7 @@ version       := "2.1.0-SNAPSHOT"
 
 name          := "spawncamping-dds"
 
-scalaVersion  := "2.10.4"
+scalaVersion  := "2.10.5"
 
 lazy val shortScalaVersion = settingKey[String]("Scala major and minor version.")
 
@@ -22,7 +22,7 @@ lazy val finalArtifactName = settingKey[String]("Name of the final artifact.")
 
 finalArtifactName := s"${name.value}-${version.value}_${shortScalaVersion.value}.jar"
 
-crossScalaVersions := Seq("2.11.4", scalaVersion.value)
+crossScalaVersions := Seq("2.11.6", scalaVersion.value)
 
 scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
 
@@ -39,6 +39,8 @@ libraryDependencies ++= {
 }
 
 libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.4" % "test"
+
+libraryDependencies += "org.scalaz" %% "scalaz-core" % "7.1.3"
 
 libraryDependencies += "org.apache.spark" %% "spark-core" % "1.3.0" % "provided"
 
