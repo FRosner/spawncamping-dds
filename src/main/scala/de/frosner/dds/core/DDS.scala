@@ -316,7 +316,7 @@ object DDS {
   )
   def histogram[N: ClassTag](values: RDD[N], numBuckets: Integer = null.asInstanceOf[Integer])(implicit num: Numeric[N]): Unit = {
     if (numBuckets != null && numBuckets<2){
-      println("Number of Buckets must be greater than or equal to 2")
+      println("Number of buckets must be greater than or equal to 2")
     }
     else {
       val localNumBuckets: Integer = if (numBuckets == null) lg2IntCeil(values.count) + 1 else numBuckets
