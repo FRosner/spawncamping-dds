@@ -6,11 +6,12 @@ Composite.prototype.parent = Visualization.prototype;
 
 Composite.prototype._draw = function(composite) {
   var servedComponents = [];
+  var thisContentId = this._content.id;
   composite = composite.map(function(row, rowIdx) {
     return row.map(function(cell, cellIdx) {
-      cell.containerId = "container-" + rowIdx + "-" + cellIdx;
-      cell.contentId = "content-" + rowIdx + "-" + cellIdx;
-      cell.headerId = "header-" + rowIdx + "-" + cellIdx;
+      cell.containerId = "container-" + thisContentId + "-" + rowIdx + "-" + cellIdx;
+      cell.contentId = "content-" + thisContentId + "-" + rowIdx + "-" + cellIdx;
+      cell.headerId = "header-" + thisContentId + "-" + rowIdx + "-" + cellIdx;
       return cell;
     });
   });
