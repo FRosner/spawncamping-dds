@@ -1019,9 +1019,9 @@ object DDS {
       val (years, yearFrequencies) = agg.yearFrequencies.toList.sortBy(_._1).unzip
       val yearBar = createBar(yearFrequencies, years.map(_.toString), s"Years in ${field.name}")
       val (months, monthFrequencies) = agg.monthFrequencies.toList.sortBy(_._1).unzip
-      val monthBar = createBar(monthFrequencies, months.map(_.toString), s"Years in ${field.name}")
+      val monthBar = createBar(monthFrequencies, months.map(_.toString), s"Months in ${field.name}")
       val (days, dayFrequencies) = agg.dayOfWeekFrequencies.toList.sortBy(_._1).unzip
-      val dayBar = createBar(dayFrequencies, days.map(_.toString), s"Years in ${field.name}")
+      val dayBar = createBar(dayFrequencies, days.map(_.toString), s"Days in ${field.name}")
       val table = createTable(List("Key", "Value"), List(
         List("Total Count", agg.totalCount),
         List("Missing Count", agg.missingCount),
