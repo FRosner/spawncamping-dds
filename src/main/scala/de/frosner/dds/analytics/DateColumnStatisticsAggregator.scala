@@ -49,34 +49,9 @@ class DateColumnStatisticsAggregator extends Serializable {
 
   def yearFrequencies = runningYearFrequencies.toMap
 
-  def monthFrequencies = runningMonthFrequencies.map{ case (month, count) => {
-    (month match {
-      case Calendar.JANUARY => "Jan"
-      case Calendar.FEBRUARY => "Feb"
-      case Calendar.MARCH => "Mar"
-      case Calendar.APRIL => "Apr"
-      case Calendar.MAY => "May"
-      case Calendar.JUNE => "Jun"
-      case Calendar.JULY => "Jul"
-      case Calendar.AUGUST => "Aug"
-      case Calendar.SEPTEMBER => "Sep"
-      case Calendar.OCTOBER => "Oct"
-      case Calendar.NOVEMBER => "Nov"
-      case Calendar.DECEMBER => "Dec"
-    }, count)
-  }}.toMap
+  def monthFrequencies = runningMonthFrequencies.toMap
 
-  def dayOfWeekFrequencies = runningDayOfWeekFrequencies.map{ case (day, count) => {
-    (day match {
-      case Calendar.MONDAY => "Mon"
-      case Calendar.TUESDAY => "Tue"
-      case Calendar.WEDNESDAY => "Wed"
-      case Calendar.THURSDAY => "Thu"
-      case Calendar.FRIDAY => "Fri"
-      case Calendar.SATURDAY => "Sat"
-      case Calendar.SUNDAY => "Sun"
-    }, count)
-  }}.toMap
+  def dayOfWeekFrequencies = runningDayOfWeekFrequencies.toMap
 
   def topYear = yearFrequencies.maxBy{ case (year, freq) => freq }
 

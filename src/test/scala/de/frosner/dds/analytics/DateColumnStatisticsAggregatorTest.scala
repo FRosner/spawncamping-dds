@@ -51,15 +51,15 @@ class DateColumnStatisticsAggregatorTest extends FlatSpec with Matchers {
     val agg = new DateColumnStatisticsAggregator
     val calendar = Calendar.getInstance
 
-    calendar.set(2000, 5, 10)
+    calendar.set(2000, Calendar.JUNE, 10)
     agg.iterate(Option(new Timestamp(calendar.getTimeInMillis)))
     agg.yearFrequencies shouldBe Map(2000 -> 1l)
 
-    calendar.set(1950, 10, 10)
+    calendar.set(1950, Calendar.NOVEMBER, 10)
     agg.iterate(Option(new Timestamp(calendar.getTimeInMillis)))
     agg.yearFrequencies shouldBe Map(2000 -> 1l, 1950 -> 1l)
 
-    calendar.set(2000, 1, 1)
+    calendar.set(2000, Calendar.JANUARY, 1)
     agg.iterate(Option(new Timestamp(calendar.getTimeInMillis)))
     agg.yearFrequencies shouldBe Map(2000 -> 2l, 1950 -> 1l)
 
@@ -71,20 +71,20 @@ class DateColumnStatisticsAggregatorTest extends FlatSpec with Matchers {
     val agg = new DateColumnStatisticsAggregator
     val calendar = Calendar.getInstance
 
-    calendar.set(2000, 5, 10)
+    calendar.set(2000, Calendar.JUNE, 10)
     agg.iterate(Option(new Timestamp(calendar.getTimeInMillis)))
-    agg.monthFrequencies shouldBe Map("Jun" -> 1l)
+    agg.monthFrequencies shouldBe Map(Calendar.JUNE -> 1l)
 
-    calendar.set(1950, 10, 10)
+    calendar.set(1950, Calendar.NOVEMBER, 10)
     agg.iterate(Option(new Timestamp(calendar.getTimeInMillis)))
-    agg.monthFrequencies shouldBe Map("Nov" -> 1l, "Jun" -> 1l)
+    agg.monthFrequencies shouldBe Map(Calendar.NOVEMBER -> 1l, Calendar.JUNE -> 1l)
 
-    calendar.set(2000, 10, 1)
+    calendar.set(2000, Calendar.NOVEMBER, 1)
     agg.iterate(Option(new Timestamp(calendar.getTimeInMillis)))
-    agg.monthFrequencies shouldBe Map("Nov" -> 2l, "Jun" -> 1l)
+    agg.monthFrequencies shouldBe Map(Calendar.NOVEMBER -> 2l, Calendar.JUNE -> 1l)
 
     agg.iterate(Option.empty)
-    agg.monthFrequencies shouldBe Map("Nov" -> 2l, "Jun" -> 1l)
+    agg.monthFrequencies shouldBe Map(Calendar.NOVEMBER -> 2l, Calendar.JUNE -> 1l)
 
   }
 
@@ -92,34 +92,34 @@ class DateColumnStatisticsAggregatorTest extends FlatSpec with Matchers {
     val agg = new DateColumnStatisticsAggregator
     val calendar = Calendar.getInstance
 
-    calendar.set(2015, 6, 4)
+    calendar.set(2015, Calendar.JULY, 4)
     agg.iterate(Option(new Timestamp(calendar.getTimeInMillis)))
-    agg.dayOfWeekFrequencies shouldBe Map("Sat" -> 1l)
+    agg.dayOfWeekFrequencies shouldBe Map(Calendar.SATURDAY -> 1l)
 
-    calendar.set(2015, 6, 5)
+    calendar.set(2015, Calendar.JULY, 5)
     agg.iterate(Option(new Timestamp(calendar.getTimeInMillis)))
-    agg.dayOfWeekFrequencies shouldBe Map("Sat" -> 1l, "Sun" -> 1l)
+    agg.dayOfWeekFrequencies shouldBe Map(Calendar.SATURDAY -> 1l, Calendar.SUNDAY -> 1l)
 
-    calendar.set(2015, 6, 12)
+    calendar.set(2015, Calendar.JULY, 12)
     agg.iterate(Option(new Timestamp(calendar.getTimeInMillis)))
-    agg.dayOfWeekFrequencies shouldBe Map("Sat" -> 1l, "Sun" -> 2l)
+    agg.dayOfWeekFrequencies shouldBe Map(Calendar.SATURDAY -> 1l, Calendar.SUNDAY -> 2l)
 
     agg.iterate(Option.empty)
-    agg.dayOfWeekFrequencies shouldBe Map("Sat" -> 1l, "Sun" -> 2l)
+    agg.dayOfWeekFrequencies shouldBe Map(Calendar.SATURDAY -> 1l, Calendar.SUNDAY -> 2l)
   }
 
   it should "compute the correct top year" in {
     val agg = new DateColumnStatisticsAggregator
     val calendar = Calendar.getInstance
 
-    calendar.set(2000, 5, 10)
+    calendar.set(2000, Calendar.JUNE, 10)
     agg.iterate(Option(new Timestamp(calendar.getTimeInMillis)))
     agg.topYear shouldBe (2000, 1l)
 
-    calendar.set(1950, 10, 10)
+    calendar.set(1950, Calendar.NOVEMBER, 10)
     agg.iterate(Option(new Timestamp(calendar.getTimeInMillis)))
 
-    calendar.set(2000, 1, 1)
+    calendar.set(2000, Calendar.JANUARY, 1)
     agg.iterate(Option(new Timestamp(calendar.getTimeInMillis)))
     agg.topYear shouldBe (2000, 2l)
 
@@ -131,38 +131,38 @@ class DateColumnStatisticsAggregatorTest extends FlatSpec with Matchers {
     val agg = new DateColumnStatisticsAggregator
     val calendar = Calendar.getInstance
 
-    calendar.set(2000, 5, 10)
+    calendar.set(2000, Calendar.JUNE, 10)
     agg.iterate(Option(new Timestamp(calendar.getTimeInMillis)))
-    agg.topMonth shouldBe ("Jun", 1l)
+    agg.topMonth shouldBe (Calendar.JUNE, 1l)
 
-    calendar.set(1950, 10, 10)
+    calendar.set(1950, Calendar.NOVEMBER, 10)
     agg.iterate(Option(new Timestamp(calendar.getTimeInMillis)))
 
-    calendar.set(2000, 10, 1)
+    calendar.set(2000, Calendar.NOVEMBER, 1)
     agg.iterate(Option(new Timestamp(calendar.getTimeInMillis)))
-    agg.topMonth shouldBe ("Nov", 2l)
+    agg.topMonth shouldBe (Calendar.NOVEMBER, 2l)
 
     agg.iterate(Option.empty)
-    agg.topMonth shouldBe ("Nov", 2l)
+    agg.topMonth shouldBe (Calendar.NOVEMBER, 2l)
   }
 
   it should "compute the correct top day of week" in {
     val agg = new DateColumnStatisticsAggregator
     val calendar = Calendar.getInstance
 
-    calendar.set(2015, 6, 4)
+    calendar.set(2015, Calendar.JULY, 4)
     agg.iterate(Option(new Timestamp(calendar.getTimeInMillis)))
-    agg.topDayOfWeek shouldBe ("Sat", 1l)
+    agg.topDayOfWeek shouldBe (Calendar.SATURDAY, 1l)
 
-    calendar.set(2015, 6, 5)
+    calendar.set(2015, Calendar.JULY, 5)
     agg.iterate(Option(new Timestamp(calendar.getTimeInMillis)))
 
-    calendar.set(2015, 6, 12)
+    calendar.set(2015, Calendar.JULY, 12)
     agg.iterate(Option(new Timestamp(calendar.getTimeInMillis)))
-    agg.topDayOfWeek shouldBe ("Sun", 2l)
+    agg.topDayOfWeek shouldBe (Calendar.SUNDAY, 2l)
 
     agg.iterate(Option.empty)
-    agg.topDayOfWeek shouldBe ("Sun", 2l)
+    agg.topDayOfWeek shouldBe (Calendar.SUNDAY, 2l)
   }
 
   it should "merge the correct total count correctly" in {
@@ -196,13 +196,13 @@ class DateColumnStatisticsAggregatorTest extends FlatSpec with Matchers {
     val calendar = Calendar.getInstance
 
     val agg1 = new DateColumnStatisticsAggregator
-    calendar.set(2000, 5, 10)
+    calendar.set(2000, Calendar.JUNE, 10)
     agg1.iterate(Option(new Timestamp(calendar.getTimeInMillis)))
-    calendar.set(1950, 10, 10)
+    calendar.set(1950, Calendar.NOVEMBER, 10)
     agg1.iterate(Option(new Timestamp(calendar.getTimeInMillis)))
 
     val agg2 = new DateColumnStatisticsAggregator
-    calendar.set(2000, 1, 1)
+    calendar.set(2000, Calendar.JANUARY, 1)
     agg2.iterate(Option(new Timestamp(calendar.getTimeInMillis)))
 
     agg1.merge(agg2).yearFrequencies shouldBe Map(2000 -> 2l, 1950 -> 1l)
@@ -212,32 +212,32 @@ class DateColumnStatisticsAggregatorTest extends FlatSpec with Matchers {
     val calendar = Calendar.getInstance
 
     val agg1 = new DateColumnStatisticsAggregator
-    calendar.set(2000, 5, 10)
+    calendar.set(2000, Calendar.JUNE, 10)
     agg1.iterate(Option(new Timestamp(calendar.getTimeInMillis)))
-    calendar.set(1950, 10, 10)
+    calendar.set(1950, Calendar.NOVEMBER, 10)
     agg1.iterate(Option(new Timestamp(calendar.getTimeInMillis)))
 
     val agg2 = new DateColumnStatisticsAggregator
-    calendar.set(2000, 10, 1)
+    calendar.set(2000, Calendar.NOVEMBER, 1)
     agg2.iterate(Option(new Timestamp(calendar.getTimeInMillis)))
 
-    agg1.merge(agg2).monthFrequencies shouldBe Map("Nov" -> 2l, "Jun" -> 1l)
+    agg1.merge(agg2).monthFrequencies shouldBe Map(Calendar.NOVEMBER -> 2l, Calendar.JUNE -> 1l)
   }
 
   it should "merge the correct day of week frequencies correctly" in {
     val calendar = Calendar.getInstance
 
     val agg1 = new DateColumnStatisticsAggregator
-    calendar.set(2015, 6, 4)
+    calendar.set(2015, Calendar.JULY, 4)
     agg1.iterate(Option(new Timestamp(calendar.getTimeInMillis)))
-    calendar.set(2015, 6, 5)
+    calendar.set(2015, Calendar.JULY, 5)
     agg1.iterate(Option(new Timestamp(calendar.getTimeInMillis)))
 
     val agg2 = new DateColumnStatisticsAggregator
-    calendar.set(2015, 6, 12)
+    calendar.set(2015, Calendar.JULY, 12)
     agg2.iterate(Option(new Timestamp(calendar.getTimeInMillis)))
 
-    agg1.merge(agg2).dayOfWeekFrequencies shouldBe Map("Sat" -> 1l, "Sun" -> 2l)
+    agg1.merge(agg2).dayOfWeekFrequencies shouldBe Map(Calendar.SATURDAY -> 1l, Calendar.SUNDAY -> 2l)
   }
 
 }
