@@ -6,12 +6,13 @@ Composite.prototype.parent = Visualization.prototype;
 
 Composite.prototype._draw = function(composite) {
   var servedComponents = [];
-  var thisContentId = this._content.id;
+  var thisContent = this._content;
   composite = composite.map(function(row, rowIdx) {
     return row.map(function(cell, cellIdx) {
-      cell.containerId = "container-" + thisContentId + "-" + rowIdx + "-" + cellIdx;
-      cell.contentId = "content-" + thisContentId + "-" + rowIdx + "-" + cellIdx;
-      cell.headerId = "header-" + thisContentId + "-" + rowIdx + "-" + cellIdx;
+      cell.containerId = "container-" + thisContent.id + "-" + rowIdx + "-" + cellIdx;
+      cell.contentId = "content-" + thisContent.id + "-" + rowIdx + "-" + cellIdx;
+      cell.headerId = "header-" + thisContent.id + "-" + rowIdx + "-" + cellIdx;
+      cell.contentWidth = $(thisContent).width();
       return cell;
     });
   });
@@ -36,14 +37,19 @@ Composite.prototype._draw = function(composite) {
           enhancedCell.cssClass = columnLayout + "12";
         } else if (row.length == 2) {
           enhancedCell.cssClass = columnLayout + "6";
+          enhancedCell.contentWidth = enhancedCell.contentWidth / 2
         } else if (row.length == 3) {
           enhancedCell.cssClass = columnLayout + "4";
+          enhancedCell.contentWidth = enhancedCell.contentWidth / 3
         } else if (row.length == 4) {
           enhancedCell.cssClass = columnLayout + "3";
+          enhancedCell.contentWidth = enhancedCell.contentWidth / 4
         } else if (row.length <= 6) {
           enhancedCell.cssClass = columnLayout + "2";
+          enhancedCell.contentWidth = enhancedCell.contentWidth / 6
         } else {
           enhancedCell.cssClass = columnLayout + "1";
+          enhancedCell.contentWidth = enhancedCell.contentWidth / 12
         }
         return enhancedCell;
       });
@@ -66,8 +72,8 @@ Composite.prototype._draw = function(composite) {
     .attr("id", function(cell) {
       return cell.contentId;
     })
-    .style({
-      height: 500
+    .attr("style", function(cell) {
+      return "height: " + cell.contentWidth/3 + "px"
     })
     .each(function(cell) {
       var servable = cell;
