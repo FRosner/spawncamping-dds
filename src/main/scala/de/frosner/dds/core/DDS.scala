@@ -1056,7 +1056,9 @@ object DDS {
       val table = createTable(List("Key", "Value"), List(
         List("Total Count", agg.totalCount),
         List("Missing Count", agg.missingCount),
-        List("Non-Missing Count", agg.nonMissingCount)
+        List("Non-Missing Count", agg.nonMissingCount),
+        List("Mode", mode),
+        List("Cardinality", cardinality)
       ), field.name)
       if (barPlot.isDefined && table.isDefined) {
         Option((index, List(table.get, barPlot.get)))
