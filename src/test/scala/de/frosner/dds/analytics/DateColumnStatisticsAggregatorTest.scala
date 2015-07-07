@@ -73,18 +73,18 @@ class DateColumnStatisticsAggregatorTest extends FlatSpec with Matchers {
 
     calendar.set(2000, 5, 10)
     agg.iterate(Option(new Timestamp(calendar.getTimeInMillis)))
-    agg.monthFrequencies shouldBe Map(5 -> 1l)
+    agg.monthFrequencies shouldBe Map("Jun" -> 1l)
 
     calendar.set(1950, 10, 10)
     agg.iterate(Option(new Timestamp(calendar.getTimeInMillis)))
-    agg.monthFrequencies shouldBe Map(10 -> 1l, 5 -> 1l)
+    agg.monthFrequencies shouldBe Map("Nov" -> 1l, "Jun" -> 1l)
 
     calendar.set(2000, 10, 1)
     agg.iterate(Option(new Timestamp(calendar.getTimeInMillis)))
-    agg.monthFrequencies shouldBe Map(10 -> 2l, 5 -> 1l)
+    agg.monthFrequencies shouldBe Map("Nov" -> 2l, "Jun" -> 1l)
 
     agg.iterate(Option.empty)
-    agg.monthFrequencies shouldBe Map(10 -> 2l, 5 -> 1l)
+    agg.monthFrequencies shouldBe Map("Nov" -> 2l, "Jun" -> 1l)
 
   }
 
@@ -94,18 +94,18 @@ class DateColumnStatisticsAggregatorTest extends FlatSpec with Matchers {
 
     calendar.set(2015, 6, 4)
     agg.iterate(Option(new Timestamp(calendar.getTimeInMillis)))
-    agg.dayOfWeekFrequencies shouldBe Map(7 -> 1l)
+    agg.dayOfWeekFrequencies shouldBe Map("Sat" -> 1l)
 
     calendar.set(2015, 6, 5)
     agg.iterate(Option(new Timestamp(calendar.getTimeInMillis)))
-    agg.dayOfWeekFrequencies shouldBe Map(7 -> 1l, 1 -> 1l)
+    agg.dayOfWeekFrequencies shouldBe Map("Sat" -> 1l, "Sun" -> 1l)
 
     calendar.set(2015, 6, 12)
     agg.iterate(Option(new Timestamp(calendar.getTimeInMillis)))
-    agg.dayOfWeekFrequencies shouldBe Map(7 -> 1l, 1 -> 2l)
+    agg.dayOfWeekFrequencies shouldBe Map("Sat" -> 1l, "Sun" -> 2l)
 
     agg.iterate(Option.empty)
-    agg.dayOfWeekFrequencies shouldBe Map(7 -> 1l, 1 -> 2l)
+    agg.dayOfWeekFrequencies shouldBe Map("Sat" -> 1l, "Sun" -> 2l)
   }
 
   it should "compute the correct top year" in {
@@ -133,17 +133,17 @@ class DateColumnStatisticsAggregatorTest extends FlatSpec with Matchers {
 
     calendar.set(2000, 5, 10)
     agg.iterate(Option(new Timestamp(calendar.getTimeInMillis)))
-    agg.topMonth shouldBe (5, 1l)
+    agg.topMonth shouldBe ("Jun", 1l)
 
     calendar.set(1950, 10, 10)
     agg.iterate(Option(new Timestamp(calendar.getTimeInMillis)))
 
     calendar.set(2000, 10, 1)
     agg.iterate(Option(new Timestamp(calendar.getTimeInMillis)))
-    agg.topMonth shouldBe (10, 2l)
+    agg.topMonth shouldBe ("Nov", 2l)
 
     agg.iterate(Option.empty)
-    agg.topMonth shouldBe (10, 2l)
+    agg.topMonth shouldBe ("Nov", 2l)
   }
 
   it should "compute the correct top day of week" in {
@@ -152,17 +152,17 @@ class DateColumnStatisticsAggregatorTest extends FlatSpec with Matchers {
 
     calendar.set(2015, 6, 4)
     agg.iterate(Option(new Timestamp(calendar.getTimeInMillis)))
-    agg.topDayOfWeek shouldBe (7, 1l)
+    agg.topDayOfWeek shouldBe ("Sat", 1l)
 
     calendar.set(2015, 6, 5)
     agg.iterate(Option(new Timestamp(calendar.getTimeInMillis)))
 
     calendar.set(2015, 6, 12)
     agg.iterate(Option(new Timestamp(calendar.getTimeInMillis)))
-    agg.topDayOfWeek shouldBe (1, 2l)
+    agg.topDayOfWeek shouldBe ("Sun", 2l)
 
     agg.iterate(Option.empty)
-    agg.topDayOfWeek shouldBe (1, 2l)
+    agg.topDayOfWeek shouldBe ("Sun", 2l)
   }
 
   it should "merge the correct total count correctly" in {
@@ -221,7 +221,7 @@ class DateColumnStatisticsAggregatorTest extends FlatSpec with Matchers {
     calendar.set(2000, 10, 1)
     agg2.iterate(Option(new Timestamp(calendar.getTimeInMillis)))
 
-    agg1.merge(agg2).monthFrequencies shouldBe Map(10 -> 2l, 5 -> 1l)
+    agg1.merge(agg2).monthFrequencies shouldBe Map("Nov" -> 2l, "Jun" -> 1l)
   }
 
   it should "merge the correct day of week frequencies correctly" in {
@@ -237,7 +237,7 @@ class DateColumnStatisticsAggregatorTest extends FlatSpec with Matchers {
     calendar.set(2015, 6, 12)
     agg2.iterate(Option(new Timestamp(calendar.getTimeInMillis)))
 
-    agg1.merge(agg2).dayOfWeekFrequencies shouldBe Map(7 -> 1l, 1 -> 2l)
+    agg1.merge(agg2).dayOfWeekFrequencies shouldBe Map("Sat" -> 1l, "Sun" -> 2l)
   }
 
 }
