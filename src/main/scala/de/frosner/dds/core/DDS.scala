@@ -988,7 +988,6 @@ object DDS {
     val numericColumnStatistics = columnStatistics.numericColumns
     val numericFields = getNumericFields(dataFrame)
     val numericServables = for ((index, field) <- numericFields) yield {
-      val groupCounts = dataFrame.groupBy(new Column(field.name)).count.map(row => (row.get(0).toString, row.getLong(1)))
       val hist = createHistogram(dataFrame.select(new Column(field.name)), 10)
       val (agg, _) = numericColumnStatistics(index)
       val table = createTable(List("Key", "Value"), List(
