@@ -974,7 +974,7 @@ object DDS {
 
   @Help(
     category = "Spark SQL",
-    shortDescription = "Gives an overview of the columns of a data frame.",
+    shortDescription = "Gives an overview of the columns of a data frame",
     longDescription = "Gives an overview of the columns of a data frame. " +
       "For each column it will display some summary statistics based on the column data type.",
     parameters = "dataFrame: DataFrame"
