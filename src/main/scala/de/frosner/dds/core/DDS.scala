@@ -1036,7 +1036,9 @@ object DDS {
     val nominalColumnStatistics = columnStatistics.nominalColumns
     val nominalFields = getNominalFields(dataFrame)
     val nominalServables = for ((index, field) <- nominalFields) yield {
-      val groupCounts = dataFrame.groupBy(new Column(field.name)).count.map(row => (row.get(0).toString, row.getLong(1)))
+      val groupCounts = dataFrame.groupBy(new Column(field.name)).count.map(row =>
+        (if (row.isNullAt(0)) "NULL" else row.get(0).toString, row.getLong(1))
+      )
       val cardinality = groupCounts.count
       val orderedCounts = groupCounts.sortBy(x => x._2, ascending = false)
       val mode = orderedCounts.first
