@@ -1001,12 +1001,9 @@ object DDS {
         List("Mean", agg.mean),
         List("Stdev", agg.stdev),
         List("Var", agg.variance)
-      ))
+      ), field.name)
       if (table.isDefined && hist.isDefined) {
-        Option(CompositeServable(List(
-          List(table.get),
-          List(hist.get)
-        ), field.name))
+        Option((index, List(table.get, hist.get)))
       } else {
         Option.empty
       }
@@ -1029,14 +1026,9 @@ object DDS {
         List("Top Year", agg.topYear),
         List("Top Month", agg.topMonth),
         List("Top Day", agg.topDayOfWeek)
-      ))
+      ), field.name)
       if (yearBar.isDefined && monthBar.isDefined && dayBar.isDefined && table.isDefined) {
-        Option(CompositeServable(List(
-          List(table.get),
-          List(yearBar.get),
-          List(monthBar.get),
-          List(dayBar.get)
-        ), field.name))
+        Option((index, List(table.get, yearBar.get, monthBar.get, dayBar.get)))
       } else {
         Option.empty
       }
@@ -1064,23 +1056,18 @@ object DDS {
         List("Total Count", agg.totalCount),
         List("Missing Count", agg.missingCount),
         List("Non-Missing Count", agg.nonMissingCount)
-      ))
+      ), field.name)
       if (barPlot.isDefined && table.isDefined) {
-        Option(CompositeServable(List(
-          List(table.get),
-          List(barPlot.get)
-        ), field.name))
+        Option((index, List(table.get, barPlot.get)))
       } else {
         Option.empty
       }
     }
 
     if (numericServables.forall(_.isDefined) && dateServables.forall(_.isDefined) && nominalServables.forall(_.isDefined)) {
-      serve(CompositeServable(List(
-        numericServables.map(_.get).toList,
-        dateServables.map(_.get).toList,
-        nominalServables.map(_.get).toList
-      )))
+      val allServables = numericServables.map(_.get) ++ dateServables.map(_.get) ++ nominalServables.map(_.get)
+      val sortedServables = allServables.toSeq.sortBy(_._1)
+      serve(CompositeServable(sortedServables.map{ case (index, servables) => servables }))
     } else {
       println("Failed to create summary statistics")
     }
