@@ -65,7 +65,8 @@ Graph.prototype._draw = function(graph) {
     .enter();
 
   var circles = nodes.append('circle')
-    .attr('class', 'node');
+    .attr('class', 'node')
+    .call(force.drag);
 
   var nodeLabels = nodes.append('text')
     .text(function(n) {
