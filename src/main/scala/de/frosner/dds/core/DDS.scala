@@ -312,9 +312,9 @@ object DDS {
     shortDescription = "Plots a histogram of a numerical RDD for the given number of buckets",
     longDescription = "Plots a histogram of a numerical RDD for the given number of buckets. " +
       "The number of buckets parameter is optional - if omitted, Sturge's formula is used to determine an optimum number of bins",
-    parameters = "values: RDD[NumericValue], numBuckets: Integer"
+    parameters = "values: RDD[NumericValue], numBuckets: Int"
   )
-  def histogram[N: ClassTag](values: RDD[N], numBuckets: Integer = null.asInstanceOf[Integer])(implicit num: Numeric[N]): Unit = {
+  def histogram[N: ClassTag](values: RDD[N], numBuckets: Int = null.asInstanceOf[Int])(implicit num: Numeric[N]): Unit = {
     if (numBuckets != null && numBuckets<2){
       println("Number of buckets must be greater than or equal to 2")
     }
