@@ -72,7 +72,7 @@ Please view the [Developer Guide](https://github.com/FRosner/spawncamping-dds/wi
 - [Rick Moritz](https://github.com/RPCMoritz) (Contributor)
 - [Milos Krstajic](https://github.com/milosk) (Contributor)
 - [Z. Chen](https://github.com/zhdchen) (Contributor)
-
+- [Basil Komboz](https://github.com/bkomboz) (Contributor)
 
 ### Licensing
 
