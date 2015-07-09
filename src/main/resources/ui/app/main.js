@@ -38,6 +38,8 @@ function drawServable(servable, headerId, contentId) {
         left: 0
       })
       .data(servable.content);
+  } else if (servable.type == "empty") {
+    toDraw = new Empty();
   } else if (servable.type == "chart") {
     toDraw = new C3Chart()
       .margin({
