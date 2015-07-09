@@ -3,6 +3,7 @@ package de.frosner.dds.util
 import java.sql.Timestamp
 import java.sql.Date
 
+import de.frosner.dds.core.DDS
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row}
 
@@ -65,6 +66,20 @@ object DataFrameUtils {
       if (row.isNullAt(index)) Option.empty else Option(row.get(index))
     } else {
       Option(row.get(index))
+    }
+  }
+
+  def requireSingleColumned[R](dataFrame: DataFrame, function: String)(toDo: => Option[R]): Option[R] =
+    requireSingleColumned(dataFrame.schema, function)(toDo)
+
+  def requireSingleColumned[R](schema: StructType, function: String)(toDo: => Option[R]): Option[R] = {
+    if (schema.fields.size != 1) {
+      println(function + " function only supported on single columns.")
+      println
+      DDS.help(function)
+      Option.empty[R]
+    } else {
+      toDo
     }
   }
 

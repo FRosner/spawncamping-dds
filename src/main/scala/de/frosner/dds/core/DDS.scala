@@ -1,8 +1,6 @@
 package de.frosner.dds.core
 
-import java.util.Calendar
-
-import de.frosner.dds.analytics.{DateColumnStatisticsAggregator, ColumnsStatisticsAggregator, MutualInformationAggregator, CorrelationAggregator}
+import de.frosner.dds.analytics.{ColumnsStatisticsAggregator, CorrelationAggregator, DateColumnStatisticsAggregator, MutualInformationAggregator}
 import de.frosner.dds.servables.c3.ChartTypeEnum.ChartType
 import de.frosner.dds.servables.c3._
 import de.frosner.dds.servables.composite.CompositeServable
@@ -13,7 +11,6 @@ import de.frosner.dds.servables.scatter.Points2D
 import de.frosner.dds.servables.tabular.Table
 import de.frosner.dds.util.DataFrameUtils._
 import org.apache.log4j.Logger
-import org.apache.spark.SparkContext._
 import org.apache.spark.graphx
 import org.apache.spark.graphx.{Edge, VertexId}
 import org.apache.spark.rdd.RDD
@@ -961,17 +958,6 @@ object DDS {
       toCell(createShow(dataFrame, DEFAULT_SHOW_SAMPLE_SIZE, "Data Sample")),
       toCell(createCorrelation(dataFrame, "Pearson Correlation")) ++ toCell(createMutualInformation(dataFrame, title = "Mutual Information"))
     ) ++ summaries.map(summary => toCell(summary))))
-  }
-
-  private def requireSingleColumned[R](dataFrame: DataFrame, function: String)(toDo: => Option[R]): Option[R] = {
-    if (dataFrame.columns.size != 1) {
-      println(function + " function only supported on single columns.")
-      println
-      help(function)
-      Option.empty[R]
-    } else {
-      toDo
-    }
   }
 
   @Help(

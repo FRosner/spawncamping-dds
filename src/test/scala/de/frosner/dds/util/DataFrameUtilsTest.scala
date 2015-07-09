@@ -242,4 +242,19 @@ class DataFrameUtilsTest extends FlatSpec with Matchers {
     )
   }
 
+  "requireSingleColumned" should "execute the toDo if the dataFrame is single columned" in {
+    val schema = StructType(List(
+      StructField("test1", StringType, true)
+    ))
+    requireSingleColumned(schema, "test")(Option(5)) shouldBe Option(5)
+  }
+
+  "requireSingleColumned" should "not execute the toDo if the dataFrame is single columned" in {
+    val schema = StructType(List(
+      StructField("test1", StringType, true),
+      StructField("test1", StringType, true)
+    ))
+    requireSingleColumned(schema, "test")(Option(5)) shouldBe Option.empty
+  }
+
 }
