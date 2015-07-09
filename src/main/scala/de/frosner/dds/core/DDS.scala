@@ -2,7 +2,7 @@ package de.frosner.dds.core
 
 import java.util.Calendar
 
-import de.frosner.dds.analytics.{ColumnsStatisticsAggregator, MutualInformationAggregator, CorrelationAggregator}
+import de.frosner.dds.analytics.{DateColumnStatisticsAggregator, ColumnsStatisticsAggregator, MutualInformationAggregator, CorrelationAggregator}
 import de.frosner.dds.servables.c3.ChartTypeEnum.ChartType
 import de.frosner.dds.servables.c3._
 import de.frosner.dds.servables.composite.CompositeServable
@@ -1017,32 +1017,11 @@ object DDS {
       val (years, yearFrequencies) = agg.yearFrequencies.toList.sortBy(_._1).unzip
       val yearBar = createBar(yearFrequencies, years.map(_.toString), s"Years in ${field.name}")
       val (months, monthFrequencies) = agg.monthFrequencies.toList.sortBy(_._1).map{ case (month, count) => {
-        (month match {
-          case Calendar.JANUARY => "Jan"
-          case Calendar.FEBRUARY => "Feb"
-          case Calendar.MARCH => "Mar"
-          case Calendar.APRIL => "Apr"
-          case Calendar.MAY => "May"
-          case Calendar.JUNE => "Jun"
-          case Calendar.JULY => "Jul"
-          case Calendar.AUGUST => "Aug"
-          case Calendar.SEPTEMBER => "Sep"
-          case Calendar.OCTOBER => "Oct"
-          case Calendar.NOVEMBER => "Nov"
-          case Calendar.DECEMBER => "Dec"
-        }, count)
+        (DateColumnStatisticsAggregator.calendarMonthToString(month), count)
       }}.unzip
       val monthBar = createBar(monthFrequencies, months, s"Months in ${field.name}")
       val (days, dayFrequencies) = agg.dayOfWeekFrequencies.toList.sortBy(_._1).map{ case (day, count) => {
-        (day match {
-          case Calendar.MONDAY => "Mon"
-          case Calendar.TUESDAY => "Tue"
-          case Calendar.WEDNESDAY => "Wed"
-          case Calendar.THURSDAY => "Thu"
-          case Calendar.FRIDAY => "Fri"
-          case Calendar.SATURDAY => "Sat"
-          case Calendar.SUNDAY => "Sun"
-        }, count)
+        (DateColumnStatisticsAggregator.calendarDayToString(day), count)
       }}.unzip
       val dayBar = createBar(dayFrequencies, days, s"Days in ${field.name}")
       val table = createTable(List("Key", "Value"), List(
@@ -1050,8 +1029,8 @@ object DDS {
         List("Missing Count", agg.missingCount),
         List("Non-Missing Count", agg.nonMissingCount),
         List("Top Year", agg.topYear),
-        List("Top Month", agg.topMonth),
-        List("Top Day", agg.topDayOfWeek)
+        List("Top Month", agg.topMonth match { case (month, count) => (DateColumnStatisticsAggregator.calendarMonthToString(month), count) }),
+        List("Top Day", agg.topDayOfWeek match { case (day, count) => (DateColumnStatisticsAggregator.calendarDayToString(day), count) })
       ), field.name)
       if (yearBar.isDefined && monthBar.isDefined && dayBar.isDefined && table.isDefined) {
         Option((index, List(table.get, yearBar.get, monthBar.get, dayBar.get)))

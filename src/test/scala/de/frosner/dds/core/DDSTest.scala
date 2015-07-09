@@ -1,5 +1,7 @@
 package de.frosner.dds.core
 
+import java.sql.Date
+
 import de.frosner.dds.analytics.MutualInformationAggregator
 import de.frosner.dds.servables.c3._
 import de.frosner.dds.servables.composite.CompositeServable
@@ -1242,7 +1244,96 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
   }
 
   "A correct column statistics" should "be served" in {
-    "the test" shouldBe "implemented"
+    DDS.start(mockedServer)
+    val rdd = sc.parallelize(List(Row(1, "5", new Date(1)), Row(3, "g", new Date(0)), Row(5, "g", null)))
+    val dataFrame = sql.createDataFrame(rdd, StructType(List(
+      StructField("first", IntegerType, false),
+      StructField("second", StringType, false),
+      StructField("third", DateType, true)
+    )))
+    DDS.summarize(dataFrame)
+    val resultDashboard = mockedServer.lastServed.get.asInstanceOf[CompositeServable]
+    val resultServables = resultDashboard.servables
+
+    resultServables.size shouldBe 3
+    resultServables(0).size shouldBe 2
+    resultServables(1).size shouldBe 2
+    resultServables(2).size shouldBe 4
+
+    val firstTable = resultServables(0)(0).asInstanceOf[Table]
+    firstTable.head shouldBe List("Key", "Value")
+    firstTable.rows.map(_.toList).toList shouldBe List(
+      List("Total Count", 3l),
+      List("Missing Count", 0l),
+      List("Non-Missing Count", 3l),
+      List("Sum", 9.0),
+      List("Min", 1.0),
+      List("Max", 5.0),
+      List("Mean", 3.0),
+      List("Stdev", 1.632993161855452),
+      List("Var", 2.6666666666666665)
+    )
+
+    val firstHistogram = resultServables(0)(1).asInstanceOf[Histogram]
+    firstHistogram.bins.size shouldBe 11
+    firstHistogram.frequencies.sum shouldBe 2l // TODO should be 3l but there is a bug in Spark 1.3 histogram function
+
+    val secondTable = resultServables(1)(0).asInstanceOf[Table]
+    secondTable.head shouldBe List("Key", "Value")
+    secondTable.rows.map(_.toList).toList shouldBe List(
+      List("Total Count", 3l),
+      List("Missing Count", 0l),
+      List("Non-Missing Count", 3l),
+      List("Mode", ("g", 2l)),
+      List("Cardinality", 2l)
+    )
+
+    val secondBar = resultServables(1)(1).asInstanceOf[Chart]
+    val secondBarData = secondBar.data.asInstanceOf[SeriesData[Integer]]
+    secondBarData.types shouldBe ChartTypes(ChartTypeEnum.Bar)
+    val secondBarDataSeries = secondBarData.series
+    secondBarDataSeries.size shouldBe 1
+    val secondBarFrequencies = secondBarDataSeries.head
+    secondBarFrequencies.label shouldBe "second"
+    secondBarFrequencies.values.toList shouldBe List(2, 1)
+
+    val thirdTable = resultServables(2)(0).asInstanceOf[Table]
+    thirdTable.head shouldBe List("Key", "Value")
+    thirdTable.rows.map(_.toList).toList shouldBe List(
+      List("Total Count", 3l),
+      List("Missing Count", 1l),
+      List("Non-Missing Count", 2l),
+      List("Top Year", (1970, 2l)),
+      List("Top Month", ("Jan", 2l)),
+      List("Top Day", ("Thu", 2l))
+    )
+
+    val thirdYearBar = resultServables(2)(1).asInstanceOf[Chart]
+    val thirdYearBarData = thirdYearBar.data.asInstanceOf[SeriesData[String]]
+    thirdYearBarData.types shouldBe ChartTypes(ChartTypeEnum.Bar)
+    val thirdYearBarDataSeries = thirdYearBarData.series
+    thirdYearBarDataSeries.size shouldBe 1
+    val thirdYearBarFrequencies = thirdYearBarDataSeries.head
+    thirdYearBarFrequencies.label shouldBe "Years in third"
+    thirdYearBarFrequencies.values.toList shouldBe List(2)
+
+    val thirdMonthBar = resultServables(2)(2).asInstanceOf[Chart]
+    val thirdMonthBarData = thirdMonthBar.data.asInstanceOf[SeriesData[String]]
+    thirdMonthBarData.types shouldBe ChartTypes(ChartTypeEnum.Bar)
+    val thirdMonthBarDataSeries = thirdMonthBarData.series
+    thirdMonthBarDataSeries.size shouldBe 1
+    val thirdMonthBarFrequencies = thirdMonthBarDataSeries.head
+    thirdMonthBarFrequencies.label shouldBe "Months in third"
+    thirdMonthBarFrequencies.values.toList shouldBe List(2)
+
+    val thirdDayBar = resultServables(2)(3).asInstanceOf[Chart]
+    val thirdDayBarData = thirdDayBar.data.asInstanceOf[SeriesData[String]]
+    thirdDayBarData.types shouldBe ChartTypes(ChartTypeEnum.Bar)
+    val thirdDayBarDataSeries = thirdDayBarData.series
+    thirdDayBarDataSeries.size shouldBe 1
+    val thirdDayBarFrequencies = thirdDayBarDataSeries.head
+    thirdDayBarFrequencies.label shouldBe "Days in third"
+    thirdDayBarFrequencies.values.toList shouldBe List(2)
   }
 
   "Help" should "work" in {

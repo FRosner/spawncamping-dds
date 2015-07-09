@@ -60,3 +60,32 @@ class DateColumnStatisticsAggregator extends Serializable {
   def topDayOfWeek = dayOfWeekFrequencies.maxBy{ case (day, freq) => freq }
 
 }
+
+object DateColumnStatisticsAggregator {
+
+  def calendarMonthToString(month: Int) = month match {
+    case Calendar.JANUARY => "Jan"
+    case Calendar.FEBRUARY => "Feb"
+    case Calendar.MARCH => "Mar"
+    case Calendar.APRIL => "Apr"
+    case Calendar.MAY => "May"
+    case Calendar.JUNE => "Jun"
+    case Calendar.JULY => "Jul"
+    case Calendar.AUGUST => "Aug"
+    case Calendar.SEPTEMBER => "Sep"
+    case Calendar.OCTOBER => "Oct"
+    case Calendar.NOVEMBER => "Nov"
+    case Calendar.DECEMBER => "Dec"
+  }
+
+  def calendarDayToString(day: Int) = day match {
+    case Calendar.MONDAY => "Mon"
+    case Calendar.TUESDAY => "Tue"
+    case Calendar.WEDNESDAY => "Wed"
+    case Calendar.THURSDAY => "Thu"
+    case Calendar.FRIDAY => "Fri"
+    case Calendar.SATURDAY => "Sat"
+    case Calendar.SUNDAY => "Sun"
+  }
+
+}
