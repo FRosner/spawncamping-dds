@@ -319,7 +319,7 @@ object DDS {
       println("Number of buckets must be greater than or equal to 2")
     }
     else {
-      val localNumBuckets: Integer = if (numBuckets == null) lg2IntCeil(values.count) + 1 else numBuckets
+      val localNumBuckets: Int = if (numBuckets == null) lg2IntCeil(values.count) + 1 else numBuckets
       val (buckets, frequencies) = values.map(v => num.toDouble(v)).histogram(localNumBuckets)
       histogram(buckets, frequencies)
     }
