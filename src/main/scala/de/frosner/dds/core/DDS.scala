@@ -1,6 +1,6 @@
 package de.frosner.dds.core
 
-import de.frosner.dds.analytics.{MutualInformationAggregator, CorrelationAggregator}
+import de.frosner.dds.analytics.{ColumnsStatisticsAggregator, CorrelationAggregator, DateColumnStatisticsAggregator, MutualInformationAggregator}
 import de.frosner.dds.servables.c3.ChartTypeEnum.ChartType
 import de.frosner.dds.servables.c3._
 import de.frosner.dds.servables.composite.CompositeServable
@@ -9,8 +9,8 @@ import de.frosner.dds.servables.histogram.Histogram
 import de.frosner.dds.servables.matrix.Matrix2D
 import de.frosner.dds.servables.scatter.Points2D
 import de.frosner.dds.servables.tabular.Table
+import de.frosner.dds.util.DataFrameUtils._
 import org.apache.log4j.Logger
-import org.apache.spark.SparkContext._
 import org.apache.spark.graphx
 import org.apache.spark.graphx.{Edge, VertexId}
 import org.apache.spark.rdd.RDD
@@ -141,14 +141,14 @@ object DDS {
 
   private def categoricalPlot[N](series: Iterable[Series[N]],
                                  categories: Seq[String],
-                                 chartTypes: ChartTypes)(implicit num: Numeric[N]): Unit = {
-    serve(Chart(SeriesData(series, chartTypes), XAxis.categorical(categories)))
+                                 chartType: ChartType)(implicit num: Numeric[N]): Unit = {
+    serve(createCategoricalPlot(series, categories, chartType)(num))
   }
 
-  private def categoricalPlot[N](series: Iterable[Series[N]],
+  private def createCategoricalPlot[N](series: Iterable[Series[N]],
                                  categories: Seq[String],
-                                 chartType: ChartType)(implicit num: Numeric[N]): Unit = {
-    categoricalPlot(series, categories, ChartTypes.multiple(chartType, series.size))
+                                 chartType: ChartType)(implicit num: Numeric[N]): Option[Servable] = {
+    Option(Chart(SeriesData(series, ChartTypes.multiple(chartType, series.size)), XAxis.categorical(categories)))
   }
 
   @Help(
@@ -213,8 +213,12 @@ object DDS {
       "* bins = [0, 18, 25], frequencies = [5, 10]",
     parameters = "bins: Seq[Numeric], frequencies: Seq[Numeric]"
   )
-  def histogram[N1, N2](bins: Seq[N1], frequencies: Seq[N2])(implicit num1: Numeric[N1], num2: Numeric[N2]) = {
-    serve(Histogram(bins.map(b => num1.toDouble(b)), frequencies.map(f => num2.toLong(f))))
+  def histogram[N1, N2](bins: Seq[N1], frequencies: Seq[N2])(implicit num1: Numeric[N1], num2: Numeric[N2]): Unit = {
+    serve(createHistogram(bins, frequencies)(num1, num2))
+  }
+
+  private def createHistogram[N1, N2](bins: Seq[N1], frequencies: Seq[N2])(implicit num1: Numeric[N1], num2: Numeric[N2]): Option[Servable] = {
+    Option(Histogram(bins.map(b => num1.toDouble(b)), frequencies.map(f => num2.toLong(f))))
   }
 
   @Help(
@@ -261,7 +265,11 @@ object DDS {
     parameters = "values: Seq[NumericValue], categories: Seq[String], (optional) title: String"
   )
   def bar[N](values: Seq[N], categories: Seq[String], title: String)(implicit num: Numeric[N]): Unit = {
-    bars(List(title), List(values), categories)
+    serve(createBar(values, categories, title)(num))
+  }
+
+  def createBar[N](values: Seq[N], categories: Seq[String], title: String)(implicit num: Numeric[N]): Option[Servable] = {
+    createBars(List(title), List(values), categories)
   }
 
   def bar[N](values: Seq[N], categories: Seq[String])(implicit num: Numeric[N]): Unit =
@@ -289,8 +297,12 @@ object DDS {
     parameters = "labels: Seq[String], values: Seq[Seq[NumericValue]], categories: Seq[String]"
   )
   def bars[N](labels: Seq[String], values: Seq[Seq[N]], categories: Seq[String])(implicit num: Numeric[N]) = {
+    serve(createBars(labels, values, categories)(num))
+  }
+
+  private def createBars[N](labels: Seq[String], values: Seq[Seq[N]], categories: Seq[String])(implicit num: Numeric[N]): Option[Servable] = {
     val series = labels.zip(values).map{ case (label, values) => Series(label, values) }
-    categoricalPlot(series, categories, ChartTypeEnum.Bar)
+    createCategoricalPlot(series, categories, ChartTypeEnum.Bar)
   }
 
   @Help(
@@ -331,13 +343,13 @@ object DDS {
       val field = dataFrame.schema.fields.head
       val rdd = dataFrame.rdd
       (field.nullable) match {
-        case true => bar(rdd.map(row => if (nullValue == null) {
+        case true => Option(bar(rdd.map(row => if (nullValue == null) {
             if (row.isNullAt(0)) Option.empty[Any] else Option(row(0))
           } else {
             if (row.isNullAt(0)) nullValue else row(0)
           }
-        ), field.name)
-        case false => bar(rdd.map(row => row(0)), field.name)
+        ), field.name))
+        case false => Option(bar(rdd.map(row => row(0)), field.name))
       }
     }
   }
@@ -366,13 +378,13 @@ object DDS {
       val field = dataFrame.schema.fields.head
       val rdd = dataFrame.rdd
       (field.nullable) match {
-        case true => pie(rdd.map(row => if (nullValue == null) {
+        case true => Option(pie(rdd.map(row => if (nullValue == null) {
           if (row.isNullAt(0)) Option.empty[Any] else Option(row(0))
         } else {
           if (row.isNullAt(0)) nullValue else row(0)
         }
-        ))
-        case false => pie(rdd.map(row => row(0)))
+        )))
+        case false => Option(pie(rdd.map(row => row(0))))
       }
     }
   }
@@ -387,8 +399,12 @@ object DDS {
     parameters = "values: RDD[NumericValue], (optional) numBuckets: Int"
   )
   def histogram[N: ClassTag](values: RDD[N], numBuckets: Int = DEFAULT_HISTOGRAM_NUM_BUCKETS)(implicit num: Numeric[N]): Unit = {
+    serve(createHistogram(values, numBuckets))
+  }
+
+  private def createHistogram[N: ClassTag](values: RDD[N], numBuckets: Int = DEFAULT_HISTOGRAM_NUM_BUCKETS)(implicit num: Numeric[N]): Option[Servable] = {
     val (buckets, frequencies) = values.map(v => num.toDouble(v)).histogram(numBuckets)
-    histogram(buckets, frequencies)
+    createHistogram(buckets, frequencies)
   }
 
   @Help(
@@ -413,27 +429,27 @@ object DDS {
     parameters = "dataFrame: DataFrame, buckets: Seq[NumericValue]"
   )
   def histogram[N: ClassTag](dataFrame: DataFrame, buckets: Seq[N])(implicit num: Numeric[N]): Unit = {
-    requireSingleColumned(dataFrame, "histogram") {
+    requireSingleColumned[Unit](dataFrame, "histogram") {
       val fieldType = dataFrame.schema.fields.head
       val rdd = dataFrame.rdd
       (fieldType.dataType, fieldType.nullable) match {
-        case (DoubleType, true) => histogram(rdd.flatMap(row =>
+        case (DoubleType, true) => Option(histogram(rdd.flatMap(row =>
           if (row.isNullAt(0)) Option.empty[Double] else Option(row.getDouble(0))
-        ), buckets)
-        case (DoubleType, false) => histogram(rdd.map(row => row.getDouble(0)), buckets)
-        case (IntegerType, true) => histogram(rdd.flatMap(row =>
+        ), buckets))
+        case (DoubleType, false) => Option(histogram(rdd.map(row => row.getDouble(0)), buckets))
+        case (IntegerType, true) => Option(histogram(rdd.flatMap(row =>
           if (row.isNullAt(0)) Option.empty[Int] else Option(row.getInt(0))
-        ), buckets)
-        case (IntegerType, false) => histogram(rdd.map(row => row.getInt(0)), buckets)
-        case (FloatType, true) => histogram(rdd.flatMap(row =>
+        ), buckets))
+        case (IntegerType, false) => Option(histogram(rdd.map(row => row.getInt(0)), buckets))
+        case (FloatType, true) => Option(histogram(rdd.flatMap(row =>
           if (row.isNullAt(0)) Option.empty[Float] else Option(row.getFloat(0))
-        ), buckets)
-        case (FloatType, false) => histogram(rdd.map(row => row.getFloat(0)), buckets)
-        case (LongType, true) => histogram(rdd.flatMap(row =>
+        ), buckets))
+        case (FloatType, false) => Option(histogram(rdd.map(row => row.getFloat(0)), buckets))
+        case (LongType, true) => Option(histogram(rdd.flatMap(row =>
           if (row.isNullAt(0)) Option.empty[Long] else Option(row.getLong(0))
-        ), buckets)
-        case (LongType, false) => histogram(rdd.map(row => row.getLong(0)), buckets)
-        case _ => println("Histogram only supported for numerical columns.")
+        ), buckets))
+        case (LongType, false) => Option(histogram(rdd.map(row => row.getLong(0)), buckets))
+        case _ => Option(println("Histogram only supported for numerical columns."))
       }
     }
   }
@@ -447,27 +463,31 @@ object DDS {
     parameters = "dataFrame: DataFrame, (optional) numBuckets: Int"
   )
   def histogram(dataFrame: DataFrame, numBuckets: Int): Unit = {
+    serve(createHistogram(dataFrame, numBuckets))
+  }
+
+  private def createHistogram(dataFrame: DataFrame, numBuckets: Int): Option[Servable] = {
     requireSingleColumned(dataFrame, "histogram") {
       val fieldType = dataFrame.schema.fields.head
       val rdd = dataFrame.rdd
       (fieldType.dataType, fieldType.nullable) match {
-        case (DoubleType, true) => histogram(rdd.flatMap(row =>
+        case (DoubleType, true) => createHistogram(rdd.flatMap(row =>
           if (row.isNullAt(0)) Option.empty[Double] else Option(row.getDouble(0))
         ), numBuckets)
-        case (DoubleType, false) => histogram(rdd.map(row => row.getDouble(0)), numBuckets)
-        case (IntegerType, true) => histogram(rdd.flatMap(row =>
+        case (DoubleType, false) => createHistogram(rdd.map(row => row.getDouble(0)), numBuckets)
+        case (IntegerType, true) => createHistogram(rdd.flatMap(row =>
           if (row.isNullAt(0)) Option.empty[Int] else Option(row.getInt(0))
         ), numBuckets)
-        case (IntegerType, false) => histogram(rdd.map(row => row.getInt(0)), numBuckets)
-        case (FloatType, true) => histogram(rdd.flatMap(row =>
+        case (IntegerType, false) => createHistogram(rdd.map(row => row.getInt(0)), numBuckets)
+        case (FloatType, true) => createHistogram(rdd.flatMap(row =>
           if (row.isNullAt(0)) Option.empty[Float] else Option(row.getFloat(0))
         ), numBuckets)
-        case (FloatType, false) => histogram(rdd.map(row => row.getFloat(0)), numBuckets)
-        case (LongType, true) => histogram(rdd.flatMap(row =>
+        case (FloatType, false) => createHistogram(rdd.map(row => row.getFloat(0)), numBuckets)
+        case (LongType, true) => createHistogram(rdd.flatMap(row =>
           if (row.isNullAt(0)) Option.empty[Long] else Option(row.getLong(0))
         ), numBuckets)
-        case (LongType, false) => histogram(rdd.map(row => row.getLong(0)), numBuckets)
-        case _ => println("Histogram only supported for numerical columns.")
+        case (LongType, false) => createHistogram(rdd.map(row => row.getLong(0)), numBuckets)
+        case _ => println("Histogram only supported for numerical columns."); Option.empty
       }
     }
   }
@@ -822,23 +842,23 @@ object DDS {
       val field = dataFrame.schema.fields.head
       val rdd = dataFrame.rdd
       (field.dataType, field.nullable) match {
-        case (DoubleType, true) => median(rdd.flatMap(row =>
+        case (DoubleType, true) => Option(median(rdd.flatMap(row =>
           if (row.isNullAt(0)) Option.empty[Double] else Option(row.getDouble(0))
-        ))
-        case (DoubleType, false) => median(rdd.map(row => row.getDouble(0)))
-        case (IntegerType, true) => median(rdd.flatMap(row =>
+        )))
+        case (DoubleType, false) => Option(median(rdd.map(row => row.getDouble(0))))
+        case (IntegerType, true) => Option(median(rdd.flatMap(row =>
           if (row.isNullAt(0)) Option.empty[Int] else Option(row.getInt(0))
-        ))
-        case (IntegerType, false) => median(rdd.map(row => row.getInt(0)))
-        case (FloatType, true) => median(rdd.flatMap(row =>
+        )))
+        case (IntegerType, false) => Option(median(rdd.map(row => row.getInt(0))))
+        case (FloatType, true) => Option(median(rdd.flatMap(row =>
           if (row.isNullAt(0)) Option.empty[Float] else Option(row.getFloat(0))
-        ))
-        case (FloatType, false) => median(rdd.map(row => row.getFloat(0)))
-        case (LongType, true) => median(rdd.flatMap(row =>
+        )))
+        case (FloatType, false) => Option(median(rdd.map(row => row.getFloat(0))))
+        case (LongType, true) => Option(median(rdd.flatMap(row =>
           if (row.isNullAt(0)) Option.empty[Long] else Option(row.getLong(0))
-        ))
-        case (LongType, false) => median(rdd.map(row => row.getLong(0)))
-        case _ => println("Median only supported for numerical columns.")
+        )))
+        case (LongType, false) => Option(median(rdd.map(row => row.getLong(0))))
+        case _ => Option(println("Median only supported for numerical columns."))
       }
     }
   }
@@ -940,14 +960,113 @@ object DDS {
     ) ++ summaries.map(summary => toCell(summary))))
   }
 
-  private def requireSingleColumned(dataFrame: DataFrame, function: String)(toDo: => Unit): Unit = {
-    if (dataFrame.columns.size != 1) {
-      println(function + " function only supported on single columns.")
-      println
-      help(function)
-    } else {
-      toDo
+  @Help(
+    category = "Spark SQL",
+    shortDescription = "Gives an overview of the columns of a data frame",
+    longDescription = "Gives an overview of the columns of a data frame. " +
+      "For each column it will display some summary statistics based on the column data type.",
+    parameters = "dataFrame: DataFrame"
+  )
+  def summarize(dataFrame: DataFrame): Unit = {
+    val columnStatistics = dataFrame.rdd.aggregate(ColumnsStatisticsAggregator(dataFrame.schema))(
+      (agg, row) => agg.iterate(row),
+      (agg1, agg2) => agg1.merge(agg2)
+    )
+
+    val numericColumnStatistics = columnStatistics.numericColumns
+    val numericFields = getNumericFields(dataFrame)
+    val numericServables = for ((index, field) <- numericFields) yield {
+      val hist = createHistogram(dataFrame.select(new Column(field.name)), 10)
+      val (agg, _) = numericColumnStatistics(index)
+      val table = createTable(List("Key", "Value"), List(
+        List("Total Count", agg.totalCount),
+        List("Missing Count", agg.missingCount),
+        List("Non-Missing Count", agg.nonMissingCount),
+        List("Sum", agg.sum),
+        List("Min", agg.min),
+        List("Max", agg.max),
+        List("Mean", agg.mean),
+        List("Stdev", agg.stdev),
+        List("Var", agg.variance)
+      ), field.name)
+      if (table.isDefined && hist.isDefined) {
+        Option((index, List(table.get, hist.get)))
+      } else {
+        Option.empty
+      }
     }
+
+    val dateColumnStatistics = columnStatistics.dateColumns
+    val dateFields = getDateFields(dataFrame)
+    val dateServables = for ((index, field) <- dateFields) yield {
+      val (agg, _) = dateColumnStatistics(index)
+      val (years, yearFrequencies) = agg.yearFrequencies.toList.sortBy(_._1).unzip
+      val yearBar = createBar(yearFrequencies, years.map(_.toString), s"Years in ${field.name}")
+      val (months, monthFrequencies) = agg.monthFrequencies.toList.sortBy(_._1).map{ case (month, count) => {
+        (DateColumnStatisticsAggregator.calendarMonthToString(month), count)
+      }}.unzip
+      val monthBar = createBar(monthFrequencies, months, s"Months in ${field.name}")
+      val (days, dayFrequencies) = agg.dayOfWeekFrequencies.toList.sortBy(_._1).map{ case (day, count) => {
+        (DateColumnStatisticsAggregator.calendarDayToString(day), count)
+      }}.unzip
+      val dayBar = createBar(dayFrequencies, days, s"Days in ${field.name}")
+      val table = createTable(List("Key", "Value"), List(
+        List("Total Count", agg.totalCount),
+        List("Missing Count", agg.missingCount),
+        List("Non-Missing Count", agg.nonMissingCount),
+        List("Top Year", agg.topYear),
+        List("Top Month", agg.topMonth match { case (month, count) => (DateColumnStatisticsAggregator.calendarMonthToString(month), count) }),
+        List("Top Day", agg.topDayOfWeek match { case (day, count) => (DateColumnStatisticsAggregator.calendarDayToString(day), count) })
+      ), field.name)
+      if (yearBar.isDefined && monthBar.isDefined && dayBar.isDefined && table.isDefined) {
+        Option((index, List(table.get, yearBar.get, monthBar.get, dayBar.get)))
+      } else {
+        Option.empty
+      }
+    }
+
+    val nominalColumnStatistics = columnStatistics.nominalColumns
+    val nominalFields = getNominalFields(dataFrame)
+    val nominalServables = for ((index, field) <- nominalFields) yield {
+      val groupCounts = dataFrame.groupBy(new Column(field.name)).count.map(row =>
+        (if (row.isNullAt(0)) "NULL" else row.get(0).toString, row.getLong(1))
+      )
+      val cardinality = groupCounts.count
+      val orderedCounts = groupCounts.sortBy(x => x._2, ascending = false)
+      val mode = orderedCounts.first
+      val barPlot = if (cardinality <= 10) {
+        val (values, counts) = orderedCounts.collect.unzip
+        createBar(counts, values, field.name)
+      } else {
+        val (top10Values, top10Counts) = orderedCounts.take(10).unzip
+        val top10CountsSum = top10Counts.sum
+        val totalCountsSum = orderedCounts.map{ case (value, counts) => counts }.reduce(_ + _)
+        val otherCount = totalCountsSum - top10CountsSum
+        createBar(top10Counts ++ List(otherCount), top10Values ++ List("..."), field.name)
+      }
+      val (agg, _) = nominalColumnStatistics(index)
+      val table = createTable(List("Key", "Value"), List(
+        List("Total Count", agg.totalCount),
+        List("Missing Count", agg.missingCount),
+        List("Non-Missing Count", agg.nonMissingCount),
+        List("Mode", mode),
+        List("Cardinality", cardinality)
+      ), field.name)
+      if (barPlot.isDefined && table.isDefined) {
+        Option((index, List(table.get, barPlot.get)))
+      } else {
+        Option.empty
+      }
+    }
+
+    if (numericServables.forall(_.isDefined) && dateServables.forall(_.isDefined) && nominalServables.forall(_.isDefined)) {
+      val allServables = numericServables.map(_.get) ++ dateServables.map(_.get) ++ nominalServables.map(_.get)
+      val sortedServables = allServables.toSeq.sortBy(_._1)
+      serve(CompositeServable(sortedServables.map{ case (index, servables) => servables }))
+    } else {
+      println("Failed to create summary statistics")
+    }
+
   }
 
 }

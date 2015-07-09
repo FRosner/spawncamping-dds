@@ -46,6 +46,7 @@ object Index {
           <script src="/ui/app/C3Chart.js"></script>
           <script src="/ui/app/Histogram.js"></script>
           <script src="/ui/app/Graph.js"></script>
+          <script src="/ui/app/Empty.js"></script>
           <script src="/ui/app/Composite.js"></script>
         </div>
       </body>
