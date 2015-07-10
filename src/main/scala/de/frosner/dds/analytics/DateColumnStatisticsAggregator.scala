@@ -8,6 +8,8 @@ import Scalaz._
 
 import scala.collection.mutable
 
+import DateColumnStatisticsAggregator._
+
 class DateColumnStatisticsAggregator extends Serializable {
 
   private var counts: NominalColumnStatisticsAggregator = new NominalColumnStatisticsAggregator()
@@ -26,6 +28,10 @@ class DateColumnStatisticsAggregator extends Serializable {
       runningYearFrequencies.update(year, runningYearFrequencies.getOrElse(year, 0l) + 1l)
       runningMonthFrequencies.update(month, runningMonthFrequencies.getOrElse(month, 0l) + 1l)
       runningDayOfWeekFrequencies.update(day, runningDayOfWeekFrequencies.getOrElse(day, 0l) + 1l)
+    } else {
+      runningYearFrequencies.update(NULL_YEAR, runningYearFrequencies.getOrElse(NULL_YEAR, 0l) + 1l)
+      runningMonthFrequencies.update(NULL_MONTH, runningMonthFrequencies.getOrElse(NULL_MONTH, 0l) + 1l)
+      runningDayOfWeekFrequencies.update(NULL_DAY, runningDayOfWeekFrequencies.getOrElse(NULL_DAY, 0l) + 1l)
     }
     this
   }
@@ -63,6 +69,17 @@ class DateColumnStatisticsAggregator extends Serializable {
 
 object DateColumnStatisticsAggregator {
 
+  val NULL_YEAR = Integer.MAX_VALUE
+
+  val NULL_MONTH = Integer.MAX_VALUE
+
+  val NULL_DAY = Integer.MAX_VALUE
+
+  def calendarYearToString(year: Int) = year match {
+    case DateColumnStatisticsAggregator.NULL_YEAR => "NULL"
+    case normalYear => normalYear.toString
+  }
+
   def calendarMonthToString(month: Int) = month match {
     case Calendar.JANUARY => "Jan"
     case Calendar.FEBRUARY => "Feb"
@@ -76,6 +93,7 @@ object DateColumnStatisticsAggregator {
     case Calendar.OCTOBER => "Oct"
     case Calendar.NOVEMBER => "Nov"
     case Calendar.DECEMBER => "Dec"
+    case DateColumnStatisticsAggregator.NULL_MONTH => "NULL"
   }
 
   def calendarDayToString(day: Int) = day match {
@@ -86,6 +104,7 @@ object DateColumnStatisticsAggregator {
     case Calendar.FRIDAY => "Fri"
     case Calendar.SATURDAY => "Sat"
     case Calendar.SUNDAY => "Sun"
+    case DateColumnStatisticsAggregator.NULL_DAY => "NULL"
   }
 
 }

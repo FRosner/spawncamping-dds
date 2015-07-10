@@ -3,7 +3,7 @@ package de.frosner.dds.core
 import de.frosner.dds.analytics.{ColumnsStatisticsAggregator, CorrelationAggregator, DateColumnStatisticsAggregator, MutualInformationAggregator}
 import de.frosner.dds.servables.c3.ChartTypeEnum.ChartType
 import de.frosner.dds.servables.c3._
-import de.frosner.dds.servables.composite.CompositeServable
+import de.frosner.dds.servables.composite.{EmptyServable, CompositeServable}
 import de.frosner.dds.servables.graph.Graph
 import de.frosner.dds.servables.histogram.Histogram
 import de.frosner.dds.servables.matrix.Matrix2D
@@ -22,6 +22,8 @@ import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
+
+import scala.util
 
 /**
  * Main object containing the core commands that can be executed from the Spark shell. It holds a mutable reference
@@ -412,8 +414,14 @@ object DDS {
       Option.empty
     } else {
       val localNumBuckets = if (numBuckets.isEmpty) Histogram.optimalNumberOfBins(values.count) else numBuckets.get
-      val (buckets, frequencies) = values.map(v => num.toDouble(v)).histogram(localNumBuckets)
-      createHistogram(buckets, frequencies)
+      val tryHist = util.Try(values.map(v => num.toDouble(v)).histogram(localNumBuckets))
+      if (tryHist.isSuccess) {
+        val (buckets, frequencies) = tryHist.get
+        createHistogram(buckets, frequencies)
+      } else {
+        println("Could not create histogram: " + tryHist.failed.get)
+        Option.empty
+      }
     }
   }
 
@@ -1001,8 +1009,8 @@ object DDS {
         List("Stdev", agg.stdev),
         List("Var", agg.variance)
       ), field.name)
-      if (table.isDefined && hist.isDefined) {
-        Option((index, List(table.get, hist.get)))
+      if (table.isDefined) {
+        Option((index, List(table.get, hist.getOrElse(EmptyServable.instance))))
       } else {
         Option.empty
       }
@@ -1012,23 +1020,23 @@ object DDS {
     val dateFields = getDateFields(dataFrame)
     val dateServables = for ((index, field) <- dateFields) yield {
       val (agg, _) = dateColumnStatistics(index)
-      val (years, yearFrequencies) = agg.yearFrequencies.toList.sortBy(_._1).unzip
-      val yearBar = createBar(yearFrequencies, years.map(_.toString), s"Years in ${field.name}")
+      val (years, yearFrequencies) = agg.yearFrequencies.toList.sortBy(_._1).map { case (year, count) => {
+        (DateColumnStatisticsAggregator.calendarYearToString(year), count)
+      }}.unzip
+      val yearBar = createBar(yearFrequencies, years, s"Years in ${field.name}")
       val (months, monthFrequencies) = agg.monthFrequencies.toList.sortBy(_._1).map { case (month, count) => {
         (DateColumnStatisticsAggregator.calendarMonthToString(month), count)
-      }
-      }.unzip
+      }}.unzip
       val monthBar = createBar(monthFrequencies, months, s"Months in ${field.name}")
       val (days, dayFrequencies) = agg.dayOfWeekFrequencies.toList.sortBy(_._1).map { case (day, count) => {
         (DateColumnStatisticsAggregator.calendarDayToString(day), count)
-      }
-      }.unzip
+      }}.unzip
       val dayBar = createBar(dayFrequencies, days, s"Days in ${field.name}")
       val table = createTable(List("Key", "Value"), List(
         List("Total Count", agg.totalCount),
         List("Missing Count", agg.missingCount),
         List("Non-Missing Count", agg.nonMissingCount),
-        List("Top Year", agg.topYear),
+        List("Top Year", agg.topYear match { case (year, count) => (DateColumnStatisticsAggregator.calendarYearToString(year), count) }),
         List("Top Month", agg.topMonth match { case (month, count) => (DateColumnStatisticsAggregator.calendarMonthToString(month), count) }),
         List("Top Day", agg.topDayOfWeek match { case (day, count) => (DateColumnStatisticsAggregator.calendarDayToString(day), count) })
       ), field.name)

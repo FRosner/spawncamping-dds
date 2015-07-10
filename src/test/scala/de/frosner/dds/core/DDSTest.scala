@@ -4,7 +4,7 @@ import java.sql.Date
 
 import de.frosner.dds.analytics.MutualInformationAggregator
 import de.frosner.dds.servables.c3._
-import de.frosner.dds.servables.composite.CompositeServable
+import de.frosner.dds.servables.composite.{EmptyServable, CompositeServable}
 import de.frosner.dds.servables.graph.Graph
 import de.frosner.dds.servables.histogram.Histogram
 import de.frosner.dds.servables.matrix.Matrix2D
@@ -447,6 +447,16 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     val actualChart = mockedServer.lastServed.get.asInstanceOf[Histogram]
     actualChart.bins.toList shouldBe List(1.0, 1.5, 2.0, 2.5, 3.0)
     actualChart.frequencies.toList shouldBe List(2,0,1,1)
+  }
+
+  it should "be served from a single column data frame with all null values" in {
+    DDS.start(mockedServer)
+    val values = sc.makeRDD(List(Row(null), Row(null), Row(null), Row(null), Row(null), Row(null)))
+    val schema = StructType(List(StructField("values", DoubleType, true)))
+    val dataFrame = sql.createDataFrame(values, schema)
+    DDS.histogram(dataFrame, 4)
+
+    val actualChart = mockedServer.lastServed.isEmpty shouldBe true
   }
 
   it should "not be served from a data frame with more than one column and fixed bins" in {
@@ -1285,7 +1295,7 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     column3Summary.title shouldBe "third"
   }
 
-  "A correct column statistics" should "be served" in {
+  "A correct column statistics" should "be served for normal data frames" in {
     DDS.start(mockedServer)
     val rdd = sc.parallelize(List(Row(1, "5", new Date(1)), Row(3, "g", new Date(0)), Row(5, "g", null)))
     val dataFrame = sql.createDataFrame(rdd, StructType(List(
@@ -1345,7 +1355,7 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
       List("Total Count", 3l),
       List("Missing Count", 1l),
       List("Non-Missing Count", 2l),
-      List("Top Year", (1970, 2l)),
+      List("Top Year", ("1970", 2l)),
       List("Top Month", ("Jan", 2l)),
       List("Top Day", ("Thu", 2l))
     )
@@ -1357,7 +1367,7 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     thirdYearBarDataSeries.size shouldBe 1
     val thirdYearBarFrequencies = thirdYearBarDataSeries.head
     thirdYearBarFrequencies.label shouldBe "Years in third"
-    thirdYearBarFrequencies.values.toList shouldBe List(2)
+    thirdYearBarFrequencies.values.toList shouldBe List(2, 1)
 
     val thirdMonthBar = resultServables(2)(2).asInstanceOf[Chart]
     val thirdMonthBarData = thirdMonthBar.data.asInstanceOf[SeriesData[String]]
@@ -1366,7 +1376,7 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     thirdMonthBarDataSeries.size shouldBe 1
     val thirdMonthBarFrequencies = thirdMonthBarDataSeries.head
     thirdMonthBarFrequencies.label shouldBe "Months in third"
-    thirdMonthBarFrequencies.values.toList shouldBe List(2)
+    thirdMonthBarFrequencies.values.toList shouldBe List(2, 1)
 
     val thirdDayBar = resultServables(2)(3).asInstanceOf[Chart]
     val thirdDayBarData = thirdDayBar.data.asInstanceOf[SeriesData[String]]
@@ -1375,7 +1385,102 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     thirdDayBarDataSeries.size shouldBe 1
     val thirdDayBarFrequencies = thirdDayBarDataSeries.head
     thirdDayBarFrequencies.label shouldBe "Days in third"
-    thirdDayBarFrequencies.values.toList shouldBe List(2)
+    thirdDayBarFrequencies.values.toList shouldBe List(2, 1)
+  }
+
+  it should "be served for data frames having all null values" in {
+    DDS.start(mockedServer)
+    val rdd = sc.parallelize(List(Row(null, null, null), Row(null, null, null), Row(null, null, null)))
+    val dataFrame = sql.createDataFrame(rdd, StructType(List(
+      StructField("first", IntegerType, true),
+      StructField("second", StringType, true),
+      StructField("third", DateType, true)
+    )))
+    DDS.summarize(dataFrame)
+    val resultDashboard = mockedServer.lastServed.get.asInstanceOf[CompositeServable]
+    val resultServables = resultDashboard.servables
+
+    resultServables.size shouldBe 3
+    resultServables(0).size shouldBe 2
+    resultServables(1).size shouldBe 2
+    resultServables(2).size shouldBe 4
+
+    val firstTable = resultServables(0)(0).asInstanceOf[Table]
+    firstTable.head shouldBe List("Key", "Value")
+    val firstTableRows = firstTable.rows.map(_.toList).toList
+    firstTableRows(0) shouldBe List("Total Count", 3l)
+    firstTableRows(1) shouldBe List("Missing Count", 3l)
+    firstTableRows(2) shouldBe List("Non-Missing Count", 0l)
+    firstTableRows(3) shouldBe List("Sum", 0d)
+    firstTableRows(4)(0) shouldBe "Min"
+    firstTableRows(4)(1).asInstanceOf[Double].isPosInfinity shouldBe true
+    firstTableRows(5)(0) shouldBe "Max"
+    firstTableRows(5)(1).asInstanceOf[Double].isNegInfinity shouldBe true
+    firstTableRows(6)(0) shouldBe "Mean"
+    firstTableRows(6)(1).asInstanceOf[Double].isNaN shouldBe true
+    firstTableRows(7)(0) shouldBe "Stdev"
+    firstTableRows(7)(1).asInstanceOf[Double].isNaN shouldBe true
+    firstTableRows(8)(0) shouldBe "Var"
+    firstTableRows(8)(1).asInstanceOf[Double].isNaN shouldBe true
+
+    val firstHistogram = resultServables(0)(1) shouldBe EmptyServable.instance
+
+    val secondTable = resultServables(1)(0).asInstanceOf[Table]
+    secondTable.head shouldBe List("Key", "Value")
+    secondTable.rows.map(_.toList).toList shouldBe List(
+      List("Total Count", 3l),
+      List("Missing Count", 3l),
+      List("Non-Missing Count", 0l),
+      List("Mode", ("NULL", 3l)),
+      List("Cardinality", 1l)
+    )
+
+    val secondBar = resultServables(1)(1).asInstanceOf[Chart]
+    val secondBarData = secondBar.data.asInstanceOf[SeriesData[Integer]]
+    secondBarData.types shouldBe ChartTypes(ChartTypeEnum.Bar)
+    val secondBarDataSeries = secondBarData.series
+    secondBarDataSeries.size shouldBe 1
+    val secondBarFrequencies = secondBarDataSeries.head
+    secondBarFrequencies.label shouldBe "second"
+    secondBarFrequencies.values.toList shouldBe List(3)
+
+    val thirdTable = resultServables(2)(0).asInstanceOf[Table]
+    thirdTable.head shouldBe List("Key", "Value")
+    thirdTable.rows.map(_.toList).toList shouldBe List(
+      List("Total Count", 3l),
+      List("Missing Count", 3l),
+      List("Non-Missing Count", 0l),
+      List("Top Year", ("NULL", 3l)),
+      List("Top Month", ("NULL", 3l)),
+      List("Top Day", ("NULL", 3l))
+    )
+
+    val thirdYearBar = resultServables(2)(1).asInstanceOf[Chart]
+    val thirdYearBarData = thirdYearBar.data.asInstanceOf[SeriesData[String]]
+    thirdYearBarData.types shouldBe ChartTypes(ChartTypeEnum.Bar)
+    val thirdYearBarDataSeries = thirdYearBarData.series
+    thirdYearBarDataSeries.size shouldBe 1
+    val thirdYearBarFrequencies = thirdYearBarDataSeries.head
+    thirdYearBarFrequencies.label shouldBe "Years in third"
+    thirdYearBarFrequencies.values.toList shouldBe List(3)
+
+    val thirdMonthBar = resultServables(2)(2).asInstanceOf[Chart]
+    val thirdMonthBarData = thirdMonthBar.data.asInstanceOf[SeriesData[String]]
+    thirdMonthBarData.types shouldBe ChartTypes(ChartTypeEnum.Bar)
+    val thirdMonthBarDataSeries = thirdMonthBarData.series
+    thirdMonthBarDataSeries.size shouldBe 1
+    val thirdMonthBarFrequencies = thirdMonthBarDataSeries.head
+    thirdMonthBarFrequencies.label shouldBe "Months in third"
+    thirdMonthBarFrequencies.values.toList shouldBe List(3)
+
+    val thirdDayBar = resultServables(2)(3).asInstanceOf[Chart]
+    val thirdDayBarData = thirdDayBar.data.asInstanceOf[SeriesData[String]]
+    thirdDayBarData.types shouldBe ChartTypes(ChartTypeEnum.Bar)
+    val thirdDayBarDataSeries = thirdDayBarData.series
+    thirdDayBarDataSeries.size shouldBe 1
+    val thirdDayBarFrequencies = thirdDayBarDataSeries.head
+    thirdDayBarFrequencies.label shouldBe "Days in third"
+    thirdDayBarFrequencies.values.toList shouldBe List(3)
   }
 
   "Help" should "work" in {

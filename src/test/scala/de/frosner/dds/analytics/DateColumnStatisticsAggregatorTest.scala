@@ -64,7 +64,7 @@ class DateColumnStatisticsAggregatorTest extends FlatSpec with Matchers {
     agg.yearFrequencies shouldBe Map(2000 -> 2l, 1950 -> 1l)
 
     agg.iterate(Option.empty)
-    agg.yearFrequencies shouldBe Map(2000 -> 2l, 1950 -> 1l)
+    agg.yearFrequencies shouldBe Map(2000 -> 2l, 1950 -> 1l, DateColumnStatisticsAggregator.NULL_YEAR -> 1l)
   }
 
   it should "compute the correct month frequencies" in {
@@ -84,7 +84,7 @@ class DateColumnStatisticsAggregatorTest extends FlatSpec with Matchers {
     agg.monthFrequencies shouldBe Map(Calendar.NOVEMBER -> 2l, Calendar.JUNE -> 1l)
 
     agg.iterate(Option.empty)
-    agg.monthFrequencies shouldBe Map(Calendar.NOVEMBER -> 2l, Calendar.JUNE -> 1l)
+    agg.monthFrequencies shouldBe Map(Calendar.NOVEMBER -> 2l, Calendar.JUNE -> 1l, DateColumnStatisticsAggregator.NULL_MONTH -> 1l)
 
   }
 
@@ -105,7 +105,7 @@ class DateColumnStatisticsAggregatorTest extends FlatSpec with Matchers {
     agg.dayOfWeekFrequencies shouldBe Map(Calendar.SATURDAY -> 1l, Calendar.SUNDAY -> 2l)
 
     agg.iterate(Option.empty)
-    agg.dayOfWeekFrequencies shouldBe Map(Calendar.SATURDAY -> 1l, Calendar.SUNDAY -> 2l)
+    agg.dayOfWeekFrequencies shouldBe Map(Calendar.SATURDAY -> 1l, Calendar.SUNDAY -> 2l, DateColumnStatisticsAggregator.NULL_DAY -> 1l)
   }
 
   it should "compute the correct top year" in {
