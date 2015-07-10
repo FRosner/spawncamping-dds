@@ -1249,12 +1249,10 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     val resultDashboard = mockedServer.lastServed.get.asInstanceOf[CompositeServable]
     val resultServables = resultDashboard.servables
 
-    resultServables.size shouldBe 5
+    resultServables.size shouldBe 3
     resultServables(0).size shouldBe 1
     resultServables(1).size shouldBe 2
     resultServables(2).size shouldBe 1
-    resultServables(3).size shouldBe 1
-    resultServables(4).size shouldBe 1
 
     val table = resultServables(0)(0).asInstanceOf[Table]
     table.head.toList shouldBe List("first [Integer]", "second [String]", "third [Double]")
@@ -1279,20 +1277,17 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     mutualInformationServable.entries.foreach(row => row.size shouldBe 3)
     mutualInformationServable.title shouldBe "Mutual Information"
 
-    val column1Summary = resultServables(2)(0).asInstanceOf[Table]
-    column1Summary.head.toList shouldBe List("count", "sum", "min", "max", "mean", "stdev", "variance")
-    column1Summary.rows(0)(1) shouldBe 9d // sum of 9 for first column
-    column1Summary.title shouldBe "first"
-
-    val column2Summary = resultServables(3)(0).asInstanceOf[Table]
-    column2Summary.head.toList shouldBe List("mode", "cardinality")
-    column2Summary.rows(0)(0) shouldBe "g" // mode of "g" for second column
-    column2Summary.title shouldBe "second"
-
-    val column3Summary = resultServables(4)(0).asInstanceOf[Table]
-    column3Summary.head.toList shouldBe List("count", "sum", "min", "max", "mean", "stdev", "variance")
-    column3Summary.rows(0)(1) shouldBe 16d // sum of 16 for third column
-    column3Summary.title shouldBe "third"
+    val columnStatisticsServable = resultServables(2)(0).asInstanceOf[CompositeServable]
+    columnStatisticsServable.title shouldBe "Summary Statistics"
+    // only look if the stuff looks like a summary statistics to avoid creating this huge set of expectations again
+    val columnServables = columnStatisticsServable.servables
+    columnServables.size shouldBe 3
+    val column1Table = columnServables(0)(0).asInstanceOf[Table]
+    column1Table.title shouldBe "first"
+    val column2Table = columnServables(1)(0).asInstanceOf[Table]
+    column2Table.title shouldBe "second"
+    val column3Table = columnServables(2)(0).asInstanceOf[Table]
+    column3Table.title shouldBe "third"
   }
 
   "A correct column statistics" should "be served for normal data frames" in {

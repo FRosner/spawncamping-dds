@@ -956,28 +956,12 @@ object DDS {
     val rdd = dataFrame.rdd
     val fields = dataFrame.schema.fields
 
-    val summaries = for (i <- 0 to dataFrame.columns.size - 1; field = fields(i))
-      yield {
-        def createSummarizeOf[T: ClassTag](implicit num: Numeric[T] = null) = {
-          val column = rdd.flatMap(row => {
-            Option(row(i)).map(_.asInstanceOf[T])
-          })
-          createSummarize(column, field.name)
-        }
-        field.dataType match {
-          case DoubleType => createSummarizeOf[Double]
-          case IntegerType => createSummarizeOf[Int]
-          case FloatType => createSummarizeOf[Float]
-          case LongType => createSummarizeOf[Long]
-          case default => createSummarizeOf[Any]
-        }
-      }
-
     def toCell(maybeServable: Option[Servable]) = maybeServable.map(servable => List(servable)).getOrElse(List.empty)
     serve(CompositeServable(List(
       toCell(createShow(dataFrame, DEFAULT_SHOW_SAMPLE_SIZE, "Data Sample")),
-      toCell(createCorrelation(dataFrame, "Pearson Correlation")) ++ toCell(createMutualInformation(dataFrame, title = "Mutual Information"))
-    ) ++ summaries.map(summary => toCell(summary))))
+      toCell(createCorrelation(dataFrame, "Pearson Correlation")) ++ toCell(createMutualInformation(dataFrame, title = "Mutual Information")),
+      toCell(createSummarize(dataFrame, "Summary Statistics"))
+    )))
   }
 
   @Help(
@@ -988,6 +972,10 @@ object DDS {
     parameters = "dataFrame: DataFrame"
   )
   def summarize(dataFrame: DataFrame): Unit = {
+    serve(createSummarize(dataFrame, Servable.DEFAULT_TITLE))
+  }
+
+  private def createSummarize(dataFrame: DataFrame, title: String): Option[Servable] = {
     val columnStatistics = dataFrame.rdd.aggregate(ColumnsStatisticsAggregator(dataFrame.schema))(
       (agg, row) => agg.iterate(row),
       (agg1, agg2) => agg1.merge(agg2)
@@ -1084,9 +1072,10 @@ object DDS {
     if (numericServables.forall(_.isDefined) && dateServables.forall(_.isDefined) && nominalServables.forall(_.isDefined)) {
       val allServables = numericServables.map(_.get) ++ dateServables.map(_.get) ++ nominalServables.map(_.get)
       val sortedServables = allServables.toSeq.sortBy(_._1)
-      serve(CompositeServable(sortedServables.map { case (index, servables) => servables }))
+      Option(CompositeServable(sortedServables.map { case (index, servables) => servables }, title))
     } else {
       println("Failed to create summary statistics")
+      Option.empty
     }
   }
 
