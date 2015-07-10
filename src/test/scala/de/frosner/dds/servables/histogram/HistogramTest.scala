@@ -33,4 +33,10 @@ class HistogramTest extends FlatSpec with Matchers {
     )
   }
 
+  "An optimal number of bins" should "be computed correctly" in {
+    val testValues = List(0,1,3,5,8,12,16)
+    val expectedValues = List(1,1,3,4,4,5,5)
+    testValues.map(Histogram.optimalNumberOfBins(_)) shouldBe expectedValues
+  }
+
 }

@@ -395,16 +395,26 @@ object DDS {
     category = "Spark Core",
     shortDescription = "Plots a histogram of a numerical RDD for the given number of buckets",
     longDescription = "Plots a histogram of a numerical RDD for the given number of buckets. " +
-      "The number of buckets parameter is optional having the default value of 100.",
+      "The number of buckets parameter is optional - if omitted, Sturge's formula is used to determine an optimal number of bins.",
     parameters = "values: RDD[NumericValue], (optional) numBuckets: Int"
   )
-  def histogram[N: ClassTag](values: RDD[N], numBuckets: Int = DEFAULT_HISTOGRAM_NUM_BUCKETS)(implicit num: Numeric[N]): Unit = {
-    serve(createHistogram(values, numBuckets))
+  def histogram[N: ClassTag](values: RDD[N], numBuckets: Int)(implicit num: Numeric[N]): Unit = {
+    serve(createHistogram(values, Option(numBuckets)))
   }
 
-  private def createHistogram[N: ClassTag](values: RDD[N], numBuckets: Int = DEFAULT_HISTOGRAM_NUM_BUCKETS)(implicit num: Numeric[N]): Option[Servable] = {
-    val (buckets, frequencies) = values.map(v => num.toDouble(v)).histogram(numBuckets)
-    createHistogram(buckets, frequencies)
+  def histogram[N: ClassTag](values: RDD[N])(implicit num: Numeric[N]): Unit = {
+    serve(createHistogram(values, Option.empty))
+  }
+
+  private def createHistogram[N: ClassTag](values: RDD[N], numBuckets: Option[Int])(implicit num: Numeric[N]): Option[Servable] = {
+    if (numBuckets.isDefined && numBuckets.get < 2) {
+      println("Number of buckets must be greater than or equal to 2")
+      Option.empty
+    } else {
+      val localNumBuckets = if (numBuckets.isEmpty) Histogram.optimalNumberOfBins(values.count) else numBuckets.get
+      val (buckets, frequencies) = values.map(v => num.toDouble(v)).histogram(localNumBuckets)
+      createHistogram(buckets, frequencies)
+    }
   }
 
   @Help(
@@ -458,15 +468,19 @@ object DDS {
     category = "Spark SQL",
     shortDescription = "Plots a histogram of a single column data frame for the given number of buckets",
     longDescription = "Plots a histogram of a single column data frame for the given number of buckets. " +
-      "The number of buckets parameter is optional having the default value of 100. " +
+      "The number of buckets parameter is optional - if omitted, Sturge's formula is used to determine an optimal number of bins. " +
       "If the column contains null values, they will be ignored in the computation.",
     parameters = "dataFrame: DataFrame, (optional) numBuckets: Int"
   )
   def histogram(dataFrame: DataFrame, numBuckets: Int): Unit = {
-    serve(createHistogram(dataFrame, numBuckets))
+    serve(createHistogram(dataFrame, Option(numBuckets)))
   }
 
-  private def createHistogram(dataFrame: DataFrame, numBuckets: Int): Option[Servable] = {
+  def histogram(dataFrame: DataFrame): Unit = {
+    serve(createHistogram(dataFrame, Option.empty))
+  }
+
+  private def createHistogram(dataFrame: DataFrame, numBuckets: Option[Int]): Option[Servable] = {
     requireSingleColumned(dataFrame, "histogram") {
       val fieldType = dataFrame.schema.fields.head
       val rdd = dataFrame.rdd
@@ -491,8 +505,6 @@ object DDS {
       }
     }
   }
-
-  def histogram(dataFrame: DataFrame): Unit = histogram(dataFrame, DEFAULT_HISTOGRAM_NUM_BUCKETS)
 
   @Help(
     category = "Spark Core",
@@ -976,7 +988,7 @@ object DDS {
     val numericColumnStatistics = columnStatistics.numericColumns
     val numericFields = getNumericFields(dataFrame)
     val numericServables = for ((index, field) <- numericFields) yield {
-      val hist = createHistogram(dataFrame.select(new Column(field.name)), 10)
+      val hist = createHistogram(dataFrame.select(new Column(field.name)), Option(10))
       val (agg, _) = numericColumnStatistics(index)
       val table = createTable(List("Key", "Value"), List(
         List("Total Count", agg.totalCount),
@@ -1002,13 +1014,15 @@ object DDS {
       val (agg, _) = dateColumnStatistics(index)
       val (years, yearFrequencies) = agg.yearFrequencies.toList.sortBy(_._1).unzip
       val yearBar = createBar(yearFrequencies, years.map(_.toString), s"Years in ${field.name}")
-      val (months, monthFrequencies) = agg.monthFrequencies.toList.sortBy(_._1).map{ case (month, count) => {
+      val (months, monthFrequencies) = agg.monthFrequencies.toList.sortBy(_._1).map { case (month, count) => {
         (DateColumnStatisticsAggregator.calendarMonthToString(month), count)
-      }}.unzip
+      }
+      }.unzip
       val monthBar = createBar(monthFrequencies, months, s"Months in ${field.name}")
-      val (days, dayFrequencies) = agg.dayOfWeekFrequencies.toList.sortBy(_._1).map{ case (day, count) => {
+      val (days, dayFrequencies) = agg.dayOfWeekFrequencies.toList.sortBy(_._1).map { case (day, count) => {
         (DateColumnStatisticsAggregator.calendarDayToString(day), count)
-      }}.unzip
+      }
+      }.unzip
       val dayBar = createBar(dayFrequencies, days, s"Days in ${field.name}")
       val table = createTable(List("Key", "Value"), List(
         List("Total Count", agg.totalCount),
@@ -1040,7 +1054,7 @@ object DDS {
       } else {
         val (top10Values, top10Counts) = orderedCounts.take(10).unzip
         val top10CountsSum = top10Counts.sum
-        val totalCountsSum = orderedCounts.map{ case (value, counts) => counts }.reduce(_ + _)
+        val totalCountsSum = orderedCounts.map { case (value, counts) => counts }.reduce(_ + _)
         val otherCount = totalCountsSum - top10CountsSum
         createBar(top10Counts ++ List(otherCount), top10Values ++ List("..."), field.name)
       }
@@ -1062,11 +1076,10 @@ object DDS {
     if (numericServables.forall(_.isDefined) && dateServables.forall(_.isDefined) && nominalServables.forall(_.isDefined)) {
       val allServables = numericServables.map(_.get) ++ dateServables.map(_.get) ++ nominalServables.map(_.get)
       val sortedServables = allServables.toSeq.sortBy(_._1)
-      serve(CompositeServable(sortedServables.map{ case (index, servables) => servables }))
+      serve(CompositeServable(sortedServables.map { case (index, servables) => servables }))
     } else {
       println("Failed to create summary statistics")
     }
-
   }
 
 }
