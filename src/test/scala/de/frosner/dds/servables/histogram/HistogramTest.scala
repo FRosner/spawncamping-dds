@@ -1,6 +1,5 @@
 package de.frosner.dds.servables.histogram
 
-import de.frosner.dds.core.DDS
 import org.scalatest.{FlatSpec, Matchers}
 import spray.json.{JsArray, JsNumber, JsObject, JsString}
 
