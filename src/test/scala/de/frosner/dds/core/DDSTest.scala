@@ -469,6 +469,26 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     val actualChart = mockedServer.lastServed.isDefined shouldBe false
   }
 
+  it should "not be served when a negative number of bins is specified" in {
+    DDS.start(mockedServer)
+    val values = sc.makeRDD(List(Row(1d), Row(1d), Row(null), Row(2d), Row(null), Row(3d)))
+    val schema = StructType(List(StructField("values", DoubleType, true)))
+    val dataFrame = sql.createDataFrame(values, schema)
+    DDS.histogram(dataFrame, -2)
+
+    val actualChart = mockedServer.lastServed.isDefined shouldBe false
+  }
+
+  it should "not be served when the number of bins is not bigger than 1" in {
+    DDS.start(mockedServer)
+    val values = sc.makeRDD(List(Row(1d), Row(1d), Row(null), Row(2d), Row(null), Row(3d)))
+    val schema = StructType(List(StructField("values", DoubleType, true)))
+    val dataFrame = sql.createDataFrame(values, schema)
+    DDS.histogram(dataFrame, 1)
+
+    val actualChart = mockedServer.lastServed.isDefined shouldBe false
+  }
+
   it should "be served from a single numeric value RDD, binned according to Sturge's formula" in {
     DDS.start(mockedServer)
     val values = sc.makeRDD(List(0,5,15,3,8))
