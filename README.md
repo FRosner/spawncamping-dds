@@ -92,3 +92,4 @@ This project is licensed under the Apache License Version 2.0. For details pleas
 | [Chroma.js](https://github.com/gka/chroma.js) | BSD |
 | [Underscore.js](http://underscorejs.org/) | MIT |
 | [Bootstrap CSS](http://getbootstrap.com) | MIT |
+| [Scalaz](https://github.com/scalaz/scalaz) | Custom |
