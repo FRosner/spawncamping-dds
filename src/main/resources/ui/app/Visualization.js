@@ -79,7 +79,7 @@ Visualization.prototype.content = function(newContentId) {
     }
     if (!this._height) {
       this._height = $(this._content)
-        .height();  
+        .height();
     }
     return this;
   } else {
@@ -163,7 +163,7 @@ Visualization.prototype.draw = function() {
   return this;
 }
 
-Visualization.prototype.clear = function () {
+Visualization.prototype.clear = function() {
   removeElementIfExists(this._titleSpan);
   this._clear();
 }

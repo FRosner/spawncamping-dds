@@ -9,7 +9,7 @@ import de.frosner.dds.servables.graph.Graph
 import de.frosner.dds.servables.histogram.Histogram
 import de.frosner.dds.servables.matrix.Matrix2D
 import de.frosner.dds.servables.scatter.Points2D
-import de.frosner.dds.servables.tabular.Table
+import de.frosner.dds.servables.tabular.{KeyValueSequence, Table}
 import org.apache.spark.graphx._
 import org.apache.spark.{SparkConf, SparkContext, graphx}
 import org.apache.spark.rdd.RDD
@@ -1282,11 +1282,11 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     // only look if the stuff looks like a summary statistics to avoid creating this huge set of expectations again
     val columnServables = columnStatisticsServable.servables
     columnServables.size shouldBe 3
-    val column1Table = columnServables(0)(0).asInstanceOf[Table]
+    val column1Table = columnServables(0)(0).asInstanceOf[KeyValueSequence]
     column1Table.title shouldBe "first"
-    val column2Table = columnServables(1)(0).asInstanceOf[Table]
+    val column2Table = columnServables(1)(0).asInstanceOf[KeyValueSequence]
     column2Table.title shouldBe "second"
-    val column3Table = columnServables(2)(0).asInstanceOf[Table]
+    val column3Table = columnServables(2)(0).asInstanceOf[KeyValueSequence]
     column3Table.title shouldBe "third"
   }
 
@@ -1307,32 +1307,30 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     resultServables(1).size shouldBe 2
     resultServables(2).size shouldBe 4
 
-    val firstTable = resultServables(0)(0).asInstanceOf[Table]
-    firstTable.head shouldBe List("Key", "Value")
-    firstTable.rows.map(_.toList).toList shouldBe List(
-      List("Total Count", 3l),
-      List("Missing Count", 0l),
-      List("Non-Missing Count", 3l),
-      List("Sum", 9.0),
-      List("Min", 1.0),
-      List("Max", 5.0),
-      List("Mean", 3.0),
-      List("Stdev", 1.632993161855452),
-      List("Var", 2.6666666666666665)
+    val firstKeyValueSequence = resultServables(0)(0).asInstanceOf[KeyValueSequence]
+    firstKeyValueSequence.keyValueSequence shouldBe List(
+      ("Total Count", 3l),
+      ("Missing Count", 0l),
+      ("Non-Missing Count", 3l),
+      ("Sum", 9.0),
+      ("Min", 1.0),
+      ("Max", 5.0),
+      ("Mean", 3.0),
+      ("Stdev", 1.632993161855452),
+      ("Var", 2.6666666666666665)
     )
 
     val firstHistogram = resultServables(0)(1).asInstanceOf[Histogram]
     firstHistogram.bins.size shouldBe 11
     firstHistogram.frequencies.sum shouldBe 2l // TODO should be 3l but there is a bug in Spark 1.3 histogram function
 
-    val secondTable = resultServables(1)(0).asInstanceOf[Table]
-    secondTable.head shouldBe List("Key", "Value")
-    secondTable.rows.map(_.toList).toList shouldBe List(
-      List("Total Count", 3l),
-      List("Missing Count", 0l),
-      List("Non-Missing Count", 3l),
-      List("Mode", ("g", 2l)),
-      List("Cardinality", 2l)
+    val secondKeyValueSequence = resultServables(1)(0).asInstanceOf[KeyValueSequence]
+    secondKeyValueSequence.keyValueSequence shouldBe List(
+      ("Total Count", 3l),
+      ("Missing Count", 0l),
+      ("Non-Missing Count", 3l),
+      ("Mode", ("g", 2l)),
+      ("Cardinality", 2l)
     )
 
     val secondBar = resultServables(1)(1).asInstanceOf[Chart]
@@ -1344,15 +1342,14 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     secondBarFrequencies.label shouldBe "second"
     secondBarFrequencies.values.toList shouldBe List(2, 1)
 
-    val thirdTable = resultServables(2)(0).asInstanceOf[Table]
-    thirdTable.head shouldBe List("Key", "Value")
-    thirdTable.rows.map(_.toList).toList shouldBe List(
-      List("Total Count", 3l),
-      List("Missing Count", 1l),
-      List("Non-Missing Count", 2l),
-      List("Top Year", ("1970", 2l)),
-      List("Top Month", ("Jan", 2l)),
-      List("Top Day", ("Thu", 2l))
+    val thirdKeyValueSequence = resultServables(2)(0).asInstanceOf[KeyValueSequence]
+    thirdKeyValueSequence.keyValueSequence shouldBe List(
+      ("Total Count", 3l),
+      ("Missing Count", 1l),
+      ("Non-Missing Count", 2l),
+      ("Top Year", ("1970", 2l)),
+      ("Top Month", ("Jan", 2l)),
+      ("Top Day", ("Thu", 2l))
     )
 
     val thirdYearBar = resultServables(2)(1).asInstanceOf[Chart]
@@ -1400,34 +1397,32 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     resultServables(1).size shouldBe 2
     resultServables(2).size shouldBe 4
 
-    val firstTable = resultServables(0)(0).asInstanceOf[Table]
-    firstTable.head shouldBe List("Key", "Value")
-    val firstTableRows = firstTable.rows.map(_.toList).toList
-    firstTableRows(0) shouldBe List("Total Count", 3l)
-    firstTableRows(1) shouldBe List("Missing Count", 3l)
-    firstTableRows(2) shouldBe List("Non-Missing Count", 0l)
-    firstTableRows(3) shouldBe List("Sum", 0d)
-    firstTableRows(4)(0) shouldBe "Min"
-    firstTableRows(4)(1).asInstanceOf[Double].isPosInfinity shouldBe true
-    firstTableRows(5)(0) shouldBe "Max"
-    firstTableRows(5)(1).asInstanceOf[Double].isNegInfinity shouldBe true
-    firstTableRows(6)(0) shouldBe "Mean"
-    firstTableRows(6)(1).asInstanceOf[Double].isNaN shouldBe true
-    firstTableRows(7)(0) shouldBe "Stdev"
-    firstTableRows(7)(1).asInstanceOf[Double].isNaN shouldBe true
-    firstTableRows(8)(0) shouldBe "Var"
-    firstTableRows(8)(1).asInstanceOf[Double].isNaN shouldBe true
+    val firstKeyValues = resultServables(0)(0).asInstanceOf[KeyValueSequence]
+    val firstKeyValuePairs = firstKeyValues.keyValueSequence
+    firstKeyValuePairs(0) shouldBe ("Total Count", 3l)
+    firstKeyValuePairs(1) shouldBe ("Missing Count", 3l)
+    firstKeyValuePairs(2) shouldBe ("Non-Missing Count", 0l)
+    firstKeyValuePairs(3) shouldBe ("Sum", 0d)
+    firstKeyValuePairs(4)._1 shouldBe "Min"
+    firstKeyValuePairs(4)._2.asInstanceOf[Double].isPosInfinity shouldBe true
+    firstKeyValuePairs(5)._1 shouldBe "Max"
+    firstKeyValuePairs(5)._2.asInstanceOf[Double].isNegInfinity shouldBe true
+    firstKeyValuePairs(6)._1 shouldBe "Mean"
+    firstKeyValuePairs(6)._2.asInstanceOf[Double].isNaN shouldBe true
+    firstKeyValuePairs(7)._1 shouldBe "Stdev"
+    firstKeyValuePairs(7)._2.asInstanceOf[Double].isNaN shouldBe true
+    firstKeyValuePairs(8)._1 shouldBe "Var"
+    firstKeyValuePairs(8)._2.asInstanceOf[Double].isNaN shouldBe true
 
     val firstHistogram = resultServables(0)(1) shouldBe EmptyServable.instance
 
-    val secondTable = resultServables(1)(0).asInstanceOf[Table]
-    secondTable.head shouldBe List("Key", "Value")
-    secondTable.rows.map(_.toList).toList shouldBe List(
-      List("Total Count", 3l),
-      List("Missing Count", 3l),
-      List("Non-Missing Count", 0l),
-      List("Mode", ("NULL", 3l)),
-      List("Cardinality", 1l)
+    val secondKeyValues = resultServables(1)(0).asInstanceOf[KeyValueSequence]
+    secondKeyValues.keyValueSequence shouldBe List(
+      ("Total Count", 3l),
+      ("Missing Count", 3l),
+      ("Non-Missing Count", 0l),
+      ("Mode", ("NULL", 3l)),
+      ("Cardinality", 1l)
     )
 
     val secondBar = resultServables(1)(1).asInstanceOf[Chart]
@@ -1439,15 +1434,14 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     secondBarFrequencies.label shouldBe "second"
     secondBarFrequencies.values.toList shouldBe List(3)
 
-    val thirdTable = resultServables(2)(0).asInstanceOf[Table]
-    thirdTable.head shouldBe List("Key", "Value")
-    thirdTable.rows.map(_.toList).toList shouldBe List(
-      List("Total Count", 3l),
-      List("Missing Count", 3l),
-      List("Non-Missing Count", 0l),
-      List("Top Year", ("NULL", 3l)),
-      List("Top Month", ("NULL", 3l)),
-      List("Top Day", ("NULL", 3l))
+    val thirdKeyValues = resultServables(2)(0).asInstanceOf[KeyValueSequence]
+    thirdKeyValues.keyValueSequence shouldBe List(
+      ("Total Count", 3l),
+      ("Missing Count", 3l),
+      ("Non-Missing Count", 0l),
+      ("Top Year", ("NULL", 3l)),
+      ("Top Month", ("NULL", 3l)),
+      ("Top Day", ("NULL", 3l))
     )
 
     val thirdYearBar = resultServables(2)(1).asInstanceOf[Chart]

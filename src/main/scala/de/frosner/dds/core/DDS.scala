@@ -8,7 +8,7 @@ import de.frosner.dds.servables.graph.Graph
 import de.frosner.dds.servables.histogram.Histogram
 import de.frosner.dds.servables.matrix.Matrix2D
 import de.frosner.dds.servables.scatter.Points2D
-import de.frosner.dds.servables.tabular.Table
+import de.frosner.dds.servables.tabular.{KeyValueSequence, Table}
 import de.frosner.dds.util.DataFrameUtils._
 import org.apache.log4j.Logger
 import org.apache.spark.graphx
@@ -986,22 +986,18 @@ object DDS {
     val numericServables = for ((index, field) <- numericFields) yield {
       val hist = createHistogram(dataFrame.select(new Column(field.name)), Option(10))
       val (agg, _) = numericColumnStatistics(index)
-      val table = createTable(List("Key", "Value"), List(
-        List("Total Count", agg.totalCount),
-        List("Missing Count", agg.missingCount),
-        List("Non-Missing Count", agg.nonMissingCount),
-        List("Sum", agg.sum),
-        List("Min", agg.min),
-        List("Max", agg.max),
-        List("Mean", agg.mean),
-        List("Stdev", agg.stdev),
-        List("Var", agg.variance)
+      val table = KeyValueSequence(List(
+        ("Total Count", agg.totalCount),
+        ("Missing Count", agg.missingCount),
+        ("Non-Missing Count", agg.nonMissingCount),
+        ("Sum", agg.sum),
+        ("Min", agg.min),
+        ("Max", agg.max),
+        ("Mean", agg.mean),
+        ("Stdev", agg.stdev),
+        ("Var", agg.variance)
       ), field.name)
-      if (table.isDefined) {
-        Option((index, List(table.get, hist.getOrElse(EmptyServable.instance))))
-      } else {
-        Option.empty
-      }
+      Option((index, List(table, hist.getOrElse(EmptyServable.instance))))
     }
 
     val dateColumnStatistics = columnStatistics.dateColumns
@@ -1020,16 +1016,16 @@ object DDS {
         (DateColumnStatisticsAggregator.calendarDayToString(day), count)
       }}.unzip
       val dayBar = createBar(dayFrequencies, days, s"Days in ${field.name}")
-      val table = createTable(List("Key", "Value"), List(
-        List("Total Count", agg.totalCount),
-        List("Missing Count", agg.missingCount),
-        List("Non-Missing Count", agg.nonMissingCount),
-        List("Top Year", agg.topYear match { case (year, count) => (DateColumnStatisticsAggregator.calendarYearToString(year), count) }),
-        List("Top Month", agg.topMonth match { case (month, count) => (DateColumnStatisticsAggregator.calendarMonthToString(month), count) }),
-        List("Top Day", agg.topDayOfWeek match { case (day, count) => (DateColumnStatisticsAggregator.calendarDayToString(day), count) })
+      val table = KeyValueSequence(List(
+        ("Total Count", agg.totalCount),
+        ("Missing Count", agg.missingCount),
+        ("Non-Missing Count", agg.nonMissingCount),
+        ("Top Year", agg.topYear match { case (year, count) => (DateColumnStatisticsAggregator.calendarYearToString(year), count) }),
+        ("Top Month", agg.topMonth match { case (month, count) => (DateColumnStatisticsAggregator.calendarMonthToString(month), count) }),
+        ("Top Day", agg.topDayOfWeek match { case (day, count) => (DateColumnStatisticsAggregator.calendarDayToString(day), count) })
       ), field.name)
-      if (yearBar.isDefined && monthBar.isDefined && dayBar.isDefined && table.isDefined) {
-        Option((index, List(table.get, yearBar.get, monthBar.get, dayBar.get)))
+      if (yearBar.isDefined && monthBar.isDefined && dayBar.isDefined) {
+        Option((index, List(table, yearBar.get, monthBar.get, dayBar.get)))
       } else {
         Option.empty
       }
@@ -1055,15 +1051,15 @@ object DDS {
         createBar(top10Counts ++ List(otherCount), top10Values ++ List("..."), field.name)
       }
       val (agg, _) = nominalColumnStatistics(index)
-      val table = createTable(List("Key", "Value"), List(
-        List("Total Count", agg.totalCount),
-        List("Missing Count", agg.missingCount),
-        List("Non-Missing Count", agg.nonMissingCount),
-        List("Mode", mode),
-        List("Cardinality", cardinality)
+      val table = KeyValueSequence(List(
+        ("Total Count", agg.totalCount),
+        ("Missing Count", agg.missingCount),
+        ("Non-Missing Count", agg.nonMissingCount),
+        ("Mode", mode),
+        ("Cardinality", cardinality)
       ), field.name)
-      if (barPlot.isDefined && table.isDefined) {
-        Option((index, List(table.get, barPlot.get)))
+      if (barPlot.isDefined) {
+        Option((index, List(table, barPlot.get)))
       } else {
         Option.empty
       }
