@@ -12,7 +12,8 @@ Composite.prototype._draw = function(composite) {
       cell.containerId = "container-" + thisContent.id + "-" + rowIdx + "-" + cellIdx;
       cell.contentId = "content-" + thisContent.id + "-" + rowIdx + "-" + cellIdx;
       cell.headerId = "header-" + thisContent.id + "-" + rowIdx + "-" + cellIdx;
-      cell.contentWidth = $(thisContent).width();
+      cell.contentWidth = $(thisContent)
+        .width();
       return cell;
     });
   });
@@ -73,7 +74,7 @@ Composite.prototype._draw = function(composite) {
       return cell.contentId;
     })
     .attr("style", function(cell) {
-      return "height: " + cell.contentWidth/16*9 + "px"
+      return "height: " + cell.contentWidth / 16 * 9 + "px"
     })
     .each(function(cell) {
       var servable = cell;
