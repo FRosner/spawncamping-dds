@@ -6,11 +6,11 @@ class MutualInformationAggregator(val numColumns: Int) extends Serializable {
 
   require(numColumns > 0, "You need to pass a positive number of columns to use the aggregator.")
 
-  private[analytics] var columnCounts: mutable.ArrayBuffer[mutable.Map[Any, Int]] =
-    mutable.ArrayBuffer.empty ++ List.fill(numColumns)(mutable.HashMap.empty[Any, Int])
+  private[analytics] var columnCounts: mutable.ArrayBuffer[mutable.Map[Any, Long]] =
+    mutable.ArrayBuffer.empty ++ List.fill(numColumns)(mutable.HashMap.empty[Any, Long])
 
-  private[analytics] var crossColumnCounts: mutable.Map[(Int, Int), mutable.Map[(Any, Any), Int]] = {
-    var pXY = mutable.HashMap.empty[(Int, Int), mutable.Map[(Any, Any), Int]]
+  private[analytics] var crossColumnCounts: mutable.Map[(Int, Int), mutable.Map[(Any, Any), Long]] = {
+    var pXY = mutable.HashMap.empty[(Int, Int), mutable.Map[(Any, Any), Long]]
     for (i <- 0 to numColumns - 1; j <- 0 to numColumns - 1; if i <= j) {
       pXY.put((i, j), mutable.HashMap.empty)
     }
