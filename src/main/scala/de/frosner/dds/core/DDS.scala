@@ -36,6 +36,10 @@ import scala.util
  */
 object DDS {
 
+  {
+    ManifestMetaData.logWelcomeMessage()
+  }
+
   private val logger = Logger.getLogger("DDS")
 
   private val helper = Helper(this.getClass)

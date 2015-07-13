@@ -1,5 +1,7 @@
 import S3._
 
+import uk.gov.hmrc.GitStampPlugin._
+
 organization  := "de.frosner"
 
 version       := "2.2.0-SNAPSHOT"
@@ -7,6 +9,8 @@ version       := "2.2.0-SNAPSHOT"
 name          := "spawncamping-dds"
 
 scalaVersion  := "2.10.5"
+
+Seq( gitStampSettings: _* )
 
 lazy val shortScalaVersion = settingKey[String]("Scala major and minor version.")
 
