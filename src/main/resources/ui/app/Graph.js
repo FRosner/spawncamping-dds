@@ -43,7 +43,7 @@ Graph.prototype._draw = function(graph) {
     .links(links)
     .linkDistance(
       Math.min(width, height) / 6.5)
-    .charge(-1000);
+    .charge(-500);
 
   var links = svg.selectAll('.link')
     .data(links)
