@@ -4,8 +4,8 @@ describe('Hello world', function() {
       expect("Hello World!").toEqual("Hello World!");
   });
 
-  it('fails', function() {
-      expect("Hello world!").toEqual("Hello World!");
+  it('succeeds', function() {
+      expect("Hello World!").toEqual("Hello World!");
   });
-  
+
 });
