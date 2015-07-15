@@ -10,7 +10,7 @@ name          := "spawncamping-dds"
 
 scalaVersion  := "2.10.5"
 
-Seq( gitStampSettings: _* )
+Seq(gitStampSettings: _*)
 
 lazy val shortScalaVersion = settingKey[String]("Scala major and minor version.")
 
