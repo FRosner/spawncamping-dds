@@ -1,1 +1,3 @@
-EnvJasmine.loadGlobal(EnvJasmine.libDir + "jquery-1.7.min.js");
+EnvJasmine.loadGlobal(EnvJasmine.rootDir + "util.js");
+
+EnvJasmine.loadGlobal(EnvJasmine.libDir + "underscore.min.js");
