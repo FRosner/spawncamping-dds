@@ -109,7 +109,7 @@ function checkForUpdate() {
       if (response != "{}") {
         var servable = JSON.parse(response);
         document.isNewVisualization = true;
-        doAndRedoOnResize(function() {
+        doAndRedoOnResizeOf(window, function() {
           var contentId = "content";
           var headerId = "header";
           if (document.lastServed) {
