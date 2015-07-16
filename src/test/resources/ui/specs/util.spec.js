@@ -24,4 +24,20 @@ describe('util.js', function() {
     expect(x).toEqual(2);
   });
 
+  it('removes an existing element', function() {
+    var removedChild = {};
+    var parent = {
+      id : 0,
+      removeChild : function(child) {
+        removedChild = child;
+      }
+    };
+    var child = {
+      id : 1,
+      parentNode: parent
+    };
+    removeElementIfExists(child);
+    expect(removedChild).toEqual(child);
+  });
+
 });
