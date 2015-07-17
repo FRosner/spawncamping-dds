@@ -10,7 +10,9 @@ name          := "spawncamping-dds"
 
 scalaVersion  := "2.10.5"
 
-Seq( gitStampSettings: _* )
+Seq(gitStampSettings: _*)
+
+Seq(jasmineSettings: _*)
 
 lazy val shortScalaVersion = settingKey[String]("Scala major and minor version.")
 
@@ -91,3 +93,13 @@ fork in Compile := true
 lazy val build = taskKey[Unit]("Jarjar link the assembly jar!")
 
 build <<= assembly map { (asm) => s"./build.sh ${asm.getAbsolutePath()}" ! }
+
+appJsDir <+= sourceDirectory { src => src / "main" / "resources" / "ui" / "app" }
+
+appJsLibDir <+= sourceDirectory {  src => src / "main" / "resources" / "ui" / "lib" }
+
+jasmineTestDir <+= sourceDirectory { src => src / "test" / "resources" / "ui" }
+
+jasmineConfFile <+= sourceDirectory { src => src / "test" / "resources" / "ui" / "test.dependencies.js" }
+
+(test in Test) <<= (test in Test) dependsOn (jasmine)

@@ -1,6 +1,6 @@
-function doAndRedoOnResize(f) {
+function doAndRedoOnResizeOf(w, f) {
   f();
-  window.onresize = f;
+  w.onresize = f;
 }
 
 function flatMap(seq, f) {
