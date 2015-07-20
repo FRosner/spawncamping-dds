@@ -199,4 +199,20 @@ class DatasetsTest extends FlatSpec with Matchers with BeforeAndAfterAll {
     flightsArray.size shouldBe 18441
   }
 
+
+  "Peer to Peer Network CSV case class RDD" should "have the correct data" in {
+    val ppGraph = gnutella(sc)
+    ppGraph.edges.count() shouldBe 20777
+
+    val edgesFrom196 = ppGraph.triplets.filter(triplet =>
+      triplet.srcId == 196L
+    )
+    edgesFrom196.count() shouldBe 10
+
+    val distIds196 = edgesFrom196.map(triplet =>
+      triplet.dstId
+    )
+    distIds196.collect().toSet shouldBe Set(246L, 424L, 659L, 809L, 2120L, 2142L, 2143L, 2144L, 2145L, 2146L)
+  }
+
 }

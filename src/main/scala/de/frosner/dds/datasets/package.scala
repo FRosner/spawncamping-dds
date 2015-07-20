@@ -8,6 +8,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, SQLContext}
 import org.apache.spark.sql.catalyst.expressions.Row
 import org.apache.spark.sql.types._
+import org.apache.spark.graphx._
 
 import scala.io.Source
 import scala.util.Try
@@ -34,6 +35,26 @@ package object datasets {
         play = split(4) == "yes"
       )
     })
+  }
+
+  private lazy val readNetwork = readCsvWithHeader("/data/peer_to_peer_network.csv")
+
+  def gnutella(implicit sc: SparkContext): Graph[Int, String] = {
+    val (rawHead, rawBody) = readNetwork
+
+    val edgeRdd = sc.parallelize(rawBody).map(line => {
+     val split = line.replaceAll("\"", "").split(",", -1)
+      Edge(split(0).toLong, split(1).toLong, "")
+    })
+
+    val allVertices = rawBody.flatMap(line => {
+      val leftId = line.replaceAll("\"", "").split(",", -1)(0).toInt
+      val rightId = line.replaceAll("\"", "").split(",", -1)(1).toInt
+      List((leftId.toLong, leftId), (rightId.toLong, rightId))
+    }).toSet.toSeq
+    val vertexRdd = sc.parallelize(allVertices)
+
+    Graph(vertexRdd, edgeRdd)
   }
 
   def golf(implicit sc: SparkContext, sql: SQLContext): DataFrame = {
