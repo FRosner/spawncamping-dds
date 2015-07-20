@@ -8,31 +8,19 @@ class CorrelationAggregatorTest extends FlatSpec with Matchers {
 
   "A correlation aggregator" should "be initialized properly" in {
     val agg = new CorrelationAggregator(5)
-    val expectedCounts = Map(
-      (0, 1) -> 0,
-      (0, 2) -> 0,
-      (0, 3) -> 0,
-      (0, 4) -> 0,
-      (1, 2) -> 0,
-      (1, 3) -> 0,
-      (1, 4) -> 0,
-      (2, 3) -> 0,
-      (2, 4) -> 0,
-      (3, 4) -> 0
+    agg.aggregators.mapValues{ case (agg1, agg2) => (agg1.totalCount, agg2.totalCount) }.toMap shouldBe Map(
+      (0, 1) -> (0l, 0l),
+      (0, 2) -> (0l, 0l),
+      (0, 3) -> (0l, 0l),
+      (0, 4) -> (0l, 0l),
+      (1, 2) -> (0l, 0l),
+      (1, 3) -> (0l, 0l),
+      (1, 4) -> (0l, 0l),
+      (2, 3) -> (0l, 0l),
+      (2, 4) -> (0l, 0l),
+      (3, 4) -> (0l, 0l)
     )
-    val expectedSumsAndSumsOfSquares = Map(
-      (0, 1) -> (0d, 0d),
-      (0, 2) -> (0d, 0d),
-      (0, 3) -> (0d, 0d),
-      (0, 4) -> (0d, 0d),
-      (1, 2) -> (0d, 0d),
-      (1, 3) -> (0d, 0d),
-      (1, 4) -> (0d, 0d),
-      (2, 3) -> (0d, 0d),
-      (2, 4) -> (0d, 0d),
-      (3, 4) -> (0d, 0d)
-    )
-    val expectedSumsOfPairs = Map(
+    agg.runningCov.toMap shouldBe Map(
       (0, 1) -> 0d,
       (0, 2) -> 0d,
       (0, 3) -> 0d,
@@ -44,132 +32,111 @@ class CorrelationAggregatorTest extends FlatSpec with Matchers {
       (2, 4) -> 0d,
       (3, 4) -> 0d
     )
-    agg.counts.toMap shouldBe expectedCounts
-    agg.sums.toMap shouldBe expectedSumsAndSumsOfSquares
-    agg.sumsOfSquares.toMap shouldBe expectedSumsAndSumsOfSquares
-    agg.sumsOfPairs.toMap shouldBe expectedSumsOfPairs
   }
 
-  it should "compute the correct sums" in {
+  it should "iterate the numeric aggregators accordingly" in {
     val agg = new CorrelationAggregator(3)
     agg.iterateWithoutNulls(List(1d,2d,3d))
-    agg.sums shouldBe Map(
-      (0, 1) -> (1d, 2d),
-      (0, 2) -> (1d, 3d),
-      (1, 2) -> (2d, 3d)
+    agg.aggregators.mapValues{ case (agg1, agg2) => (agg1.totalCount, agg2.totalCount) }.toMap shouldBe Map(
+      (0, 1) -> (1l, 1l),
+      (0, 2) -> (1l, 1l),
+      (1, 2) -> (1l, 1l)
     )
     agg.iterate(List(Option(1d),Option(2d),Option.empty))
-    agg.sums shouldBe Map(
-      (0, 1) -> (2d, 4d),
-      (0, 2) -> (1d, 3d),
-      (1, 2) -> (2d, 3d)
+    agg.aggregators.mapValues{ case (agg1, agg2) => (agg1.totalCount, agg2.totalCount) }.toMap shouldBe Map(
+      (0, 1) -> (2l, 2l),
+      (0, 2) -> (1l, 1l),
+      (1, 2) -> (1l, 1l)
     )
   }
 
-  it should "compute the correct sums of squares" in {
+  it should "compute the running covariance accordingly" in {
     val agg = new CorrelationAggregator(3)
     agg.iterateWithoutNulls(List(1d,2d,3d))
-    agg.sumsOfSquares.toMap shouldBe Map(
-      (0, 1) -> (1d, 4d),
-      (0, 2) -> (1d, 9d),
-      (1, 2) -> (4d, 9d)
+    agg.runningCov.toMap shouldBe Map(
+      (0, 1) -> 0d,
+      (0, 2) -> 0d,
+      (1, 2) -> 0d
     )
-    agg.iterate(List(Option(1d),Option.empty,Option(3d)))
-    agg.sumsOfSquares.toMap shouldBe Map(
-      (0, 1) -> (1d, 4d),
-      (0, 2) -> (2d, 18d),
-      (1, 2) -> (4d, 9d)
-    )
-  }
-
-  it should "compute the correct count" in {
-    val agg = new CorrelationAggregator(3)
-    agg.iterateWithoutNulls(List(1d,2d,3d))
-    agg.counts shouldBe Map(
-      (0, 1) -> 1,
-      (0, 2) -> 1,
-      (1, 2) -> 1
-    )
-    agg.iterate(List(Option.empty,Option(2d),Option(3d)))
-    agg.counts shouldBe Map(
-      (0, 1) -> 1,
-      (0, 2) -> 1,
-      (1, 2) -> 2
+    agg.iterate(List(Option(2d),Option.empty,Option(4d)))
+    agg.runningCov.toMap shouldBe Map(
+      (0, 1) -> 0d,
+      (0, 2) -> 0.25,
+      (1, 2) -> 0d
     )
   }
 
-  it should "compute the correct sum of pair for two columns" in {
+  it should "compute the running covariance for negative values" in {
     val agg = new CorrelationAggregator(2)
-    agg.iterateWithoutNulls(List(2d, 3d))
-    agg.sumsOfPairs.toMap shouldBe Map((0, 1) -> 6d)
-    agg.iterateWithoutNulls(List(1d, 1d))
-    agg.sumsOfPairs.toMap shouldBe Map((0, 1) -> 7d)
-    agg.iterate(List(Option(1d), Option.empty))
-    agg.sumsOfPairs.toMap shouldBe Map((0, 1) -> 7d)
+    agg.iterateWithoutNulls(List(10d,1d))
+    agg.iterateWithoutNulls(List(-5d,2d))
+    agg.iterateWithoutNulls(List(1d,-10d))
+    agg.iterateWithoutNulls(List(80d,20d))
+    agg.iterateWithoutNulls(List(3d,5d))
+    agg.runningCov.toMap shouldBe Map((0, 1) -> 256.91999999999996)
   }
 
-  it should "compute the correct sum of pair for more than two columns" in {
-    val agg = new CorrelationAggregator(3)
-    agg.iterateWithoutNulls(List(2d, 3d, 4d))
-    agg.sumsOfPairs.toMap shouldBe Map((0, 1) -> 6d, (0, 2) -> 8d, (1, 2) -> 12d)
-    agg.iterate(List(Option(1d), Option(1d), Option.empty))
-    agg.sumsOfPairs.toMap shouldBe Map((0, 1) -> 7d, (0, 2) -> 8d, (1, 2) -> 12d)
-  }
-
-  it should "merge two sums correctly" in {
+  it should "merge two numerical aggregators correctly" in {
     val agg1 = new CorrelationAggregator(3)
     agg1.iterateWithoutNulls(List(1d,2d,3d))
     val agg2 = new CorrelationAggregator(3)
-    agg2.iterateWithoutNulls(List(1d,2d,3d))
-    agg1.merge(agg2).sums.toMap shouldBe Map(
-      (0, 1) -> (2d, 4d),
-      (0, 2) -> (2d, 6d),
-      (1, 2) -> (4d, 6d)
+    agg2.iterate(List(Option(1d),Option(2d),Option.empty))
+    agg1.merge(agg2).aggregators.mapValues{ case (agg1, agg2) => (agg1.totalCount, agg2.totalCount) }.toMap shouldBe Map(
+      (0, 1) -> (2l, 2l),
+      (0, 2) -> (1l, 1l),
+      (1, 2) -> (1l, 1l)
     )
   }
 
-  it should "merge two sums of squares correctly" in {
+  it should "merge two covariances correctly" in {
     val agg1 = new CorrelationAggregator(3)
     agg1.iterateWithoutNulls(List(1d,2d,3d))
     val agg2 = new CorrelationAggregator(3)
-    agg2.iterateWithoutNulls(List(1d,2d,3d))
-    agg1.merge(agg2).sumsOfSquares.toMap shouldBe Map(
-      (0, 1) -> (2d, 8d),
-      (0, 2) -> (2d, 18d),
-      (1, 2) -> (8d, 18d)
+    agg2.iterate(List(Option(2d),Option.empty,Option(4d)))
+    agg1.merge(agg2).runningCov.toMap shouldBe Map(
+      (0, 1) -> 0d,
+      (0, 2) -> 0.25,
+      (1, 2) -> 0d
     )
   }
 
-  it should "merge two counts correctly" in {
+  it should "merge more than two covariances correctly" in {
     val agg1 = new CorrelationAggregator(3)
-    agg1.iterateWithoutNulls(List(1d,2d,3d))
+    agg1.iterateWithoutNulls(List(5d, 7d, 1d))
+    agg1.iterateWithoutNulls(List(3d, 2d, 8d))
     val agg2 = new CorrelationAggregator(3)
-    agg2.iterateWithoutNulls(List(1d,2d,3d))
-    agg1.merge(agg2).counts shouldBe Map(
-      (0, 1) -> 2,
-      (0, 2) -> 2,
-      (1, 2) -> 2
-    )
+    agg2.iterateWithoutNulls(List(2d, 6d, -5d))
+    agg2.iterate(List(Option.empty, Option.empty, Option.empty))
+    val result = agg1.merge(agg2).runningCov
+    result((0, 1)) should be (1d +- epsilon)
+    result((0, 2)) should be (1.8888888888 +- epsilon)
+    result((1, 2)) should be (-9d +- epsilon)
   }
 
-  it should "merge two sums of pairs correctly for two columns" in {
-    val agg1 = new CorrelationAggregator(2)
-    agg1.iterateWithoutNulls(List(2d, 3d))
-    val agg2 = new CorrelationAggregator(2)
-    agg2.iterateWithoutNulls(List(1d, 1d))
-    agg1.merge(agg2).sumsOfPairs.toMap shouldBe Map((0, 1) -> 7d)
-  }
-
-  it should "merge two sums of pairs correctly for more than two columns" in {
+  it should "merge more than two covariances correctly when the left one is empty" in {
     val agg1 = new CorrelationAggregator(3)
-    agg1.iterateWithoutNulls(List(2d, 3d, 4d))
     val agg2 = new CorrelationAggregator(3)
-    agg2.iterateWithoutNulls(List(1d, 1d, 1d))
-    agg1.merge(agg2).sumsOfPairs.toMap shouldBe Map(
-      (0, 1) -> 7d,
-      (0, 2) -> 9d,
-      (1, 2) -> 13d
-    )
+    agg2.iterateWithoutNulls(List(5d, 7d, 1d))
+    agg2.iterateWithoutNulls(List(3d, 2d, 8d))
+    agg2.iterateWithoutNulls(List(2d, 6d, -5d))
+    agg2.iterate(List(Option.empty, Option.empty, Option.empty))
+    val result = agg1.merge(agg2).runningCov
+    result((0, 1)) should be (1d +- epsilon)
+    result((0, 2)) should be (1.8888888888 +- epsilon)
+    result((1, 2)) should be (-9d +- epsilon)
+  }
+
+  it should "merge more than two covariances correctly when the right one is empty" in {
+    val agg1 = new CorrelationAggregator(3)
+    agg1.iterateWithoutNulls(List(5d, 7d, 1d))
+    agg1.iterateWithoutNulls(List(3d, 2d, 8d))
+    agg1.iterateWithoutNulls(List(2d, 6d, -5d))
+    agg1.iterate(List(Option.empty, Option.empty, Option.empty))
+    val agg2 = new CorrelationAggregator(3)
+    val result = agg1.merge(agg2).runningCov
+    result((0, 1)) should be (1d +- epsilon)
+    result((0, 2)) should be (1.8888888888 +- epsilon)
+    result((1, 2)) should be (-9d +- epsilon)
   }
 
   it should "require the number of columns in an iteration its initial size" in {
@@ -237,6 +204,19 @@ class CorrelationAggregatorTest extends FlatSpec with Matchers {
     agg.iterateWithoutNulls(List(3d, 2d, 8d))
     agg.iterateWithoutNulls(List(2d, 6d, -5d))
     val result = agg.pearsonCorrelations
+    result((0, 1)) should be (0.3711537 +- epsilon)
+    result((0, 2)) should be (0.2850809 +- epsilon)
+    result((1, 2)) should be (-0.7842301 +- epsilon)
+  }
+
+  it should "give the same correlation values as R when covariances have been merged" in {
+    val agg1 = new CorrelationAggregator(3)
+    agg1.iterateWithoutNulls(List(5d, 7d, 1d))
+    agg1.iterateWithoutNulls(List(3d, 2d, 8d))
+    val agg2 = new CorrelationAggregator(3)
+    agg2.iterateWithoutNulls(List(2d, 6d, -5d))
+    agg2.iterate(List(Option.empty, Option.empty, Option.empty))
+    val result = agg1.merge(agg2).pearsonCorrelations
     result((0, 1)) should be (0.3711537 +- epsilon)
     result((0, 2)) should be (0.2850809 +- epsilon)
     result((1, 2)) should be (-0.7842301 +- epsilon)
