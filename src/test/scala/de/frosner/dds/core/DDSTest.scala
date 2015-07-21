@@ -590,6 +590,21 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     )
   }
 
+  "A key value pair servable" should "be served from a list of key value pairs" in {
+    DDS.start(mockedServer)
+    DDS.keyValuePairs(List((1, "a"), (2, "b")))
+
+    val result = mockedServer.lastServed.get.asInstanceOf[KeyValueSequence]
+    result.keyValueSequence.toList shouldBe List((1, "a"), (2, "b"))
+  }
+
+  it should "not be served if the key value sequence is empty" in {
+    DDS.start(mockedServer)
+    DDS.keyValuePairs(List.empty)
+
+    mockedServer.lastServed.isDefined shouldBe false
+  }
+
   "A correct median table" should "be served from an even-sized numerical RDD" in {
     DDS.start(mockedServer)
     val valueRDD = sc.makeRDD(List(1,2,3,4))

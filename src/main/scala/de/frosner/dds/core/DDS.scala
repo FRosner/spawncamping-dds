@@ -174,6 +174,20 @@ object DDS {
 
   @Help(
     category = "Scala",
+    shortDescription = "Prints a key value pair list",
+    longDescription = "Prints a key value pair list.",
+    parameters = "pairs: Seq[(Key, Value)]"
+  )
+  def keyValuePairs(pairs: List[(Any, Any)]): Unit = {
+    if (pairs.isEmpty) {
+      println("Cannot print empty key-value pairs.")
+    } else {
+      serve(KeyValueSequence(pairs))
+    }
+  }
+
+  @Help(
+    category = "Scala",
     shortDescription = "Plots a scatter plot",
     longDescription = "Plots a scatter plot of the given points. A point is represented as a pair of X and Y coordinates." +
       "Works with both, numeric or nominal values and will plot the axes accordingly.",
