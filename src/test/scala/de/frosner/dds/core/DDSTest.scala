@@ -693,10 +693,15 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     DDS.summarize(valueRdd)
 
     val counter = StatCounter(1D, 2D, 3D)
-    val resultTable = mockedServer.lastServed.get.asInstanceOf[Table]
-    resultTable.head.toList shouldBe List("count", "sum", "min", "max", "mean", "stdev", "variance")
-    resultTable.rows.toList shouldBe List(
-      List(counter.count, counter.sum, counter.min, counter.max, counter.mean, counter.stdev, counter.variance)
+    val result = mockedServer.lastServed.get.asInstanceOf[KeyValueSequence]
+    result.keyValueSequence.toList shouldBe List(
+      ("Count", counter.count),
+      ("Sum", counter.sum),
+      ("Min", counter.min),
+      ("Max", counter.max),
+      ("Mean", counter.mean),
+      ("Stdev", counter.stdev),
+      ("Variance", counter.variance)
     )
   }
 
@@ -705,10 +710,10 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     val valueRdd = sc.makeRDD(List("a", "b", "b", "c"))
     DDS.summarize(valueRdd)
 
-    val resultTable = mockedServer.lastServed.get.asInstanceOf[Table]
-    resultTable.head.toList shouldBe List("mode", "cardinality")
-    resultTable.rows.toList shouldBe List(
-      List("b", 3)
+    val result = mockedServer.lastServed.get.asInstanceOf[KeyValueSequence]
+    result.keyValueSequence.toList shouldBe List(
+      ("Mode", "b"),
+      ("Cardinality", 3)
     )
   }
 

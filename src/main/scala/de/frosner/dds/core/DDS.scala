@@ -179,10 +179,15 @@ object DDS {
     parameters = "pairs: Seq[(Key, Value)]"
   )
   def keyValuePairs(pairs: List[(Any, Any)]): Unit = {
+    serve(createKeyValuePairs(pairs, ""))
+  }
+
+  private def createKeyValuePairs(pairs: List[(Any, Any)], title: String): Option[Servable] = {
     if (pairs.isEmpty) {
       println("Cannot print empty key-value pairs.")
+      Option.empty
     } else {
-      serve(KeyValueSequence(pairs))
+      Option(KeyValueSequence(pairs))
     }
   }
 
@@ -904,16 +909,17 @@ object DDS {
   private def createSummarize[N: ClassTag](values: RDD[N], title: String = Servable.DEFAULT_TITLE)
                                           (implicit num: Numeric[N] = null): Option[Servable] = {
     if (num != null) {
-      Option(Table.fromStatCounter(values.stats(), title))
+      Option(KeyValueSequence.fromStatCounter(values.stats(), title))
     } else {
       val cardinality = values.distinct.count
       if (cardinality > 0) {
         val valueCounts = values.map((_, 1)).reduceByKey(_ + _)
         val (mode, modeCount) = valueCounts.max()(Ordering.by { case (value, count) => count})
-        createTable(
-          List("mode", "cardinality"),
-          List(List(mode, cardinality)),
-          title
+        createKeyValuePairs(
+          List(
+            ("Mode", mode),
+            ("Cardinality", cardinality)
+          ), title
         )
       } else {
         println("Summarize function requires a non-empty RDD!")
