@@ -257,4 +257,44 @@ class DataFrameUtilsTest extends FlatSpec with Matchers {
     requireSingleColumned(schema, "test")(Option(5)) shouldBe Option.empty
   }
 
+  "A double binning udf" should "bin doubles correctly" in {
+    val binDouble = binDoubleUdf(10, 0, 10)
+    val binningFunction = binDouble.f.asInstanceOf[(Double) => String]
+    binningFunction(0) shouldBe "0"
+    binningFunction(0.5) shouldBe "0"
+    binningFunction(1) shouldBe "1"
+    binningFunction(9) shouldBe "9"
+    binningFunction(10) shouldBe "9"
+  }
+
+  it should "assign no bin to NaN values" in {
+    val binDouble = binDoubleUdf(10, 0, 10)
+    val binningFunction = binDouble.f.asInstanceOf[(Double) => String]
+    binningFunction(Double.NaN) shouldBe null
+  }
+
+  it should "assign no bin to values less than the minimum value" in {
+    val binDouble = binDoubleUdf(10, 0, 10)
+    val binningFunction = binDouble.f.asInstanceOf[(Double) => String]
+    binningFunction(-0.5) shouldBe null
+  }
+
+  it should "assign no bin to values bigger than the maximum value" in {
+    val binDouble = binDoubleUdf(10, 0, 10)
+    val binningFunction = binDouble.f.asInstanceOf[(Double) => String]
+    binningFunction(10.5) shouldBe null
+  }
+
+  it should "require a positive number of bins" in {
+    intercept[IllegalArgumentException] {
+      binDoubleUdf(0, 0, 10)
+    }
+  }
+
+  it should "require a minimum value not to be greater than the maximum value" in {
+    intercept[IllegalArgumentException] {
+      binDoubleUdf(10, 12, 10)
+    }
+  }
+
 }
