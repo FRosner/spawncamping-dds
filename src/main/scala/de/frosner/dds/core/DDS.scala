@@ -174,6 +174,25 @@ object DDS {
 
   @Help(
     category = "Scala",
+    shortDescription = "Prints a key value pair list",
+    longDescription = "Prints a key value pair list.",
+    parameters = "pairs: Seq[(Key, Value)]"
+  )
+  def keyValuePairs(pairs: List[(Any, Any)]): Unit = {
+    serve(createKeyValuePairs(pairs, ""))
+  }
+
+  private def createKeyValuePairs(pairs: List[(Any, Any)], title: String): Option[Servable] = {
+    if (pairs.isEmpty) {
+      println("Cannot print empty key-value pairs.")
+      Option.empty
+    } else {
+      Option(KeyValueSequence(pairs))
+    }
+  }
+
+  @Help(
+    category = "Scala",
     shortDescription = "Plots a scatter plot",
     longDescription = "Plots a scatter plot of the given points. A point is represented as a pair of X and Y coordinates." +
       "Works with both, numeric or nominal values and will plot the axes accordingly.",
@@ -890,16 +909,17 @@ object DDS {
   private def createSummarize[N: ClassTag](values: RDD[N], title: String = Servable.DEFAULT_TITLE)
                                           (implicit num: Numeric[N] = null): Option[Servable] = {
     if (num != null) {
-      Option(Table.fromStatCounter(values.stats(), title))
+      Option(KeyValueSequence.fromStatCounter(values.stats(), title))
     } else {
       val cardinality = values.distinct.count
       if (cardinality > 0) {
         val valueCounts = values.map((_, 1)).reduceByKey(_ + _)
         val (mode, modeCount) = valueCounts.max()(Ordering.by { case (value, count) => count})
-        createTable(
-          List("mode", "cardinality"),
-          List(List(mode, cardinality)),
-          title
+        createKeyValuePairs(
+          List(
+            ("Mode", mode),
+            ("Cardinality", cardinality)
+          ), title
         )
       } else {
         println("Summarize function requires a non-empty RDD!")

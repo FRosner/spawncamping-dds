@@ -7,6 +7,10 @@ KeyValueSequence.prototype.parent = Visualization.prototype;
 KeyValueSequence.prototype._draw = function(keyValueObject) {
   var contentId = this._content.id;
   var table = generateElement(this._content, contentId + "-listing", "table");
+  this._content.style.display = "table-cell";
+  this._content.style.verticalAlign = "middle";
+  this._content.style.textAlign = "center";
+  this._content.style.width = "5000px";
   table.setAttribute("class", "keyValueTable");
   var keyValueArray = Object.keys(keyValueObject)
     .map(function(key) {
