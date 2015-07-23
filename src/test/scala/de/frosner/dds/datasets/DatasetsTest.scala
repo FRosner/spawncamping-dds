@@ -200,19 +200,32 @@ class DatasetsTest extends FlatSpec with Matchers with BeforeAndAfterAll {
   }
 
 
-  "Peer to Peer Network CSV case class RDD" should "have the correct data" in {
-    val ppGraph = gnutella(sc)
-    ppGraph.edges.count() shouldBe 20777
+  "Enron email communication network CSV case class RDD" should "have the correct data" in {
+    val ppGraph = enron(sc)
+    ppGraph.edges.count() shouldBe 367662
 
-    val edgesFrom196 = ppGraph.triplets.filter(triplet =>
-      triplet.srcId == 196L
+    val edgesFrom6 = ppGraph.triplets.filter(triplet =>
+      triplet.srcId == 6L
     )
-    edgesFrom196.count() shouldBe 10
+    edgesFrom6.count() shouldBe 9
 
-    val distIds196 = edgesFrom196.map(triplet =>
+    val distIds196 = edgesFrom6.map(triplet =>
       triplet.dstId
     )
-    distIds196.collect().toSet shouldBe Set(246L, 424L, 659L, 809L, 2120L, 2142L, 2143L, 2144L, 2145L, 2146L)
+    distIds196.collect().toSet shouldBe Set(1L, 3L, 7L, 50L, 74L, 308L, 878L, 910L, 10606L)
+  }
+
+  it should "generate a GraphX graph" in {
+
+    import de.frosner.dds.core.DDS._
+    start("127.0.0.1", 9080)
+
+    while (true) {
+      val network = de.frosner.dds.datasets.enron(sc)
+      connectedComponents(network)
+
+      Thread sleep 100000
+    }
   }
 
 }

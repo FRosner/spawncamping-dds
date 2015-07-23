@@ -39,7 +39,7 @@ package object datasets {
 
   private lazy val readNetwork = readCsvWithHeader("/data/peer_to_peer_network.csv")
 
-  def gnutella(implicit sc: SparkContext): Graph[Int, String] = {
+  def enron(implicit sc: SparkContext): Graph[Int, String] = {
     val (rawHead, rawBody) = readNetwork
 
     val edgeRdd = sc.parallelize(rawBody).map(line => {
