@@ -214,18 +214,4 @@ class DatasetsTest extends FlatSpec with Matchers with BeforeAndAfterAll {
     )
     distIds196.collect().toSet shouldBe Set(1L, 3L, 7L, 50L, 74L, 308L, 878L, 910L, 10606L)
   }
-
-  it should "generate a GraphX graph" in {
-
-    import de.frosner.dds.core.DDS._
-    start("127.0.0.1", 9080)
-
-    while (true) {
-      val network = de.frosner.dds.datasets.enron(sc)
-      connectedComponents(network)
-
-      Thread sleep 100000
-    }
-  }
-
 }
