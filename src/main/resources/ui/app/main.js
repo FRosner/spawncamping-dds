@@ -115,8 +115,10 @@ function checkForUpdate() {
           if (document.lastServed) {
             document.lastServed.clear();
           }
-          document.getElementById(contentId)
-            .innerHTML = "";
+          var previousContentDiv = document.getElementById(contentId);
+          var contentParent = previousContentDiv.parentNode;
+          removeElementIfExists(previousContentDiv);
+          generateDiv(contentParent, contentId);
           document.lastServed = drawServable(servable, headerId, contentId);
           document.isNewVisualization = false;
         });
