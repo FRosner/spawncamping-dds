@@ -199,4 +199,14 @@ class MutualInformationAggregatorTest extends FlatSpec with Matchers {
     result((2, 2)) should be (1d +- epsilon)
   }
 
+  it should "contain only 0 if all values are the same" in {
+    val agg = new MutualInformationAggregator(2)
+    agg.iterate(List("a", "a"))
+    agg.iterate(List("a", "a"))
+    val result = agg.mutualInformation
+    result((0, 0)) should be (0d +- epsilon)
+    result((0, 1)) should be (0d +- epsilon)
+    result((1, 1)) should be (0d +- epsilon)
+  }
+
 }

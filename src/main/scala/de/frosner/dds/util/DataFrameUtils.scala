@@ -87,10 +87,12 @@ object DataFrameUtils {
   def binDoubleUdf(numBins: Int, min: Double, max: Double) = {
     require(numBins > 0, "The number of bins must be greater than 0")
     require(min <= max, "The minimum value must not be greater than the maximum")
-    udf((value: Double) => {
-      if (value.isNaN || value < min || value > max) {
-        null.asInstanceOf[String]
+    udf((value: java.lang.Double) => {
+      if (value == null || value.isNaN) {
+        Option(value).toString
       } else {
+        require(value <= max, s" Value ($value) must be less than max ($max)")
+        require(value >= min, s"Value ($value) must be greater than min ($min)")
         val bin = (((value - min) / (max - min)) * numBins).toInt
         Math.min(bin, numBins - 1).toString
       }

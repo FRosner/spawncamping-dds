@@ -267,22 +267,32 @@ class DataFrameUtilsTest extends FlatSpec with Matchers {
     binningFunction(10) shouldBe "9"
   }
 
-  it should "assign no bin to NaN values" in {
+  it should "assign the NaN bin to NaN values" in {
     val binDouble = binDoubleUdf(10, 0, 10)
     val binningFunction = binDouble.f.asInstanceOf[(Double) => String]
-    binningFunction(Double.NaN) shouldBe null
+    binningFunction(Double.NaN) shouldBe "Some(NaN)"
+  }
+
+  it should "assign the null bin to null values" in {
+    val binDouble = binDoubleUdf(10, 0, 10)
+    val binningFunction = binDouble.f.asInstanceOf[(java.lang.Double) => String]
+    binningFunction(null.asInstanceOf[java.lang.Double]) shouldBe "None"
   }
 
   it should "assign no bin to values less than the minimum value" in {
     val binDouble = binDoubleUdf(10, 0, 10)
     val binningFunction = binDouble.f.asInstanceOf[(Double) => String]
-    binningFunction(-0.5) shouldBe null
+    intercept[IllegalArgumentException] {
+      binningFunction(-0.5) shouldBe null
+    }
   }
 
   it should "assign no bin to values bigger than the maximum value" in {
     val binDouble = binDoubleUdf(10, 0, 10)
     val binningFunction = binDouble.f.asInstanceOf[(Double) => String]
-    binningFunction(10.5) shouldBe null
+    intercept[IllegalArgumentException] {
+      binningFunction(10.5) shouldBe null
+    }
   }
 
   it should "require a positive number of bins" in {
