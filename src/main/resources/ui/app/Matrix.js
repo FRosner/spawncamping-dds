@@ -100,7 +100,7 @@ Matrix.prototype._draw = function(matrixAndNames) {
     .attr("width", x.rangeBand() - 1)
     .attr("height", y.rangeBand() - 1)
     .attr("fill", function(value) {
-      return z(value.z);
+      return (value.z != null) ? z(value.z) : "#000000";
     })
     .attr("class", "matrix-cell")
   rects.append("svg:title")
