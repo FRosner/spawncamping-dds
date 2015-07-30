@@ -74,7 +74,7 @@ Composite.prototype._draw = function(composite) {
       return cell.contentId;
     })
     .attr("style", function(cell) {
-      return "height: " + cell.contentWidth / 16 * 9 + "px"
+      return "height: " + Math.ceil(cell.contentWidth / 16 * 9) + "px"
     })
     .each(function(cell) {
       var servable = cell;
