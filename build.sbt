@@ -18,11 +18,9 @@ lazy val shortScalaVersion = settingKey[String]("Scala major and minor version."
 
 shortScalaVersion := scalaVersion.value.split("\\.").take(2).mkString(".")
 
-lazy val currentBranch = ("git status -sb" !!).split("\\n")(0).stripPrefix("## ")
+val isMasterBranch = settingKey[Boolean]("Master branch is active")
 
-val isMasterBranch = settingKey[Boolean]("currentBranch is master")
-
-isMasterBranch := currentBranch == "master" || System.getenv("TRAVIS_BRANCH") == "master"
+isMasterBranch := System.getenv("TRAVIS_BRANCH") == "master"
 
 lazy val finalArtifactName = settingKey[String]("Name of the final artifact.")
 
@@ -69,7 +67,7 @@ assemblyJarName in assembly := finalArtifactName.value
 val dontPublishTask = TaskKey[Unit]("dont-publish-to-s3", "Don't publish branch SNAPSHOT to S3.")
 
 dontPublishTask <<= (streams) map { (s) => {
-    s.log.info(s"""Not publishing artifact to S3 (on branch $currentBranch / ${System.getenv("TRAVIS_BRANCH")})""")
+    s.log.info(s"""Not publishing artifact to S3 (on branch ${System.getenv("TRAVIS_BRANCH")})""")
   }
 }
 
