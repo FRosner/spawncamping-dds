@@ -307,4 +307,16 @@ class DataFrameUtilsTest extends FlatSpec with Matchers {
     }
   }
 
+  it should "require a non-infinite min value" in {
+    intercept[IllegalArgumentException] {
+      binDoubleUdf(10, Double.NegativeInfinity, 10)
+    }
+  }
+
+  it should "require a non-infinite max value" in {
+    intercept[IllegalArgumentException] {
+      binDoubleUdf(10, 12, Double.PositiveInfinity)
+    }
+  }
+
 }

@@ -87,6 +87,8 @@ object DataFrameUtils {
   def binDoubleUdf(numBins: Int, min: Double, max: Double) = {
     require(numBins > 0, "The number of bins must be greater than 0")
     require(min <= max, "The minimum value must not be greater than the maximum")
+    require(!min.isInfinite, "Having an infinite minimum is not supported")
+    require(!max.isInfinite, "Having an infinite maximum is not supported")
     udf((value: java.lang.Double) => {
       if (value == null || value.isNaN) {
         Option(value).toString
