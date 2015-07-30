@@ -1166,7 +1166,13 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     corrMatrix(1)(0) should be (-1d +- epsilon)
     corrMatrix(1)(1) should be (1d +- epsilon)
   }
-
+  
+  /**
+   * I used R to compute the expected mutual information values. E.g.:
+   *
+   * library(entropy)
+   * mi.plugin(rbind(c(2/3, 0), c(0, 1/3)), unit="log")
+   */
   "A correct mutual information heatmap" should "be served from an RDD with three columns and no normalization" in {
     DDS.start(mockedServer)
     val rdd = sc.makeRDD(List(Row("1", "a", "1d"), Row("1", "b", "2d"), Row("2", "b", "3d")))
