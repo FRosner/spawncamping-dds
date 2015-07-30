@@ -1166,7 +1166,7 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     corrMatrix(1)(0) should be (-1d +- epsilon)
     corrMatrix(1)(1) should be (1d +- epsilon)
   }
-  
+
   /**
    * I used R to compute the expected mutual information values. E.g.:
    *
