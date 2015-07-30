@@ -6,6 +6,7 @@ import java.sql.Date
 import de.frosner.dds.core.DDS
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row}
+import org.apache.spark.sql.functions._
 
 object DataFrameUtils {
 
@@ -81,6 +82,23 @@ object DataFrameUtils {
     } else {
       toDo
     }
+  }
+
+  def binDoubleUdf(numBins: Int, min: Double, max: Double) = {
+    require(numBins > 0, "The number of bins must be greater than 0")
+    require(min <= max, "The minimum value must not be greater than the maximum")
+    require(!min.isInfinite, "Having an infinite minimum is not supported")
+    require(!max.isInfinite, "Having an infinite maximum is not supported")
+    udf((value: java.lang.Double) => {
+      if (value == null || value.isNaN) {
+        Option(value).toString
+      } else {
+        require(value <= max, s" Value ($value) must be less than max ($max)")
+        require(value >= min, s"Value ($value) must be greater than min ($min)")
+        val bin = (((value - min) / (max - min)) * numBins).toInt
+        Math.min(bin, numBins - 1).toString
+      }
+    })
   }
 
 }

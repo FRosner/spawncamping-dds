@@ -798,10 +798,52 @@ object DDS {
                                       title: String = Servable.DEFAULT_TITLE): Option[Servable] = {
     import MutualInformationAggregator._
     def showError = println("Mutual information only supported for RDDs with at least one column.")
+
+    // bin all numerical fields by first converting them to double and then perform equal-width binning using sturges
     val schema = dataFrame.schema
     val fields = schema.fields
+    val numericalFields = fields.zipWithIndex.filter{ case (field, idx) => isNumeric(field.dataType) }
+    val dfWithAllNumericColumnsAsDouble = dataFrame.select(
+      fields.map(field => {
+        if (isNumeric(field.dataType)) {
+          new Column(field.name).cast(DoubleType).as(field.name)
+        } else {
+          new Column(field.name)
+        }
+      }):_*
+    )
+    val (numericMinMaxCountIndexes, numericMinMaxCountColumns) = fields.zipWithIndex.flatMap{case (field, idx) => {
+      import org.apache.spark.sql.functions._
+      if (isNumeric(field.dataType)) {
+        List(
+          ((idx, 0), max(field.name).as(field.name + "_max")),
+          ((idx, 1), min(field.name).as(field.name + "_min")),
+          ((idx, 2), count(field.name).as(field.name + "_count"))
+        )
+      } else {
+        List.empty
+      }
+    }}.unzip
+    val numericMinMaxCountValues = dfWithAllNumericColumnsAsDouble.select(numericMinMaxCountColumns:_*).collect
+    val numericMinMaxCountValuesMap = numericMinMaxCountIndexes.zip(numericMinMaxCountValues.head.toSeq).toMap
+    val dfWithBinnedDoubleValues = dfWithAllNumericColumnsAsDouble.select(
+      fields.zipWithIndex.map{ case (field, idx) => {
+        if (isNumeric(field.dataType)) {
+          val max = numericMinMaxCountValuesMap((idx, 0)).asInstanceOf[Double]
+          val min = numericMinMaxCountValuesMap((idx, 1)).asInstanceOf[Double]
+          val count = numericMinMaxCountValuesMap((idx, 2)).asInstanceOf[Long]
+          val optimalNumBins = Histogram.optimalNumberOfBins(count)
+          binDoubleUdf(optimalNumBins, min, max)(new Column(field.name))
+        } else {
+          new Column(field.name)
+        }
+      }}:_*
+    )
+
+    // compute mutual information matrix
+    val binnedFields = dfWithBinnedDoubleValues.schema.fields
     if (fields.size >= 1) {
-      val miAgg = dataFrame.rdd.aggregate(new MutualInformationAggregator(fields.size)) (
+      val miAgg = dfWithBinnedDoubleValues.rdd.aggregate(new MutualInformationAggregator(binnedFields.size)) (
         (agg, row) => agg.iterate(row.toSeq),
         (agg1, agg2) => agg1.merge(agg2)
       )

@@ -1167,13 +1167,19 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     corrMatrix(1)(1) should be (1d +- epsilon)
   }
 
+  /**
+   * I used R to compute the expected mutual information values. E.g.:
+   *
+   * library(entropy)
+   * mi.plugin(rbind(c(2/3, 0), c(0, 1/3)), unit="log")
+   */
   "A correct mutual information heatmap" should "be served from an RDD with three columns and no normalization" in {
     DDS.start(mockedServer)
-    val rdd = sc.makeRDD(List(Row(1, "a", 1d), Row(1, "b", 2d), Row(2, "b", 3d)))
+    val rdd = sc.makeRDD(List(Row("1", "a", "1d"), Row("1", "b", "2d"), Row("2", "b", "3d")))
     val dataFrame = sql.createDataFrame(rdd, StructType(List(
-      StructField("first", IntegerType, false),
+      StructField("first", StringType, false),
       StructField("second", StringType, false),
-      StructField("third", DoubleType, false)
+      StructField("third", StringType, false)
     )))
     DDS.mutualInformation(dataFrame, MutualInformationAggregator.NO_NORMALIZATION)
 
@@ -1194,9 +1200,9 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
 
   it should "be served from an RDD with one column and no normalization" in {
     DDS.start(mockedServer)
-    val rdd = sc.makeRDD(List(Row(1), Row(1), Row(2)))
+    val rdd = sc.makeRDD(List(Row("1"), Row("1"), Row("2")))
     val dataFrame = sql.createDataFrame(rdd, StructType(List(
-      StructField("first", IntegerType, false)
+      StructField("first", StringType, false)
     )))
     DDS.mutualInformation(dataFrame, MutualInformationAggregator.NO_NORMALIZATION)
 
@@ -1209,11 +1215,11 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
 
   it should "be served from an RDD with three columns and normalization" in {
     DDS.start(mockedServer)
-    val rdd = sc.makeRDD(List(Row(1, "a", 1d), Row(1, "b", 2d), Row(2, "b", 3d)))
+    val rdd = sc.makeRDD(List(Row("1", "a", "1d"), Row("1", "b", "2d"), Row("2", "b", "3d")))
     val dataFrame = sql.createDataFrame(rdd, StructType(List(
-      StructField("first", IntegerType, false),
+      StructField("first", StringType, false),
       StructField("second", StringType, false),
-      StructField("third", DoubleType, false)
+      StructField("third", StringType, false)
     )))
     DDS.mutualInformation(dataFrame, MutualInformationAggregator.METRIC_NORMALIZATION)
 
@@ -1234,11 +1240,11 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
 
   it should "use default normalization if wrong normalization is specified" in {
     DDS.start(mockedServer)
-    val rdd = sc.makeRDD(List(Row(1, "a", 1d), Row(1, "b", 2d), Row(2, "b", 3d)))
+    val rdd = sc.makeRDD(List(Row("1", "a", "1d"), Row("1", "b", "2d"), Row("2", "b", "3d")))
     val dataFrame = sql.createDataFrame(rdd, StructType(List(
-      StructField("first", IntegerType, false),
+      StructField("first", StringType, false),
       StructField("second", StringType, false),
-      StructField("third", DoubleType, false)
+      StructField("third", StringType, false)
     )))
     DDS.mutualInformation(dataFrame, "dasaasfsdgsrwefsdf")
 
@@ -1255,6 +1261,123 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     miMatrix(2)(0) should be (0.5793803 +- epsilon)
     miMatrix(2)(1) should be (0.5793803 +- epsilon)
     miMatrix(2)(2) should be (1d +- epsilon)
+  }
+
+  it should "bin different numerical values using Sturge's formula before computing mutual information" in {
+    DDS.start(mockedServer)
+    val rdd = sc.makeRDD(List(Row(1, 1d, 1f, 1l, 1.toShort), Row(4, 4d, 6f, 6l, 4.toShort), Row(10, 10d, 10f, 10l, 10.toShort)))
+    val dataFrame = sql.createDataFrame(rdd, StructType(List(
+      StructField("first", IntegerType, false),
+      StructField("second", DoubleType, false),
+      StructField("third", FloatType, false),
+      StructField("fourth", LongType, false),
+      StructField("fifth", ShortType, false)
+    )))
+    DDS.mutualInformation(dataFrame, MutualInformationAggregator.METRIC_NORMALIZATION)
+
+    val resultMatrix = mockedServer.lastServed.get.asInstanceOf[Matrix2D]
+    resultMatrix.colNames.toList shouldBe List("first", "second", "third", "fourth", "fifth")
+    resultMatrix.rowNames.toList shouldBe List("first", "second", "third", "fourth", "fifth")
+    val miMatrix = resultMatrix.entries.map(_.toSeq)
+    miMatrix(0)(0) should be (1d +- epsilon)
+    miMatrix(0)(1) should be (1d +- epsilon)
+    miMatrix(0)(2) should be (1d +- epsilon)
+    miMatrix(0)(3) should be (1d +- epsilon)
+    miMatrix(0)(4) should be (1d +- epsilon)
+    miMatrix(1)(1) should be (1d +- epsilon)
+    miMatrix(1)(2) should be (1d +- epsilon)
+    miMatrix(1)(3) should be (1d +- epsilon)
+    miMatrix(1)(4) should be (1d +- epsilon)
+    miMatrix(2)(2) should be (1d +- epsilon)
+    miMatrix(2)(3) should be (1d +- epsilon)
+    miMatrix(2)(4) should be (1d +- epsilon)
+    miMatrix(3)(3) should be (1d +- epsilon)
+    miMatrix(3)(4) should be (1d +- epsilon)
+    miMatrix(4)(4) should be (1d +- epsilon)
+  }
+
+  it should "bin numerical columns having null values (null as extra bin)" in {
+    DDS.start(mockedServer)
+    val rdd = sc.makeRDD(List(Row(1, 1d, 1f, 1l, 1.toShort), Row(4, 4d, 6f, 6l, 4.toShort), Row(null, null, null, null, null)))
+    val dataFrame = sql.createDataFrame(rdd, StructType(List(
+      StructField("first", IntegerType, true),
+      StructField("second", DoubleType, true),
+      StructField("third", FloatType, true),
+      StructField("fourth", LongType, true),
+      StructField("fifth", ShortType, true)
+    )))
+    DDS.mutualInformation(dataFrame, MutualInformationAggregator.METRIC_NORMALIZATION)
+
+    val resultMatrix = mockedServer.lastServed.get.asInstanceOf[Matrix2D]
+    resultMatrix.colNames.toList shouldBe List("first", "second", "third", "fourth", "fifth")
+    resultMatrix.rowNames.toList shouldBe List("first", "second", "third", "fourth", "fifth")
+    val miMatrix = resultMatrix.entries.map(_.toSeq)
+    miMatrix(0)(0) should be (1d +- epsilon)
+    miMatrix(0)(1) should be (1d +- epsilon)
+    miMatrix(0)(2) should be (1d +- epsilon)
+    miMatrix(0)(3) should be (1d +- epsilon)
+    miMatrix(0)(4) should be (1d +- epsilon)
+    miMatrix(1)(1) should be (1d +- epsilon)
+    miMatrix(1)(2) should be (1d +- epsilon)
+    miMatrix(1)(3) should be (1d +- epsilon)
+    miMatrix(1)(4) should be (1d +- epsilon)
+    miMatrix(2)(2) should be (1d +- epsilon)
+    miMatrix(2)(3) should be (1d +- epsilon)
+    miMatrix(2)(4) should be (1d +- epsilon)
+    miMatrix(3)(3) should be (1d +- epsilon)
+    miMatrix(3)(4) should be (1d +- epsilon)
+    miMatrix(4)(4) should be (1d +- epsilon)
+  }
+
+  it should "ignore numerical columns having only null values (null as extra bin)" in {
+    DDS.start(mockedServer)
+    val rdd = sc.makeRDD(List(Row(null, null, null, null, null), Row(null, null, null, null, null), Row(null, null, null, null, null)))
+    val dataFrame = sql.createDataFrame(rdd, StructType(List(
+      StructField("first", IntegerType, true),
+      StructField("second", DoubleType, true),
+      StructField("third", FloatType, true),
+      StructField("fourth", LongType, true),
+      StructField("fifth", ShortType, true)
+    )))
+    DDS.mutualInformation(dataFrame, MutualInformationAggregator.METRIC_NORMALIZATION)
+
+    val resultMatrix = mockedServer.lastServed.get.asInstanceOf[Matrix2D]
+    resultMatrix.colNames.toList shouldBe List("first", "second", "third", "fourth", "fifth")
+    resultMatrix.rowNames.toList shouldBe List("first", "second", "third", "fourth", "fifth")
+    val miMatrix = resultMatrix.entries.map(_.toSeq)
+    miMatrix(0)(0).isNaN shouldBe true
+    miMatrix(0)(1).isNaN shouldBe true
+    miMatrix(0)(2).isNaN shouldBe true
+    miMatrix(0)(3).isNaN shouldBe true
+    miMatrix(0)(4).isNaN shouldBe true
+    miMatrix(1)(1).isNaN shouldBe true
+    miMatrix(1)(2).isNaN shouldBe true
+    miMatrix(1)(3).isNaN shouldBe true
+    miMatrix(1)(4).isNaN shouldBe true
+    miMatrix(2)(2).isNaN shouldBe true
+    miMatrix(2)(3).isNaN shouldBe true
+    miMatrix(2)(4).isNaN shouldBe true
+    miMatrix(3)(3).isNaN shouldBe true
+    miMatrix(3)(4).isNaN shouldBe true
+    miMatrix(4)(4).isNaN shouldBe true
+  }
+
+  it should "compute correct mutual information for bins with different ranges" in {
+    DDS.start(mockedServer)
+    val rdd = sc.makeRDD(List(Row(-10, 10d), Row(0, 0d), Row(0, 0d)))
+    val dataFrame = sql.createDataFrame(rdd, StructType(List(
+      StructField("first", IntegerType, true),
+      StructField("second", DoubleType, true)
+    )))
+    DDS.mutualInformation(dataFrame, MutualInformationAggregator.NO_NORMALIZATION)
+
+    val resultMatrix = mockedServer.lastServed.get.asInstanceOf[Matrix2D]
+    resultMatrix.colNames.toList shouldBe List("first", "second")
+    resultMatrix.rowNames.toList shouldBe List("first", "second")
+    val miMatrix = resultMatrix.entries.map(_.toSeq)
+    miMatrix(0)(0) should be (0.6365142 +- epsilon)
+    miMatrix(0)(1) should be (0.6365142 +- epsilon)
+    miMatrix(1)(1) should be (0.6365142 +- epsilon)
   }
 
   "A correct dashboard" should "be served" in {
@@ -1495,6 +1618,21 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
   "Help" should "work" in {
     DDS.help()
     DDS.help("start")
+  }
+
+  "TEst" should "do it" in {
+    DDS.start(mockedServer)
+    val rdd = sc.parallelize(List(Row(1, 1d, 1, 1d), Row(2, 2d, null, null), Row(3, 3d, 3, 3d)))
+    val dataFrame = sql.createDataFrame(rdd, StructType(List(
+      StructField("first", IntegerType, false),
+      StructField("second", DoubleType, false),
+      StructField("third", IntegerType, true),
+      StructField("fourth", DoubleType, true)
+    )))
+    /*dataFrame.select()
+    val resultDashboard = mockedServer.lastServed.get.asInstanceOf[CompositeServable]
+    val resultServables = resultDashboard.servables*/
+
   }
 
 }
