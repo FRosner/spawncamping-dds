@@ -29,19 +29,17 @@ when working on the cluster with the Spark REPL. It does not offer a fully flexi
 
     ```scala
     // load example data set
-    val golf = de.frosner.dds.datasets.golf(sc)
+    val sql = new org.apache.spark.sql.SQLContext(sc)
+    val golf = de.frosner.dds.datasets.golf(sc, sql)
 
     // look at a sample of your data set
     show(golf)
 
-    // visualize the distribution of a numeric attribute
-    histogram(golf.map(_.temperature), buckets = List(60, 65, 70, 75, 80, 85, 90))
+    // compute column statistics
+    summarize(golf)
 
-    // compute some summary statistics
-    summarize(golf.map(_.humidity))
-
-    // visualize the distribution of a nominal attribute
-    bar(golf.map(_.outlook))
+    // visualize column dependencies
+    mutualInformation(golf)
     ```
 
 5. Stop the server once you are done
