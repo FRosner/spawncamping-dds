@@ -37,7 +37,7 @@ package object datasets {
     })
   }
 
-  private lazy val readNetwork = readCsvWithHeader("/data/peer_to_peer_network.csv")
+  private lazy val readNetwork = readCsvWithHeader("/data/enron.csv")
 
   def enron(implicit sc: SparkContext): Graph[Int, String] = {
     val (rawHead, rawBody) = readNetwork
