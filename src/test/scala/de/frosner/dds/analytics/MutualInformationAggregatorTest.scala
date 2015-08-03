@@ -171,6 +171,21 @@ class MutualInformationAggregatorTest extends FlatSpec with Matchers {
     result((2, 2)) should be (1.098612 +- epsilon)
   }
 
+  it should "give the same mutual information values as my calculator for a normal data set after merging" in {
+    val agg1 = new MutualInformationAggregator(3)
+    agg1.iterate(List("a", "a", "a"))
+    agg1.iterate(List("a", "b", "b"))
+    val agg2 = new MutualInformationAggregator(3)
+    agg2.iterate(List("b", "b", "c"))
+    val result = agg1.merge(agg2).mutualInformation
+    result((0, 0)) should be (0.6365142 +- epsilon)
+    result((0, 1)) should be (0.174416 +- epsilon)
+    result((0, 2)) should be (0.6365142 +- epsilon)
+    result((1, 1)) should be (0.6365142 +- epsilon)
+    result((1, 2)) should be (0.6365142 +- epsilon)
+    result((2, 2)) should be (1.098612 +- epsilon)
+  }
+
   it should "give the same mutual information values as my calculator for a data set with null values" in {
     val agg = new MutualInformationAggregator(3)
     agg.iterate(List("a", "a", "a"))
