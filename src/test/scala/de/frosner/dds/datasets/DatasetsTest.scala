@@ -201,17 +201,17 @@ class DatasetsTest extends FlatSpec with Matchers with BeforeAndAfterAll {
 
 
   "Enron email communication network CSV case class RDD" should "have the correct data" in {
-    val ppGraph = enron(sc)
-    ppGraph.edges.count() shouldBe 367662
+    val network = enron(sc)
+    network.edges.count() shouldBe 367662
 
-    val edgesFrom6 = ppGraph.triplets.filter(triplet =>
+    val edgesFrom6 = network.triplets.filter(triplet =>
       triplet.srcId == 6L
     )
     edgesFrom6.count() shouldBe 9
 
-    val distIds196 = edgesFrom6.map(triplet =>
+    val destinationsFrom6 = edgesFrom6.map(triplet =>
       triplet.dstId
     )
-    distIds196.collect().toSet shouldBe Set(1L, 3L, 7L, 50L, 74L, 308L, 878L, 910L, 10606L)
+    destinationsFrom6.collect().toSet shouldBe Set(1L, 3L, 7L, 50L, 74L, 308L, 878L, 910L, 10606L)
   }
 }
