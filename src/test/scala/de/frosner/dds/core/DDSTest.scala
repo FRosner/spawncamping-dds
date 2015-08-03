@@ -1620,21 +1620,6 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     DDS.help("start")
   }
 
-  "TEst" should "do it" in {
-    DDS.start(mockedServer)
-    val rdd = sc.parallelize(List(Row(1, 1d, 1, 1d), Row(2, 2d, null, null), Row(3, 3d, 3, 3d)))
-    val dataFrame = sql.createDataFrame(rdd, StructType(List(
-      StructField("first", IntegerType, false),
-      StructField("second", DoubleType, false),
-      StructField("third", IntegerType, true),
-      StructField("fourth", DoubleType, true)
-    )))
-    /*dataFrame.select()
-    val resultDashboard = mockedServer.lastServed.get.asInstanceOf[CompositeServable]
-    val resultServables = resultDashboard.servables*/
-
-  }
-
 }
 
 /**
