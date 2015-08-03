@@ -199,7 +199,6 @@ class DatasetsTest extends FlatSpec with Matchers with BeforeAndAfterAll {
     flightsArray.size shouldBe 18441
   }
 
-
   "Enron email communication network CSV case class RDD" should "have the correct data" in {
     val network = enron(sc)
     network.edges.count() shouldBe 367662
