@@ -102,4 +102,6 @@ jasmineTestDir <+= sourceDirectory { src => src / "test" / "resources" / "ui" }
 
 jasmineConfFile <+= sourceDirectory { src => src / "test" / "resources" / "ui" / "test.dependencies.js" }
 
+jasmineRequireJsFile <+= sourceDirectory { src => src / "main" / "resources" / "ui" / "lib" / "require.js" }
+
 (test in Test) <<= (test in Test) dependsOn (jasmine)

@@ -1,4 +1,7 @@
-EnvJasmine.loadGlobal(EnvJasmine.rootDir + "util.js");
-EnvJasmine.loadGlobal(EnvJasmine.rootDir + "Visualization.js");
+var mainRequireConf = EnvJasmine.rootDir + "require.config.js";
+console.log("[info] Loading " + mainRequireConf);
+EnvJasmine.loadGlobal(mainRequireConf);
 
-EnvJasmine.loadGlobal(EnvJasmine.libDir + "underscore.min.js");
+var testRequireConf = EnvJasmine.testDir + "require.config.js";
+console.log("[info] Loading " + testRequireConf);
+EnvJasmine.loadGlobal(testRequireConf);

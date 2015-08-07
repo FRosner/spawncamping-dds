@@ -5,13 +5,11 @@ import java.net.URI
 
 import akka.actor.ActorSystem
 import com.typesafe.config.ConfigFactory
-import de.frosner.dds.html.Index
-import spray.http.MediaTypes._
 import spray.routing.SimpleRoutingApp
 import spray.routing.authentication._
 import spray.routing.Route
 import spray.routing.directives.AuthMagnet
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
 
 import scala.concurrent.Future
@@ -71,11 +69,7 @@ case class SprayServer(name: String,
       val server = startServer(interface, port, actorName) {
         path("") {
           withAuthentication {
-            get {
-              respondWithMediaType(`text/html`) {
-                complete(Index.html)
-              }
-            }
+            getFromResource("ui/index.html")
           }
         } ~
         path("chart" / "update") {

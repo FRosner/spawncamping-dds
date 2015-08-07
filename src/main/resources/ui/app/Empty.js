@@ -1,9 +1,17 @@
-function Empty() {}
+define(function(require) {
 
-Empty.prototype = new Visualization();
-Empty.prototype.constructor = Visualization;
-Empty.prototype.parent = Visualization.prototype;
+  var Visualization = require("Visualization");
 
-Empty.prototype._draw = function() {}
+  function Empty() {}
 
-Empty.prototype._clear = function() {}
+  Empty.prototype = new Visualization();
+  Empty.prototype.constructor = Visualization;
+  Empty.prototype.parent = Visualization.prototype;
+
+  Empty.prototype._draw = function() {}
+
+  Empty.prototype._clear = function() {}
+
+  return Empty;
+
+});

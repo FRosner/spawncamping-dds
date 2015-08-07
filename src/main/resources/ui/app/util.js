@@ -1,45 +1,55 @@
-function doAndRedoOnResizeOf(w, f) {
-  f();
-  w.onresize = f;
-}
+define(function(require) {
 
-function flatMap(seq, f) {
-  return _.flatten(seq.map(f), true);
-}
+  var _ = require("underscore");
 
-function removeElementIfExists(element) {
-  if (element != null) {
-    var parent = element.parentNode;
-    if (parent == null) {
-      console.warn("Trying to remove " + element.tagName + " (" + element.id +
-        ") but parent node does not exist anymore.");
-    } else {
-      parent.removeChild(element);
+  function Util() {};
+
+  Util.prototype.doAndRedoOnResizeOf = function(w, f) {
+    f();
+    w.onresize = f;
+  };
+
+  Util.prototype.flatMap = function(seq, f) {
+    return _.flatten(seq.map(f), true);
+  };
+
+  Util.prototype.removeElementIfExists = function(element) {
+    if (element != null) {
+      var parent = element.parentNode;
+      if (parent == null) {
+        console.warn("Trying to remove " + element.tagName + " (" + element.id +
+          ") but parent node does not exist anymore.");
+      } else {
+        parent.removeChild(element);
+      }
     }
+  };
+
+  Util.prototype.removeElementByIdIfExists = function(elementId) {
+    this.removeElementIfExists(document.getElementById(elementId));
+  };
+
+  Util.prototype.generateElement = function(root, id, type) {
+    var element = document.createElement(type);
+    element.setAttribute("id", id);
+    root.appendChild(element);
+    return element;
   }
-}
 
-function removeElementByIdIfExists(elementId) {
-  removeElementIfExists(document.getElementById(elementId));
-}
+  Util.prototype.generateDiv = function(root, id) {
+    return this.generateElement(root, id, "div");
+  }
 
-function generateElement(root, id, type) {
-  var element = document.createElement(type);
-  element.setAttribute("id", id);
-  root.appendChild(element);
-  return element;
-}
+  Util.prototype.generateSpan = function(root, id) {
+    return this.generateElement(root, id, "span");
+  }
 
-function generateDiv(root, id) {
-  return generateElement(root, id, "div");
-}
+  Util.prototype.generateTextInput = function(root, id) {
+    var input = this.generateElement(root, id, "input");
+    input.type = "text";
+    return input;
+  }
 
-function generateSpan(root, id) {
-  return generateElement(root, id, "span");
-}
+  return new Util();
 
-function generateTextInput(root, id) {
-  var input = generateElement(root, id, "input");
-  input.type = "text";
-  return input;
-}
+});
