@@ -133,7 +133,7 @@ define(function(require) {
       var customZ = chroma.scale(cache.heatMapScale)
         .domain(customZDomain);
       rects.attr("fill", function(value) {
-        return customZ(value.z);
+        return (value.z != null) ? customZ(value.z) : "#000000";
       });
     };
     this._lowerBoundInput = lowerBoundInput;
@@ -151,7 +151,7 @@ define(function(require) {
       var customZ = chroma.scale(cache.heatMapScale)
         .domain(customZDomain);
       rects.attr("fill", function(value) {
-        return customZ(value.z);
+        return (value.z != null) ? customZ(value.z) : "#000000";
       });
     };
     this._upperBoundInput = upperBoundInput;
@@ -170,7 +170,7 @@ define(function(require) {
           var newZ = chroma.scale(scale)
             .domain(zDomain);
           rects.attr("fill", function(value) {
-            return newZ(value.z);
+            return (value.z != null) ? newZ(value.z) : "#000000";
           });
         }
       }
