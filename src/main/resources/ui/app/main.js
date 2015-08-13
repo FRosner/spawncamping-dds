@@ -51,6 +51,7 @@ define(function(require) {
       Cache.resetCache();
       $(document)
         .ready(toggleUpdating);
+      $("#lockButton").click(toggleUpdating);
     }
   }
 });
