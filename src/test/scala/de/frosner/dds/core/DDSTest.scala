@@ -1329,7 +1329,7 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     miMatrix(4)(4) should be (1d +- epsilon)
   }
 
-  it should "ignore numerical columns having only null values (null as extra bin)" in {
+  it should "work with numerical columns having only null values (null as extra bin)" in {
     DDS.start(mockedServer)
     val rdd = sc.makeRDD(List(Row(null, null, null, null, null), Row(null, null, null, null, null), Row(null, null, null, null, null)))
     val dataFrame = sql.createDataFrame(rdd, StructType(List(
