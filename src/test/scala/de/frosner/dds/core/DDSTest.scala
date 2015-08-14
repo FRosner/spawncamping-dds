@@ -1380,6 +1380,24 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     miMatrix(1)(1) should be (0.6365142 +- epsilon)
   }
 
+  it should "bin NaN values as extra bins" in {
+    DDS.start(mockedServer)
+    val rdd = sc.makeRDD(List(Row(Double.NaN, Double.NaN), Row(-10d, 10d), Row(0d, 0d)))
+    val dataFrame = sql.createDataFrame(rdd, StructType(List(
+      StructField("first", DoubleType, false),
+      StructField("second", DoubleType, false)
+    )))
+    DDS.mutualInformation(dataFrame, MutualInformationAggregator.NO_NORMALIZATION)
+
+    val resultMatrix = mockedServer.lastServed.get.asInstanceOf[Matrix2D]
+    resultMatrix.colNames.toList shouldBe List("first", "second")
+    resultMatrix.rowNames.toList shouldBe List("first", "second")
+    val miMatrix = resultMatrix.entries.map(_.toSeq)
+    miMatrix(0)(0) should be (1d +- epsilon)
+    miMatrix(0)(1) should be (1d +- epsilon)
+    miMatrix(1)(1) should be (1d +- epsilon)
+  }
+
   "A correct dashboard" should "be served" in {
     DDS.start(mockedServer)
     val rdd = sc.parallelize(List(Row(1, "5", 5d), Row(3, "g", 5d), Row(5, "g", 6d)))
