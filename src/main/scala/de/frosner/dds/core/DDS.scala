@@ -146,12 +146,6 @@ object DDS {
     indexedPlot(series, ChartTypes.multiple(chartType, series.size))
   }
 
-  private def categoricalPlot[N](series: Iterable[Series[N]],
-                                 categories: Seq[String],
-                                 chartType: ChartType)(implicit num: Numeric[N]): Unit = {
-    serve(createCategoricalPlot(series, categories, chartType)(num))
-  }
-
   private def createCategoricalPlot[N](series: Iterable[Series[N]],
                                  categories: Seq[String],
                                  chartType: ChartType)(implicit num: Numeric[N]): Option[Servable] = {
