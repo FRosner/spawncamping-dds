@@ -1329,7 +1329,7 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     miMatrix(4)(4) should be (1d +- epsilon)
   }
 
-  it should "ignore numerical columns having only null values (null as extra bin)" in {
+  it should "work with numerical columns having only null values (null as extra bin)" in {
     DDS.start(mockedServer)
     val rdd = sc.makeRDD(List(Row(null, null, null, null, null), Row(null, null, null, null, null), Row(null, null, null, null, null)))
     val dataFrame = sql.createDataFrame(rdd, StructType(List(
@@ -1378,6 +1378,42 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     miMatrix(0)(0) should be (0.6365142 +- epsilon)
     miMatrix(0)(1) should be (0.6365142 +- epsilon)
     miMatrix(1)(1) should be (0.6365142 +- epsilon)
+  }
+
+  it should "bin NaN values as extra bins" in {
+    DDS.start(mockedServer)
+    val rdd = sc.makeRDD(List(Row(Double.NaN, Double.NaN), Row(0d, 0d)))
+    val dataFrame = sql.createDataFrame(rdd, StructType(List(
+      StructField("first", DoubleType, false),
+      StructField("second", DoubleType, false)
+    )))
+    DDS.mutualInformation(dataFrame, MutualInformationAggregator.METRIC_NORMALIZATION)
+
+    val resultMatrix = mockedServer.lastServed.get.asInstanceOf[Matrix2D]
+    resultMatrix.colNames.toList shouldBe List("first", "second")
+    resultMatrix.rowNames.toList shouldBe List("first", "second")
+    val miMatrix = resultMatrix.entries.map(_.toSeq)
+    miMatrix(0)(0) should be (1d +- epsilon)
+    miMatrix(0)(1) should be (1d +- epsilon)
+    miMatrix(1)(1) should be (1d +- epsilon)
+  }
+
+  it should "still bin NaN values as extra bins when a column contains only NaN values" in {
+    DDS.start(mockedServer)
+    val rdd = sc.makeRDD(List(Row(Double.NaN, Double.NaN), Row(Double.NaN, Double.NaN)))
+    val dataFrame = sql.createDataFrame(rdd, StructType(List(
+      StructField("first", DoubleType, false),
+      StructField("second", DoubleType, false)
+    )))
+    DDS.mutualInformation(dataFrame, MutualInformationAggregator.NO_NORMALIZATION)
+
+    val resultMatrix = mockedServer.lastServed.get.asInstanceOf[Matrix2D]
+    resultMatrix.colNames.toList shouldBe List("first", "second")
+    resultMatrix.rowNames.toList shouldBe List("first", "second")
+    val miMatrix = resultMatrix.entries.map(_.toSeq)
+    miMatrix(0)(0) should be (0d +- epsilon)
+    miMatrix(0)(1) should be (0d +- epsilon)
+    miMatrix(1)(1) should be (0d +- epsilon)
   }
 
   "A correct dashboard" should "be served" in {

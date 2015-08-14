@@ -16,6 +16,7 @@ import org.apache.spark.graphx.{Edge, VertexId}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._
 import org.apache.spark.sql.types._
+import org.apache.spark.sql.functions._
 import org.apache.spark.util.StatCounter
 
 import scala.collection.mutable
@@ -812,13 +813,16 @@ object DDS {
         }
       }):_*
     )
+    val convertNanToNull = udf((d: Double) => if (d.isNaN) null.asInstanceOf[Double] else d)
     val (numericMinMaxCountIndexes, numericMinMaxCountColumns) = fields.zipWithIndex.flatMap{case (field, idx) => {
       import org.apache.spark.sql.functions._
+      val currentColumn = new Column(field.name)
+      val currentColumnWithoutNaN = convertNanToNull(currentColumn) // otherwise the max and min are NaN
       if (isNumeric(field.dataType)) {
         List(
-          ((idx, 0), max(field.name).as(field.name + "_max")),
-          ((idx, 1), min(field.name).as(field.name + "_min")),
-          ((idx, 2), count(field.name).as(field.name + "_count"))
+          ((idx, 0), max(currentColumnWithoutNaN).as(field.name + "_max")),
+          ((idx, 1), min(currentColumnWithoutNaN).as(field.name + "_min")),
+          ((idx, 2), count(currentColumn).as(field.name + "_count"))
         )
       } else {
         List.empty
