@@ -1382,12 +1382,12 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
 
   it should "bin NaN values as extra bins" in {
     DDS.start(mockedServer)
-    val rdd = sc.makeRDD(List(Row(Double.NaN, Double.NaN), Row(-10d, 10d), Row(0d, 0d)))
+    val rdd = sc.makeRDD(List(Row(Double.NaN, Double.NaN), Row(0d, 0d)))
     val dataFrame = sql.createDataFrame(rdd, StructType(List(
       StructField("first", DoubleType, false),
       StructField("second", DoubleType, false)
     )))
-    DDS.mutualInformation(dataFrame, MutualInformationAggregator.NO_NORMALIZATION)
+    DDS.mutualInformation(dataFrame, MutualInformationAggregator.METRIC_NORMALIZATION)
 
     val resultMatrix = mockedServer.lastServed.get.asInstanceOf[Matrix2D]
     resultMatrix.colNames.toList shouldBe List("first", "second")
