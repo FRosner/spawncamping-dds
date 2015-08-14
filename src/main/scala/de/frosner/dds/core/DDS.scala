@@ -1,13 +1,8 @@
 package de.frosner.dds.core
 
 import de.frosner.dds.analytics.{ColumnsStatisticsAggregator, CorrelationAggregator, DateColumnStatisticsAggregator, MutualInformationAggregator}
-import de.frosner.dds.servables.c3.ChartTypeEnum.ChartType
-import de.frosner.dds.servables.c3._
 import de.frosner.dds.servables.composite.{EmptyServable, CompositeServable}
-import de.frosner.dds.servables.graph.Graph
 import de.frosner.dds.servables.histogram.Histogram
-import de.frosner.dds.servables.matrix.Matrix2D
-import de.frosner.dds.servables.scatter.Points2D
 import de.frosner.dds.servables.tabular.{KeyValueSequence, Table}
 import de.frosner.dds.util.DataFrameUtils._
 import org.apache.log4j.Logger
@@ -23,8 +18,6 @@ import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
-
-import scala.util
 
 /**
  * Main object containing the core commands that can be executed from the Spark shell. It holds a mutable reference
@@ -138,20 +131,6 @@ object DDS {
     }
   }
 
-  private def indexedPlot[N](series: Iterable[Series[N]], chartTypes: ChartTypes)(implicit num: Numeric[N]): Unit = {
-    serve(Chart(SeriesData(series, chartTypes)))
-  }
-
-  private def indexedPlot[N](series: Iterable[Series[N]], chartType: ChartType)(implicit num: Numeric[N]): Unit = {
-    indexedPlot(series, ChartTypes.multiple(chartType, series.size))
-  }
-
-  private def createCategoricalPlot[N](series: Iterable[Series[N]],
-                                 categories: Seq[String],
-                                 chartType: ChartType)(implicit num: Numeric[N]): Option[Servable] = {
-    Option(Chart(SeriesData(series, ChartTypes.multiple(chartType, series.size)), XAxis.categorical(categories)))
-  }
-
   @Help(
     category = "Scala",
     shortDescription = "Plots a graph",
@@ -159,12 +138,7 @@ object DDS {
     parameters = "vertices: Seq[(VertexId, Label)], edges: Seq[(SourceVertexId, TargetVertexId, Label)]"
   )
   def graph[ID, VL, EL](vertices: Seq[(ID, VL)], edges: Iterable[(ID, ID, EL)]): Unit = {
-    val indexMap = vertices.map{ case (id, label) => id }.zip(0 to vertices.size).toMap
-    val graph = Graph(
-      vertices.map{ case (id, label) => label.toString},
-      edges.map{ case (sourceId, targetId, label) => (indexMap(sourceId), indexMap(targetId), label.toString)}
-    )
-    serve(graph)
+    serve(ScalaFunctions.createGraph(vertices, edges))
   }
 
   @Help(
@@ -174,16 +148,7 @@ object DDS {
     parameters = "pairs: Seq[(Key, Value)]"
   )
   def keyValuePairs(pairs: List[(Any, Any)]): Unit = {
-    serve(createKeyValuePairs(pairs, ""))
-  }
-
-  private def createKeyValuePairs(pairs: List[(Any, Any)], title: String): Option[Servable] = {
-    if (pairs.isEmpty) {
-      println("Cannot print empty key-value pairs.")
-      Option.empty
-    } else {
-      Option(KeyValueSequence(pairs))
-    }
+    serve(ScalaFunctions.createKeyValuePairs(pairs, ""))
   }
 
   @Help(
@@ -194,20 +159,7 @@ object DDS {
     parameters = "values: Seq[(Value, Value)]"
   )
   def scatter[N1, N2](values: Seq[(N1, N2)])(implicit num1: Numeric[N1] = null, num2: Numeric[N2] = null) = {
-    serve(Points2D(values)(num1, num2))
-  }
-
-  private def createHeatmap[N](values: Seq[Seq[N]], rowNames: Seq[String] = null,
-                               colNames: Seq[String] = null, title: String = Servable.DEFAULT_TITLE)
-                              (implicit num: Numeric[N]): Option[Servable] = {
-    if (values.size == 0 || values.head.size == 0) {
-      println("Can't show empty heatmap!")
-      Option.empty
-    } else {
-      val actualRowNames: Seq[String] = if (rowNames != null) rowNames else (1 to values.size).map(_.toString)
-      val actualColNames: Seq[String] = if (colNames != null) colNames else (1 to values.head.size).map(_.toString)
-      Option(Matrix2D(values.map(_.map(entry => num.toDouble(entry))), actualRowNames, actualColNames, title))
-    }
+    serve(ScalaFunctions.createScatter(values)(num1, num2))
   }
 
   @Help(
@@ -220,7 +172,7 @@ object DDS {
   )
   def heatmap[N](values: Seq[Seq[N]], rowNames: Seq[String] = null, colNames: Seq[String] = null)
                 (implicit num: Numeric[N]): Unit = {
-    serve(createHeatmap(values, rowNames, colNames)(num))
+    serve(ScalaFunctions.createHeatmap(values, rowNames, colNames)(num))
   }
 
   @Help(
@@ -234,11 +186,7 @@ object DDS {
     parameters = "bins: Seq[Numeric], frequencies: Seq[Numeric]"
   )
   def histogram[N1, N2](bins: Seq[N1], frequencies: Seq[N2])(implicit num1: Numeric[N1], num2: Numeric[N2]): Unit = {
-    serve(createHistogram(bins, frequencies)(num1, num2))
-  }
-
-  private def createHistogram[N1, N2](bins: Seq[N1], frequencies: Seq[N2])(implicit num1: Numeric[N1], num2: Numeric[N2]): Option[Servable] = {
-    Option(Histogram(bins.map(b => num1.toDouble(b)), frequencies.map(f => num2.toLong(f))))
+    serve(ScalaFunctions.createHistogram(bins, frequencies)(num1, num2))
   }
 
   @Help(
@@ -248,7 +196,7 @@ object DDS {
     parameters = "values: Seq[NumericValue]"
   )
   def line[N](values: Seq[N])(implicit num: Numeric[N]) = {
-    lines(List("data"), List(values))
+    serve(ScalaFunctions.createLine(values)(num))
   }
 
   @Help(
@@ -259,8 +207,7 @@ object DDS {
     parameters = "labels: Seq[String], values: Seq[Seq[NumericValue]]"
   )
   def lines[N](labels: Seq[String], values: Seq[Seq[N]])(implicit num: Numeric[N]) = {
-    val series = labels.zip(values).map{ case (label, values) => Series(label, values) }
-    indexedPlot(series, ChartTypeEnum.Line)
+    serve(ScalaFunctions.createLines(labels, values)(num))
   }
 
   private val DEFAULT_BAR_TITLE = "data"
@@ -272,7 +219,7 @@ object DDS {
     parameters = "values: Seq[NumericValue], (optional) title: String"
   )
   def bar[N](values: Seq[N], title: String)(implicit num: Numeric[N]): Unit = {
-    bars(List(title), List(values))
+    serve(ScalaFunctions.createBar(values, title)(num))
   }
 
   def bar[N](values: Seq[N])(implicit num: Numeric[N]): Unit =
@@ -285,11 +232,7 @@ object DDS {
     parameters = "values: Seq[NumericValue], categories: Seq[String], (optional) title: String"
   )
   def bar[N](values: Seq[N], categories: Seq[String], title: String)(implicit num: Numeric[N]): Unit = {
-    serve(createBar(values, categories, title)(num))
-  }
-
-  def createBar[N](values: Seq[N], categories: Seq[String], title: String)(implicit num: Numeric[N]): Option[Servable] = {
-    createBars(List(title), List(values), categories)
+    serve(ScalaFunctions.createBar(values, categories, title)(num))
   }
 
   def bar[N](values: Seq[N], categories: Seq[String])(implicit num: Numeric[N]): Unit =
@@ -304,8 +247,7 @@ object DDS {
     parameters = "labels: Seq[String], values: Seq[Seq[NumericValue]]"
   )
   def bars[N](labels: Seq[String], values: Seq[Seq[N]])(implicit num: Numeric[N]) = {
-    val series = labels.zip(values).map{ case (label, values) => Series(label, values) }
-    indexedPlot(series, ChartTypeEnum.Bar)
+    serve(ScalaFunctions.createBars(labels, values)(num))
   }
 
   @Help(
@@ -317,12 +259,7 @@ object DDS {
     parameters = "labels: Seq[String], values: Seq[Seq[NumericValue]], categories: Seq[String]"
   )
   def bars[N](labels: Seq[String], values: Seq[Seq[N]], categories: Seq[String])(implicit num: Numeric[N]) = {
-    serve(createBars(labels, values, categories)(num))
-  }
-
-  private def createBars[N](labels: Seq[String], values: Seq[Seq[N]], categories: Seq[String])(implicit num: Numeric[N]): Option[Servable] = {
-    val series = labels.zip(values).map{ case (label, values) => Series(label, values) }
-    createCategoricalPlot(series, categories, ChartTypeEnum.Bar)
+    serve(ScalaFunctions.createBars(labels, values, categories)(num))
   }
 
   @Help(
@@ -332,7 +269,29 @@ object DDS {
     parameters = "keyValuePairs: Iterable[(Key, NumericValue)]"
   )
   def pie[K, V](keyValuePairs: Iterable[(K, V)])(implicit num: Numeric[V]): Unit = {
-    indexedPlot(keyValuePairs.map{ case (key, value) => Series(key.toString, List(value))}, ChartTypeEnum.Pie)
+    serve(ScalaFunctions.createPie(keyValuePairs)(num))
+  }
+
+  @Help(
+    category = "Scala",
+    shortDescription = "Displays data in tabular format",
+    longDescription = "Displays the given rows as a table using the specified head. DDS also shows visualizations of the" +
+      "data in the table.",
+    parameters = "head: Seq[String], rows: Seq[Seq[Any]]"
+  )
+  def table(head: Seq[String], rows: Seq[Seq[Any]]): Unit = {
+    serve(ScalaFunctions.createTable(head, rows))
+  }
+
+  @Help(
+    category = "Scala",
+    shortDescription = "Shows a sequence",
+    longDescription = "Shows a sequence. In addition to a tabular view DDS also shows visualizations" +
+      "of the data.",
+    parameters = "sequence: Seq[T]"
+  )
+  def show[V](sequence: Seq[V])(implicit tag: TypeTag[V]): Unit = {
+    serve(ScalaFunctions.createShow(sequence)(tag))
   }
 
   @Help(
@@ -349,7 +308,6 @@ object DDS {
   }
 
   def bar[V: ClassTag](values: RDD[V]): Unit = bar(values, DEFAULT_BAR_TITLE)
-
   @Help(
     category = "Spark SQL",
     shortDescription = "Plots a bar chart with the counts of all distinct values in this single columned data frame",
@@ -364,10 +322,10 @@ object DDS {
       val rdd = dataFrame.rdd
       (field.nullable) match {
         case true => Option(bar(rdd.map(row => if (nullValue == null) {
-            if (row.isNullAt(0)) Option.empty[Any] else Option(row(0))
-          } else {
-            if (row.isNullAt(0)) nullValue else row(0)
-          }
+          if (row.isNullAt(0)) Option.empty[Any] else Option(row(0))
+        } else {
+          if (row.isNullAt(0)) nullValue else row(0)
+        }
         ), field.name))
         case false => Option(bar(rdd.map(row => row(0)), field.name))
       }
@@ -435,7 +393,7 @@ object DDS {
       val tryHist = util.Try(values.map(v => num.toDouble(v)).histogram(localNumBuckets))
       if (tryHist.isSuccess) {
         val (buckets, frequencies) = tryHist.get
-        createHistogram(buckets, frequencies)
+        ScalaFunctions.createHistogram(buckets, frequencies)
       } else {
         println("Could not create histogram: " + tryHist.failed.get)
         Option.empty
@@ -558,51 +516,6 @@ object DDS {
     pie(toBeGroupedValues.reduceByKey(reduceFunction).collect.sortBy{ case (value, count) => count })
   }
 
-  private def table(table: Table): Unit = {
-    serve(table)
-  }
-
-  private def createTable(head: Seq[String], rows: Seq[Seq[Any]], title: String = Servable.DEFAULT_TITLE): Option[Servable] = {
-    Option(Table(head, rows, title))
-  }
-
-  @Help(
-    category = "Scala",
-    shortDescription = "Displays data in tabular format",
-    longDescription = "Displays the given rows as a table using the specified head. DDS also shows visualizations of the" +
-      "data in the table.",
-    parameters = "head: Seq[String], rows: Seq[Seq[Any]]"
-  )
-  def table(head: Seq[String], rows: Seq[Seq[Any]]): Unit = {
-    serve(createTable(head, rows))
-  }
-
-  @Help(
-    category = "Scala",
-    shortDescription = "Shows a sequence",
-    longDescription = "Shows a sequence. In addition to a tabular view DDS also shows visualizations" +
-      "of the data.",
-    parameters = "sequence: Seq[T]"
-  )
-  def show[V](sequence: Seq[V])(implicit tag: TypeTag[V]): Unit = {
-    val vType = tag.tpe
-    if (sequence.length == 0) {
-      println("Sequence is empty!")
-    } else {
-      val result = if (vType <:< typeOf[Product] && !(vType <:< typeOf[Option[_]]) && !(vType <:< typeOf[Iterable[_]])) {
-        def getMembers[T: TypeTag] = typeOf[T].members.sorted.collect {
-          case m: MethodSymbol if m.isCaseAccessor => m
-        }.toList
-        val header = getMembers[V].map(_.name.toString.replace("_", ""))
-        val rows = sequence.map(product => product.asInstanceOf[Product].productIterator.toSeq).toSeq
-        Table(header, rows)
-      } else {
-        Table(List("sequence"), sequence.map(c => List(c)).toList)
-      }
-      table(result)
-    }
-  }
-
   private val DEFAULT_SHOW_SAMPLE_SIZE = 100
 
   @Help(
@@ -646,7 +559,7 @@ object DDS {
     val fieldNames = dataFrame.schema.fields.map(field => {
       s"""${field.name} [${field.dataType.toString.replace("Type", "")}${if (field.nullable) "*" else ""}]"""
     })
-    createTable(fieldNames, values, title)
+    ScalaFunctions.createTable(fieldNames, values, title)
   }
 
   @Help(
@@ -766,7 +679,7 @@ object DDS {
           corrMatrix(i)(j) = corr
         }
         val fieldNames = numericalFields.map{ case (field, idx) => field.name }
-        createHeatmap(corrMatrix, fieldNames, fieldNames, title)
+        ScalaFunctions.createHeatmap(corrMatrix, fieldNames, fieldNames, title)
       } else {
         showError
         Option.empty
@@ -865,7 +778,7 @@ object DDS {
       }
 
       val fieldNames = fields.map(_.name)
-      createHeatmap(mutualInformationMatrix, fieldNames, fieldNames, title)
+      ScalaFunctions.createHeatmap(mutualInformationMatrix, fieldNames, fieldNames, title)
     } else {
       showError
       Option.empty
@@ -955,7 +868,7 @@ object DDS {
       if (cardinality > 0) {
         val valueCounts = values.map((_, 1)).reduceByKey(_ + _)
         val (mode, modeCount) = valueCounts.max()(Ordering.by { case (value, count) => count})
-        createKeyValuePairs(
+        ScalaFunctions.createKeyValuePairs(
           List(
             ("Mode", mode),
             ("Cardinality", cardinality)
@@ -994,7 +907,7 @@ object DDS {
       (key.toString, stat)
     }.collect
     val (labels, stats) = statCounters.unzip
-    table(Table.fromStatCounters(labels, stats))
+    serve(Table.fromStatCounters(labels, stats))
   }
 
   @Help(
@@ -1071,15 +984,15 @@ object DDS {
       val (years, yearFrequencies) = agg.yearFrequencies.toList.sortBy(_._1).map { case (year, count) => {
         (DateColumnStatisticsAggregator.calendarYearToString(year), count)
       }}.unzip
-      val yearBar = createBar(yearFrequencies, years, s"Years in ${field.name}")
+      val yearBar = ScalaFunctions.createBar(yearFrequencies, years, s"Years in ${field.name}")
       val (months, monthFrequencies) = agg.monthFrequencies.toList.sortBy(_._1).map { case (month, count) => {
         (DateColumnStatisticsAggregator.calendarMonthToString(month), count)
       }}.unzip
-      val monthBar = createBar(monthFrequencies, months, s"Months in ${field.name}")
+      val monthBar = ScalaFunctions.createBar(monthFrequencies, months, s"Months in ${field.name}")
       val (days, dayFrequencies) = agg.dayOfWeekFrequencies.toList.sortBy(_._1).map { case (day, count) => {
         (DateColumnStatisticsAggregator.calendarDayToString(day), count)
       }}.unzip
-      val dayBar = createBar(dayFrequencies, days, s"Days in ${field.name}")
+      val dayBar = ScalaFunctions.createBar(dayFrequencies, days, s"Days in ${field.name}")
       val table = KeyValueSequence(List(
         ("Total Count", agg.totalCount),
         ("Missing Count", agg.missingCount),
@@ -1106,13 +1019,13 @@ object DDS {
       val mode = orderedCounts.first
       val barPlot = if (cardinality <= 10) {
         val (values, counts) = orderedCounts.collect.unzip
-        createBar(counts, values, field.name)
+        ScalaFunctions.createBar(counts, values, field.name)
       } else {
         val (top10Values, top10Counts) = orderedCounts.take(10).unzip
         val top10CountsSum = top10Counts.sum
         val totalCountsSum = orderedCounts.map { case (value, counts) => counts }.reduce(_ + _)
         val otherCount = totalCountsSum - top10CountsSum
-        createBar(top10Counts ++ List(otherCount), top10Values ++ List("..."), field.name)
+        ScalaFunctions.createBar(top10Counts ++ List(otherCount), top10Values ++ List("..."), field.name)
       }
       val (agg, _) = nominalColumnStatistics(index)
       val table = KeyValueSequence(List(
