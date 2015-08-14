@@ -1501,7 +1501,7 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
 
     val firstHistogram = resultServables(0)(1).asInstanceOf[Histogram]
     firstHistogram.bins.size shouldBe 11
-    firstHistogram.frequencies.sum shouldBe 2l // TODO should be 3l but there is a bug in Spark 1.3 histogram function
+    firstHistogram.frequencies.sum shouldBe 3l
 
     val secondKeyValueSequence = resultServables(1)(0).asInstanceOf[KeyValueSequence]
     secondKeyValueSequence.keyValueSequence shouldBe List(

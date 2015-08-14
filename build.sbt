@@ -48,11 +48,11 @@ libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.4" % "test"
 
 libraryDependencies += "org.scalaz" %% "scalaz-core" % "7.1.3"
 
-libraryDependencies += "org.apache.spark" %% "spark-core" % "1.3.0" % "provided"
+libraryDependencies += "org.apache.spark" %% "spark-core" % "1.4.0" % "provided"
 
-libraryDependencies += "org.apache.spark" %% "spark-graphx" % "1.3.0" % "provided"
+libraryDependencies += "org.apache.spark" %% "spark-graphx" % "1.4.0" % "provided"
 
-libraryDependencies += "org.apache.spark" %% "spark-sql" % "1.3.0" % "provided"
+libraryDependencies += "org.apache.spark" %% "spark-sql" % "1.4.0" % "provided"
 
 libraryDependencies += "org.slf4j" % "slf4j-log4j12" % "1.7.10"
 
