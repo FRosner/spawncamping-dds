@@ -294,6 +294,8 @@ object DDS {
     serve(ScalaFunctions.createShow(sequence)(tag))
   }
 
+  private val DEFAULT_SHOW_SAMPLE_SIZE = 100
+
   @Help(
     category = "Spark Core",
     shortDescription = "Plots a bar chart with the counts of all distinct values in this RDD",
@@ -308,6 +310,201 @@ object DDS {
   }
 
   def bar[V: ClassTag](values: RDD[V]): Unit = bar(values, DEFAULT_BAR_TITLE)
+
+  @Help(
+    category = "Spark Core",
+    shortDescription = "Plots a pie chart with the counts of all distinct values in this RDD",
+    longDescription = "Plots a pie chart with the counts of all distinct values in this RDD. This makes most sense for " +
+      "non-numeric values that have a relatively low cardinality.",
+    parameters = "values: RDD[Value]"
+  )
+  def pie[V: ClassTag](values: RDD[V]): Unit = {
+    pie(values.map((_, 1)).reduceByKey(_ + _).collect)
+  }
+
+  @Help(
+    category = "Spark Core",
+    shortDescription = "Plots a histogram of a numerical RDD for the given number of buckets",
+    longDescription = "Plots a histogram of a numerical RDD for the given number of buckets. " +
+      "The number of buckets parameter is optional - if omitted, Sturge's formula is used to determine an optimal number of bins.",
+    parameters = "values: RDD[NumericValue], (optional) numBuckets: Int"
+  )
+  def histogram[N: ClassTag](values: RDD[N], numBuckets: Int)(implicit num: Numeric[N]): Unit = {
+    serve(createHistogram(values, Option(numBuckets)))
+  }
+
+  @Help(
+    category = "Spark Core",
+    shortDescription = "Plots a histogram of a numerical RDD for the given buckets",
+    longDescription = "Plots a histogram of a numerical RDD for the given buckets. " +
+      "If the buckets do not include the complete range of possible values, some values will be missing in the histogram.",
+    parameters = "values: RDD[NumericValue], buckets: Seq[NumericValue]"
+  )
+  def histogram[N1: ClassTag, N2: ClassTag](values: RDD[N1], buckets: Seq[N2])
+                                           (implicit num1: Numeric[N1], num2: Numeric[N2]): Unit = {
+    val frequencies = values.map(v => num1.toLong(v)).histogram(buckets.map(b => num2.toDouble(b)).toArray, false)
+    histogram(buckets, frequencies)
+  }
+
+  @Help(
+    category = "Spark Core",
+    shortDescription = "Plots a pie chart of the reduced values per group",
+    longDescription = "Given the already grouped RDD, reduces the values in each group and compares the group using a pie chart.",
+    parameters = "groupedValues: RDD[(Key, Iterable[NumericValue])]",
+    parameters2 = "reduceFunction: (NumericValue, NumericValue => NumericValue)"
+  )
+  def pieGroups[K, N](groupValues: RDD[(K, Iterable[N])])
+                     (reduceFunction: (N, N) => N)
+                     (implicit num: Numeric[N]): Unit = {
+    pie(groupValues.map{ case (key, values) => (key, values.reduce(reduceFunction)) }.collect)
+  }
+
+  @Help(
+    category = "Spark Core",
+    shortDescription = "Plots a pie chart of the reduced values per group",
+    longDescription = "Groups the given pair RDD, reduces the values in each group and compares the group using a pie chart.",
+    parameters = "toBeGroupedValues: RDD[(Key, NumericValue)]",
+    parameters2 = "reduceFunction: (NumericValue, NumericValue => NumericValue)"
+  )
+  def groupAndPie[K: ClassTag, N: ClassTag](toBeGroupedValues: RDD[(K, N)])
+                                           (reduceFunction: (N, N) => N)
+                                           (implicit num: Numeric[N]): Unit = {
+    pie(toBeGroupedValues.reduceByKey(reduceFunction).collect.sortBy { case (value, count) => count })
+  }
+
+  @Help(
+    category = "Spark Core",
+    shortDescription = "Shows the first rows of an RDD",
+    longDescription = "Shows the first rows of an RDD. In addition to a tabular view DDS also shows visualizations" +
+      "of the data. The second argument is optional and determines the sample size.",
+    parameters = "rdd: RDD[T], (optional) sampleSize: Int"
+  )
+  def show[V](rdd: RDD[V], sampleSize: Int)(implicit tag: TypeTag[V]): Unit = {
+    val vType = tag.tpe
+    if (vType <:< typeOf[Row]) {
+      // RDD of rows but w/o a schema
+      val values = rdd.take(sampleSize).map(_.asInstanceOf[Row].toSeq)
+      table((1 to values.head.size).map(_.toString), values)
+    } else {
+      // Normal RDD
+      show(rdd.take(sampleSize))(tag)
+    }
+  }
+  def show[V](rdd: RDD[V])(implicit tag: TypeTag[V]): Unit =
+    show(rdd, DEFAULT_SHOW_SAMPLE_SIZE)(tag)
+
+  @Help(
+    category = "Spark Core",
+    shortDescription = "Calculates the median of a numeric dataset",
+    longDescription = "Calculates the median of a numeric dataset. " +
+      "Note that this operation requires ordering of the elements in each partition plus lookup operations, " +
+      "which makes it rather expensive.",
+    parameters = "values: RDD[NumericValue]"
+  )
+  def median[N: ClassTag](values: RDD[N])(implicit num: Numeric[N]): Unit = {
+    val sorted = values.sortBy(identity).zipWithIndex().map{
+      case (v, idx) => (idx, v)
+    }
+    val count = sorted.count
+    if (count > 0) {
+      val median: Double = if (count % 2 == 0) {
+        val r = count / 2
+        val l = r - 1
+        num.toDouble(num.plus(sorted.lookup(l).head, sorted.lookup(r).head)) * 0.5
+      } else {
+        num.toDouble(sorted.lookup(count / 2).head)
+      }
+      table(List("median"), List(List(median)))
+    } else {
+      println("Median is not defined on an empty RDD!")
+    }
+  }
+
+  @Help(
+    category = "Spark Core",
+    shortDescription = "Shows some basic summary statistics of the given dataset",
+    longDescription = "Shows some basic summary statistics of the given dataset.\n" +
+      "Statistics for numeric values are: count, sum, min, max, mean, stdev, variance\n" +
+      "Statistics for nominal values are: mode, cardinality",
+    parameters = "values: RDD[Value]"
+  )
+  def summarize[N: ClassTag](values: RDD[N])(implicit num: Numeric[N] = null): Unit = {
+    serve(createSummarize(values))
+  }
+
+  private def createSummarize[N: ClassTag](values: RDD[N], title: String = Servable.DEFAULT_TITLE)
+                                          (implicit num: Numeric[N] = null): Option[Servable] = {
+    if (num != null) {
+      Option(KeyValueSequence.fromStatCounter(values.stats(), title))
+    } else {
+      val cardinality = values.distinct.count
+      if (cardinality > 0) {
+        val valueCounts = values.map((_, 1)).reduceByKey(_ + _)
+        val (mode, modeCount) = valueCounts.max()(Ordering.by { case (value, count) => count})
+        ScalaFunctions.createKeyValuePairs(
+          List(
+            ("Mode", mode),
+            ("Cardinality", cardinality)
+          ), title
+        )
+      } else {
+        println("Summarize function requires a non-empty RDD!")
+        Option.empty
+      }
+    }
+  }
+
+  @Help(
+    category = "Spark Core",
+    shortDescription = "Shows some basic summary statistics of the given groups",
+    longDescription = "Shows some basic summary statistics of the given groups. " +
+      "Statistics are: count, sum, min, max, mean, stdev, variance.",
+    parameters = "groupedValues: RDD[(Key, Iterable[NumericValue])]"
+  )
+  def summarizeGroups[K, N](groupValues: RDD[(K, Iterable[N])])(implicit num: Numeric[N]): Unit = {
+    val statCounters = groupValues.map{ case (key, values) =>
+      (key, StatCounter(values.map(num.toDouble(_))))
+    }.map{ case (key, stat) =>
+      (key.toString, stat)
+    }.collect
+    val (labels, stats) = statCounters.unzip
+    serve(Table.fromStatCounters(labels, stats))
+  }
+
+  @Help(
+    category = "Spark Core",
+    shortDescription = "Shows some basic summary statistics of the given groups",
+    longDescription = "Shows some basic summary statistics of the given groups. " +
+      "Statistics are: count, sum, min, max, mean, stdev, variance.",
+    parameters = "toBeGroupedValues: RDD[(Key, NumericValue)]"
+  )
+  def groupAndSummarize[K: ClassTag, N: ClassTag](toBeGroupedValues: RDD[(K, N)])(implicit num: Numeric[N]): Unit = {
+    summarizeGroups(toBeGroupedValues.groupByKey())
+  }
+
+  private val DEFAULT_HISTOGRAM_NUM_BUCKETS = 100
+
+  def histogram[N: ClassTag](values: RDD[N])(implicit num: Numeric[N]): Unit = {
+    serve(createHistogram(values, Option.empty))
+  }
+
+  private def createHistogram[N: ClassTag](values: RDD[N], numBuckets: Option[Int])(implicit num: Numeric[N]): Option[Servable] = {
+    if (numBuckets.isDefined && numBuckets.get < 2) {
+      println("Number of buckets must be greater than or equal to 2")
+      Option.empty
+    } else {
+      val localNumBuckets = if (numBuckets.isEmpty) Histogram.optimalNumberOfBins(values.count) else numBuckets.get
+      val tryHist = util.Try(values.map(v => num.toDouble(v)).histogram(localNumBuckets))
+      if (tryHist.isSuccess) {
+        val (buckets, frequencies) = tryHist.get
+        ScalaFunctions.createHistogram(buckets, frequencies)
+      } else {
+        println("Could not create histogram: " + tryHist.failed.get)
+        Option.empty
+      }
+    }
+  }
+
   @Help(
     category = "Spark SQL",
     shortDescription = "Plots a bar chart with the counts of all distinct values in this single columned data frame",
@@ -333,17 +530,6 @@ object DDS {
   }
 
   @Help(
-    category = "Spark Core",
-    shortDescription = "Plots a pie chart with the counts of all distinct values in this RDD",
-    longDescription = "Plots a pie chart with the counts of all distinct values in this RDD. This makes most sense for " +
-      "non-numeric values that have a relatively low cardinality.",
-    parameters = "values: RDD[Value]"
-  )
-  def pie[V: ClassTag](values: RDD[V]): Unit = {
-    pie(values.map((_, 1)).reduceByKey(_ + _).collect)
-  }
-
-  @Help(
     category = "Spark SQL",
     shortDescription = "Plots a pie chart with the counts of all distinct values in this single columned data frame",
     longDescription = "Plots a pie chart with the counts of all distinct values in this single columned data frame. " +
@@ -365,53 +551,6 @@ object DDS {
         case false => Option(pie(rdd.map(row => row(0))))
       }
     }
-  }
-
-  private val DEFAULT_HISTOGRAM_NUM_BUCKETS = 100
-
-  @Help(
-    category = "Spark Core",
-    shortDescription = "Plots a histogram of a numerical RDD for the given number of buckets",
-    longDescription = "Plots a histogram of a numerical RDD for the given number of buckets. " +
-      "The number of buckets parameter is optional - if omitted, Sturge's formula is used to determine an optimal number of bins.",
-    parameters = "values: RDD[NumericValue], (optional) numBuckets: Int"
-  )
-  def histogram[N: ClassTag](values: RDD[N], numBuckets: Int)(implicit num: Numeric[N]): Unit = {
-    serve(createHistogram(values, Option(numBuckets)))
-  }
-
-  def histogram[N: ClassTag](values: RDD[N])(implicit num: Numeric[N]): Unit = {
-    serve(createHistogram(values, Option.empty))
-  }
-
-  private def createHistogram[N: ClassTag](values: RDD[N], numBuckets: Option[Int])(implicit num: Numeric[N]): Option[Servable] = {
-    if (numBuckets.isDefined && numBuckets.get < 2) {
-      println("Number of buckets must be greater than or equal to 2")
-      Option.empty
-    } else {
-      val localNumBuckets = if (numBuckets.isEmpty) Histogram.optimalNumberOfBins(values.count) else numBuckets.get
-      val tryHist = util.Try(values.map(v => num.toDouble(v)).histogram(localNumBuckets))
-      if (tryHist.isSuccess) {
-        val (buckets, frequencies) = tryHist.get
-        ScalaFunctions.createHistogram(buckets, frequencies)
-      } else {
-        println("Could not create histogram: " + tryHist.failed.get)
-        Option.empty
-      }
-    }
-  }
-
-  @Help(
-    category = "Spark Core",
-    shortDescription = "Plots a histogram of a numerical RDD for the given buckets",
-    longDescription = "Plots a histogram of a numerical RDD for the given buckets. " +
-      "If the buckets do not include the complete range of possible values, some values will be missing in the histogram.",
-    parameters = "values: RDD[NumericValue], buckets: Seq[NumericValue]"
-  )
-  def histogram[N1: ClassTag, N2: ClassTag](values: RDD[N1], buckets: Seq[N2])
-                                           (implicit num1: Numeric[N1], num2: Numeric[N2]): Unit = {
-    val frequencies = values.map(v => num1.toLong(v)).histogram(buckets.map(b => num2.toDouble(b)).toArray, false)
-    histogram(buckets, frequencies)
   }
 
   @Help(
@@ -491,53 +630,17 @@ object DDS {
   }
 
   @Help(
-    category = "Spark Core",
-    shortDescription = "Plots a pie chart of the reduced values per group",
-    longDescription = "Given the already grouped RDD, reduces the values in each group and compares the group using a pie chart.",
-    parameters = "groupedValues: RDD[(Key, Iterable[NumericValue])]",
-    parameters2 = "reduceFunction: (NumericValue, NumericValue => NumericValue)"
-  )
-  def pieGroups[K, N](groupValues: RDD[(K, Iterable[N])])
-                     (reduceFunction: (N, N) => N)
-                     (implicit num: Numeric[N]): Unit = {
-    pie(groupValues.map{ case (key, values) => (key, values.reduce(reduceFunction)) }.collect)
-  }
-
-  @Help(
-    category = "Spark Core",
-    shortDescription = "Plots a pie chart of the reduced values per group",
-    longDescription = "Groups the given pair RDD, reduces the values in each group and compares the group using a pie chart.",
-    parameters = "toBeGroupedValues: RDD[(Key, NumericValue)]",
-    parameters2 = "reduceFunction: (NumericValue, NumericValue => NumericValue)"
-  )
-  def groupAndPie[K: ClassTag, N: ClassTag](toBeGroupedValues: RDD[(K, N)])
-                                           (reduceFunction: (N, N) => N)
-                                           (implicit num: Numeric[N]): Unit = {
-    pie(toBeGroupedValues.reduceByKey(reduceFunction).collect.sortBy{ case (value, count) => count })
-  }
-
-  private val DEFAULT_SHOW_SAMPLE_SIZE = 100
-
-  @Help(
-    category = "Spark Core",
-    shortDescription = "Shows the first rows of an RDD",
-    longDescription = "Shows the first rows of an RDD. In addition to a tabular view DDS also shows visualizations" +
+    category = "Spark SQL",
+    shortDescription = "Shows the first rows of a DataFrame",
+    longDescription = "Shows the first rows of a DataFrame. In addition to a tabular view DDS also shows visualizations" +
       "of the data. The second argument is optional and determines the sample size.",
-    parameters = "rdd: RDD[T], (optional) sampleSize: Int"
+    parameters = "rdd: DataFrame, (optional) sampleSize: Int"
   )
-  def show[V](rdd: RDD[V], sampleSize: Int)(implicit tag: TypeTag[V]): Unit = {
-    val vType = tag.tpe
-    if (vType <:< typeOf[Row]) {
-      // RDD of rows but w/o a schema
-      val values = rdd.take(sampleSize).map(_.asInstanceOf[Row].toSeq)
-      table((1 to values.head.size).map(_.toString), values)
-    } else {
-      // Normal RDD
-      show(rdd.take(sampleSize))(tag)
-    }
-  }
-  def show[V](rdd: RDD[V])(implicit tag: TypeTag[V]): Unit =
-    show(rdd, DEFAULT_SHOW_SAMPLE_SIZE)(tag)
+  def show(dataFrame: DataFrame, sampleSize: Int): Unit =
+    serve(createShow(dataFrame, sampleSize))
+
+  def show(dataFrame: DataFrame): Unit =
+    show(dataFrame, DEFAULT_SHOW_SAMPLE_SIZE)
 
   private def createShow(dataFrame: DataFrame,
                          sampleSize: Int,
@@ -562,18 +665,6 @@ object DDS {
     ScalaFunctions.createTable(fieldNames, values, title)
   }
 
-  @Help(
-    category = "Spark SQL",
-    shortDescription = "Shows the first rows of a DataFrame",
-    longDescription = "Shows the first rows of a DataFrame. In addition to a tabular view DDS also shows visualizations" +
-      "of the data. The second argument is optional and determines the sample size.",
-    parameters = "rdd: DataFrame, (optional) sampleSize: Int"
-  )
-  def show(dataFrame: DataFrame, sampleSize: Int): Unit =
-    serve(createShow(dataFrame, sampleSize))
-
-  def show(dataFrame: DataFrame): Unit =
-    show(dataFrame, DEFAULT_SHOW_SAMPLE_SIZE)
 
   @Help(
     category = "Spark GraphX",
@@ -799,33 +890,6 @@ object DDS {
   }
 
   @Help(
-    category = "Spark Core",
-    shortDescription = "Calculates the median of a numeric dataset",
-    longDescription = "Calculates the median of a numeric dataset. " +
-      "Note that this operation requires ordering of the elements in each partition plus lookup operations, " +
-      "which makes it rather expensive.",
-    parameters = "values: RDD[NumericValue]"
-  )
-  def median[N: ClassTag](values: RDD[N])(implicit num: Numeric[N]): Unit = {
-    val sorted = values.sortBy(identity).zipWithIndex().map{
-      case (v, idx) => (idx, v)
-    }
-    val count = sorted.count
-    if (count > 0) {
-      val median: Double = if (count % 2 == 0) {
-        val r = count / 2
-        val l = r - 1
-        num.toDouble(num.plus(sorted.lookup(l).head, sorted.lookup(r).head)) * 0.5
-      } else {
-        num.toDouble(sorted.lookup(count / 2).head)
-      }
-      table(List("median"), List(List(median)))
-    } else {
-      println("Median is not defined on an empty RDD!")
-    }
-  }
-
-  @Help(
     category = "Spark SQL",
     shortDescription = "Calculates the median of a numeric data frame column",
     longDescription = "Calculates the median of a numeric data frame column. " +
@@ -857,68 +921,6 @@ object DDS {
         case _ => Option(println("Median only supported for numerical columns."))
       }
     }
-  }
-
-  private def createSummarize[N: ClassTag](values: RDD[N], title: String = Servable.DEFAULT_TITLE)
-                                          (implicit num: Numeric[N] = null): Option[Servable] = {
-    if (num != null) {
-      Option(KeyValueSequence.fromStatCounter(values.stats(), title))
-    } else {
-      val cardinality = values.distinct.count
-      if (cardinality > 0) {
-        val valueCounts = values.map((_, 1)).reduceByKey(_ + _)
-        val (mode, modeCount) = valueCounts.max()(Ordering.by { case (value, count) => count})
-        ScalaFunctions.createKeyValuePairs(
-          List(
-            ("Mode", mode),
-            ("Cardinality", cardinality)
-          ), title
-        )
-      } else {
-        println("Summarize function requires a non-empty RDD!")
-        Option.empty
-      }
-    }
-  }
-
-  @Help(
-    category = "Spark Core",
-    shortDescription = "Shows some basic summary statistics of the given dataset",
-    longDescription = "Shows some basic summary statistics of the given dataset.\n" +
-      "Statistics for numeric values are: count, sum, min, max, mean, stdev, variance\n" +
-      "Statistics for nominal values are: mode, cardinality",
-    parameters = "values: RDD[Value]"
-  )
-  def summarize[N: ClassTag](values: RDD[N])(implicit num: Numeric[N] = null): Unit = {
-    serve(createSummarize(values))
-  }
-
-  @Help(
-    category = "Spark Core",
-    shortDescription = "Shows some basic summary statistics of the given groups",
-    longDescription = "Shows some basic summary statistics of the given groups. " +
-      "Statistics are: count, sum, min, max, mean, stdev, variance.",
-    parameters = "groupedValues: RDD[(Key, Iterable[NumericValue])]"
-  )
-  def summarizeGroups[K, N](groupValues: RDD[(K, Iterable[N])])(implicit num: Numeric[N]): Unit = {
-    val statCounters = groupValues.map{ case (key, values) =>
-      (key, StatCounter(values.map(num.toDouble(_))))
-    }.map{ case (key, stat) =>
-      (key.toString, stat)
-    }.collect
-    val (labels, stats) = statCounters.unzip
-    serve(Table.fromStatCounters(labels, stats))
-  }
-
-  @Help(
-    category = "Spark Core",
-    shortDescription = "Shows some basic summary statistics of the given groups",
-    longDescription = "Shows some basic summary statistics of the given groups. " +
-      "Statistics are: count, sum, min, max, mean, stdev, variance.",
-    parameters = "toBeGroupedValues: RDD[(Key, NumericValue)]"
-  )
-  def groupAndSummarize[K: ClassTag, N: ClassTag](toBeGroupedValues: RDD[(K, N)])(implicit num: Numeric[N]): Unit = {
-    summarizeGroups(toBeGroupedValues.groupByKey())
   }
 
   @Help(
