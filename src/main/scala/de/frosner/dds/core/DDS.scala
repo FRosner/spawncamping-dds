@@ -567,14 +567,7 @@ object DDS {
   def showVertexSample[VD, ED](graph: graphx.Graph[VD, ED],
                                sampleSize: Int = 20,
                                vertexFilter: (VertexId, VD) => Boolean = (id: VertexId, attr: VD) => true): Unit = {
-    val vertexSample = graph.vertices.filter{
-      case (id, attr) => vertexFilter(id, attr)
-    }.take(sampleSize).map{ case (id, attr) => id }.toSet
-    val sampledGraph = graph.subgraph(
-      edge => vertexSample.contains(edge.srcId) && vertexSample.contains(edge.dstId),
-      (vertexId, vertexAttr) => vertexSample.contains(vertexId)
-    )
-    DDS.graph(sampledGraph.vertices.collect.toSeq, sampledGraph.edges.collect.map(edge => (edge.srcId, edge.dstId, edge.attr)))
+    serve(SparkGraphxFunctions.createShowVertexSample(graph, sampleSize, vertexFilter))
   }
 
   @Help(
@@ -588,10 +581,7 @@ object DDS {
   def showEdgeSample[VD, ED](graph: graphx.Graph[VD, ED],
                              sampleSize: Int = 20,
                              edgeFilter: (Edge[ED]) => Boolean = (edge: Edge[ED]) => true): Unit = {
-    val edgeSample = graph.edges.filter(edgeFilter).take(sampleSize)
-    val verticesToKeep = edgeSample.map(_.srcId).toSet ++ edgeSample.map(_.dstId).toSet
-    val vertexSample = graph.vertices.filter{ case (id, attr) => verticesToKeep.contains(id) }.collect
-    DDS.graph(vertexSample, edgeSample.map(edge => (edge.srcId, edge.dstId, edge.attr)))
+    serve(SparkGraphxFunctions.createShowEdgeSample(graph, sampleSize, edgeFilter))
   }
 
   @Help(
@@ -601,22 +591,7 @@ object DDS {
     parameters = "graph: Graph[VD, ED]"
   )
   def connectedComponents[VD: ClassTag, ED: ClassTag](graph: graphx.Graph[VD, ED]): Unit = {
-    val connectedComponents = graph.connectedComponents()
-    val vertexCounts = connectedComponents.vertices.map{
-      case (id, connectedComponent) => (connectedComponent, 1)
-    }.reduceByKey(_ + _)
-    val edgeCounts = connectedComponents.edges.map(e => (e.srcId, 1)).join(
-      connectedComponents.vertices
-    ).map{
-      case (id, (count, connectedComponent)) => (connectedComponent, count)
-    }.reduceByKey(_ + _)
-    val counts = vertexCounts.leftOuterJoin(edgeCounts)
-    table(
-      List("Connected Component", "#Vertices", "#Edges"),
-      counts.map{ case (connectedComponent, (numVertices, numEdges)) =>
-        List(connectedComponent, numVertices, numEdges.getOrElse(0))
-      }.collect
-    )
+    serve(SparkGraphxFunctions.createConnectedComponents(graph))
   }
 
 }
