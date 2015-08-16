@@ -50,36 +50,14 @@ object SparkSqlFunctions {
 
   private[core] def createHistogram[N: ClassTag](dataFrame: DataFrame, buckets: Seq[N])
                                                 (implicit num: Numeric[N]): Option[Servable] = {
-    requireSingleColumned(dataFrame, "histogram") {
-      val field = dataFrame.schema.fields.head
-      if (isNumeric(field.dataType)) {
-        val rdd = dataFrame.select(new Column(field.name).cast(DoubleType)).rdd
-        val doubleRdd = if (field.nullable)
-          rdd.flatMap(row => if (row.isNullAt(0)) Option.empty[Double] else Option(row.getDouble(0)))
-        else
-          rdd.map(row => row.getDouble(0))
-        SparkCoreFunctions.createHistogram(doubleRdd, buckets)
-      } else {
-        println("Histogram only supported for numerical columns.")
-        Option.empty
-      }
+    createSomethingOnNumericColumn(dataFrame, "histogram") {
+      doubleRdd => SparkCoreFunctions.createHistogram(doubleRdd, buckets)
     }
   }
 
   private[core] def createHistogram(dataFrame: DataFrame, numBuckets: Option[Int]): Option[Servable] = {
-    requireSingleColumned(dataFrame, "histogram") {
-      val field = dataFrame.schema.fields.head
-      if (isNumeric(field.dataType)) {
-        val rdd = dataFrame.select(new Column(field.name).cast(DoubleType)).rdd
-        val doubleRdd = if (field.nullable)
-          rdd.flatMap(row => if (row.isNullAt(0)) Option.empty[Double] else Option(row.getDouble(0)))
-        else
-          rdd.map(row => row.getDouble(0))
-        SparkCoreFunctions.createHistogram(doubleRdd, numBuckets)
-      } else {
-        println("Histogram only supported for numerical columns.")
-        Option.empty
-      }
+    createSomethingOnNumericColumn(dataFrame, "histogram") {
+      doubleRdd => SparkCoreFunctions.createHistogram(doubleRdd, numBuckets)
     }
   }
 
