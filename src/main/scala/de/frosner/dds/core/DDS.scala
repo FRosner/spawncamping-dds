@@ -304,9 +304,7 @@ object DDS {
     parameters = "values: RDD[Value], (optional) title: String"
   )
   def bar[V: ClassTag](values: RDD[V], title: String): Unit = {
-    val (distinctValues, distinctCounts) =
-      values.map((_, 1)).reduceByKey(_ + _).collect.sortBy{ case (value, count) => count }.reverse.unzip
-    bar(distinctCounts, distinctValues.map(_.toString), title)
+    serve(SparkCoreFunctions.createBar(values, title))
   }
 
   def bar[V: ClassTag](values: RDD[V]): Unit = bar(values, DEFAULT_BAR_TITLE)
@@ -319,7 +317,7 @@ object DDS {
     parameters = "values: RDD[Value]"
   )
   def pie[V: ClassTag](values: RDD[V]): Unit = {
-    pie(values.map((_, 1)).reduceByKey(_ + _).collect)
+    serve(SparkCoreFunctions.createPie(values))
   }
 
   @Help(
@@ -330,7 +328,11 @@ object DDS {
     parameters = "values: RDD[NumericValue], (optional) numBuckets: Int"
   )
   def histogram[N: ClassTag](values: RDD[N], numBuckets: Int)(implicit num: Numeric[N]): Unit = {
-    serve(createHistogram(values, Option(numBuckets)))
+    serve(SparkCoreFunctions.createHistogram(values, Option(numBuckets)))
+  }
+
+  def histogram[N: ClassTag](values: RDD[N])(implicit num: Numeric[N]): Unit = {
+    serve(SparkCoreFunctions.createHistogram(values, Option.empty))
   }
 
   @Help(
@@ -342,8 +344,7 @@ object DDS {
   )
   def histogram[N1: ClassTag, N2: ClassTag](values: RDD[N1], buckets: Seq[N2])
                                            (implicit num1: Numeric[N1], num2: Numeric[N2]): Unit = {
-    val frequencies = values.map(v => num1.toLong(v)).histogram(buckets.map(b => num2.toDouble(b)).toArray, false)
-    histogram(buckets, frequencies)
+    serve(SparkCoreFunctions.createHistogram(values, buckets))
   }
 
   @Help(
@@ -356,7 +357,7 @@ object DDS {
   def pieGroups[K, N](groupValues: RDD[(K, Iterable[N])])
                      (reduceFunction: (N, N) => N)
                      (implicit num: Numeric[N]): Unit = {
-    pie(groupValues.map{ case (key, values) => (key, values.reduce(reduceFunction)) }.collect)
+    serve(SparkCoreFunctions.createPieGroups(groupValues)(reduceFunction)(num))
   }
 
   @Help(
@@ -369,7 +370,7 @@ object DDS {
   def groupAndPie[K: ClassTag, N: ClassTag](toBeGroupedValues: RDD[(K, N)])
                                            (reduceFunction: (N, N) => N)
                                            (implicit num: Numeric[N]): Unit = {
-    pie(toBeGroupedValues.reduceByKey(reduceFunction).collect.sortBy { case (value, count) => count })
+    serve(SparkCoreFunctions.createGroupAndPie(toBeGroupedValues)(reduceFunction))
   }
 
   @Help(
@@ -380,15 +381,7 @@ object DDS {
     parameters = "rdd: RDD[T], (optional) sampleSize: Int"
   )
   def show[V](rdd: RDD[V], sampleSize: Int)(implicit tag: TypeTag[V]): Unit = {
-    val vType = tag.tpe
-    if (vType <:< typeOf[Row]) {
-      // RDD of rows but w/o a schema
-      val values = rdd.take(sampleSize).map(_.asInstanceOf[Row].toSeq)
-      table((1 to values.head.size).map(_.toString), values)
-    } else {
-      // Normal RDD
-      show(rdd.take(sampleSize))(tag)
-    }
+    serve(SparkCoreFunctions.createShow(rdd, sampleSize)(tag))
   }
   def show[V](rdd: RDD[V])(implicit tag: TypeTag[V]): Unit =
     show(rdd, DEFAULT_SHOW_SAMPLE_SIZE)(tag)
@@ -402,22 +395,7 @@ object DDS {
     parameters = "values: RDD[NumericValue]"
   )
   def median[N: ClassTag](values: RDD[N])(implicit num: Numeric[N]): Unit = {
-    val sorted = values.sortBy(identity).zipWithIndex().map{
-      case (v, idx) => (idx, v)
-    }
-    val count = sorted.count
-    if (count > 0) {
-      val median: Double = if (count % 2 == 0) {
-        val r = count / 2
-        val l = r - 1
-        num.toDouble(num.plus(sorted.lookup(l).head, sorted.lookup(r).head)) * 0.5
-      } else {
-        num.toDouble(sorted.lookup(count / 2).head)
-      }
-      table(List("median"), List(List(median)))
-    } else {
-      println("Median is not defined on an empty RDD!")
-    }
+    serve(SparkCoreFunctions.createMedian(values))
   }
 
   @Help(
@@ -429,29 +407,7 @@ object DDS {
     parameters = "values: RDD[Value]"
   )
   def summarize[N: ClassTag](values: RDD[N])(implicit num: Numeric[N] = null): Unit = {
-    serve(createSummarize(values))
-  }
-
-  private def createSummarize[N: ClassTag](values: RDD[N], title: String = Servable.DEFAULT_TITLE)
-                                          (implicit num: Numeric[N] = null): Option[Servable] = {
-    if (num != null) {
-      Option(KeyValueSequence.fromStatCounter(values.stats(), title))
-    } else {
-      val cardinality = values.distinct.count
-      if (cardinality > 0) {
-        val valueCounts = values.map((_, 1)).reduceByKey(_ + _)
-        val (mode, modeCount) = valueCounts.max()(Ordering.by { case (value, count) => count})
-        ScalaFunctions.createKeyValuePairs(
-          List(
-            ("Mode", mode),
-            ("Cardinality", cardinality)
-          ), title
-        )
-      } else {
-        println("Summarize function requires a non-empty RDD!")
-        Option.empty
-      }
-    }
+    serve(SparkCoreFunctions.createSummarize(values))
   }
 
   @Help(
@@ -462,13 +418,7 @@ object DDS {
     parameters = "groupedValues: RDD[(Key, Iterable[NumericValue])]"
   )
   def summarizeGroups[K, N](groupValues: RDD[(K, Iterable[N])])(implicit num: Numeric[N]): Unit = {
-    val statCounters = groupValues.map{ case (key, values) =>
-      (key, StatCounter(values.map(num.toDouble(_))))
-    }.map{ case (key, stat) =>
-      (key.toString, stat)
-    }.collect
-    val (labels, stats) = statCounters.unzip
-    serve(Table.fromStatCounters(labels, stats))
+    serve(SparkCoreFunctions.createSummarizeGroups(groupValues)(num))
   }
 
   @Help(
@@ -479,30 +429,7 @@ object DDS {
     parameters = "toBeGroupedValues: RDD[(Key, NumericValue)]"
   )
   def groupAndSummarize[K: ClassTag, N: ClassTag](toBeGroupedValues: RDD[(K, N)])(implicit num: Numeric[N]): Unit = {
-    summarizeGroups(toBeGroupedValues.groupByKey())
-  }
-
-  private val DEFAULT_HISTOGRAM_NUM_BUCKETS = 100
-
-  def histogram[N: ClassTag](values: RDD[N])(implicit num: Numeric[N]): Unit = {
-    serve(createHistogram(values, Option.empty))
-  }
-
-  private def createHistogram[N: ClassTag](values: RDD[N], numBuckets: Option[Int])(implicit num: Numeric[N]): Option[Servable] = {
-    if (numBuckets.isDefined && numBuckets.get < 2) {
-      println("Number of buckets must be greater than or equal to 2")
-      Option.empty
-    } else {
-      val localNumBuckets = if (numBuckets.isEmpty) Histogram.optimalNumberOfBins(values.count) else numBuckets.get
-      val tryHist = util.Try(values.map(v => num.toDouble(v)).histogram(localNumBuckets))
-      if (tryHist.isSuccess) {
-        val (buckets, frequencies) = tryHist.get
-        ScalaFunctions.createHistogram(buckets, frequencies)
-      } else {
-        println("Could not create histogram: " + tryHist.failed.get)
-        Option.empty
-      }
-    }
+    serve(SparkCoreFunctions.createGroupAndSummarize(toBeGroupedValues))
   }
 
   @Help(
@@ -608,22 +535,22 @@ object DDS {
       val fieldType = dataFrame.schema.fields.head
       val rdd = dataFrame.rdd
       (fieldType.dataType, fieldType.nullable) match {
-        case (DoubleType, true) => createHistogram(rdd.flatMap(row =>
+        case (DoubleType, true) => SparkCoreFunctions.createHistogram(rdd.flatMap(row =>
           if (row.isNullAt(0)) Option.empty[Double] else Option(row.getDouble(0))
         ), numBuckets)
-        case (DoubleType, false) => createHistogram(rdd.map(row => row.getDouble(0)), numBuckets)
-        case (IntegerType, true) => createHistogram(rdd.flatMap(row =>
+        case (DoubleType, false) => SparkCoreFunctions.createHistogram(rdd.map(row => row.getDouble(0)), numBuckets)
+        case (IntegerType, true) => SparkCoreFunctions.createHistogram(rdd.flatMap(row =>
           if (row.isNullAt(0)) Option.empty[Int] else Option(row.getInt(0))
         ), numBuckets)
-        case (IntegerType, false) => createHistogram(rdd.map(row => row.getInt(0)), numBuckets)
-        case (FloatType, true) => createHistogram(rdd.flatMap(row =>
+        case (IntegerType, false) => SparkCoreFunctions.createHistogram(rdd.map(row => row.getInt(0)), numBuckets)
+        case (FloatType, true) => SparkCoreFunctions.createHistogram(rdd.flatMap(row =>
           if (row.isNullAt(0)) Option.empty[Float] else Option(row.getFloat(0))
         ), numBuckets)
-        case (FloatType, false) => createHistogram(rdd.map(row => row.getFloat(0)), numBuckets)
-        case (LongType, true) => createHistogram(rdd.flatMap(row =>
+        case (FloatType, false) => SparkCoreFunctions.createHistogram(rdd.map(row => row.getFloat(0)), numBuckets)
+        case (LongType, true) => SparkCoreFunctions.createHistogram(rdd.flatMap(row =>
           if (row.isNullAt(0)) Option.empty[Long] else Option(row.getLong(0))
         ), numBuckets)
-        case (LongType, false) => createHistogram(rdd.map(row => row.getLong(0)), numBuckets)
+        case (LongType, false) => SparkCoreFunctions.createHistogram(rdd.map(row => row.getLong(0)), numBuckets)
         case _ => println("Histogram only supported for numerical columns."); Option.empty
       }
     }
