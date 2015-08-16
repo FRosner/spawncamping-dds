@@ -1,6 +1,5 @@
 package de.frosner.dds.core
 
-import de.frosner.dds.analytics.MutualInformationAggregator._
 import de.frosner.dds.analytics.{DateColumnStatisticsAggregator, ColumnsStatisticsAggregator, MutualInformationAggregator, CorrelationAggregator}
 import de.frosner.dds.servables.composite.{EmptyServable, CompositeServable}
 import de.frosner.dds.servables.histogram.Histogram
@@ -51,52 +50,34 @@ object SparkSqlFunctions {
   private[core] def createHistogram[N: ClassTag](dataFrame: DataFrame, buckets: Seq[N])
                                                 (implicit num: Numeric[N]): Option[Servable] = {
     requireSingleColumned(dataFrame, "histogram") {
-      val fieldType = dataFrame.schema.fields.head
-      val rdd = dataFrame.rdd
-      (fieldType.dataType, fieldType.nullable) match {
-        case (DoubleType, true) => SparkCoreFunctions.createHistogram(rdd.flatMap(row =>
-          if (row.isNullAt(0)) Option.empty[Double] else Option(row.getDouble(0))
-        ), buckets)
-        case (DoubleType, false) => SparkCoreFunctions.createHistogram(rdd.map(row => row.getDouble(0)), buckets)
-        case (IntegerType, true) => SparkCoreFunctions.createHistogram(rdd.flatMap(row =>
-          if (row.isNullAt(0)) Option.empty[Int] else Option(row.getInt(0))
-        ), buckets)
-        case (IntegerType, false) => SparkCoreFunctions.createHistogram(rdd.map(row => row.getInt(0)), buckets)
-        case (FloatType, true) => SparkCoreFunctions.createHistogram(rdd.flatMap(row =>
-          if (row.isNullAt(0)) Option.empty[Float] else Option(row.getFloat(0))
-        ), buckets)
-        case (FloatType, false) => SparkCoreFunctions.createHistogram(rdd.map(row => row.getFloat(0)), buckets)
-        case (LongType, true) => SparkCoreFunctions.createHistogram(rdd.flatMap(row =>
-          if (row.isNullAt(0)) Option.empty[Long] else Option(row.getLong(0))
-        ), buckets)
-        case (LongType, false) => SparkCoreFunctions.createHistogram(rdd.map(row => row.getLong(0)), buckets)
-        case _ => println("Histogram only supported for numerical columns."); Option.empty
+      val field = dataFrame.schema.fields.head
+      if (isNumeric(field.dataType)) {
+        val rdd = dataFrame.select(new Column(field.name).cast(DoubleType)).rdd
+        val doubleRdd = if (field.nullable)
+          rdd.flatMap(row => if (row.isNullAt(0)) Option.empty[Double] else Option(row.getDouble(0)))
+        else
+          rdd.map(row => row.getDouble(0))
+        SparkCoreFunctions.createHistogram(doubleRdd, buckets)
+      } else {
+        println("Histogram only supported for numerical columns.")
+        Option.empty
       }
     }
   }
 
   private[core] def createHistogram(dataFrame: DataFrame, numBuckets: Option[Int]): Option[Servable] = {
     requireSingleColumned(dataFrame, "histogram") {
-      val fieldType = dataFrame.schema.fields.head
-      val rdd = dataFrame.rdd
-      (fieldType.dataType, fieldType.nullable) match {
-        case (DoubleType, true) => SparkCoreFunctions.createHistogram(rdd.flatMap(row =>
-          if (row.isNullAt(0)) Option.empty[Double] else Option(row.getDouble(0))
-        ), numBuckets)
-        case (DoubleType, false) => SparkCoreFunctions.createHistogram(rdd.map(row => row.getDouble(0)), numBuckets)
-        case (IntegerType, true) => SparkCoreFunctions.createHistogram(rdd.flatMap(row =>
-          if (row.isNullAt(0)) Option.empty[Int] else Option(row.getInt(0))
-        ), numBuckets)
-        case (IntegerType, false) => SparkCoreFunctions.createHistogram(rdd.map(row => row.getInt(0)), numBuckets)
-        case (FloatType, true) => SparkCoreFunctions.createHistogram(rdd.flatMap(row =>
-          if (row.isNullAt(0)) Option.empty[Float] else Option(row.getFloat(0))
-        ), numBuckets)
-        case (FloatType, false) => SparkCoreFunctions.createHistogram(rdd.map(row => row.getFloat(0)), numBuckets)
-        case (LongType, true) => SparkCoreFunctions.createHistogram(rdd.flatMap(row =>
-          if (row.isNullAt(0)) Option.empty[Long] else Option(row.getLong(0))
-        ), numBuckets)
-        case (LongType, false) => SparkCoreFunctions.createHistogram(rdd.map(row => row.getLong(0)), numBuckets)
-        case _ => println("Histogram only supported for numerical columns."); Option.empty
+      val field = dataFrame.schema.fields.head
+      if (isNumeric(field.dataType)) {
+        val rdd = dataFrame.select(new Column(field.name).cast(DoubleType)).rdd
+        val doubleRdd = if (field.nullable)
+          rdd.flatMap(row => if (row.isNullAt(0)) Option.empty[Double] else Option(row.getDouble(0)))
+        else
+          rdd.map(row => row.getDouble(0))
+        SparkCoreFunctions.createHistogram(doubleRdd, numBuckets)
+      } else {
+        println("Histogram only supported for numerical columns.")
+        Option.empty
       }
     }
   }
