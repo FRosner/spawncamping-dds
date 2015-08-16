@@ -1,11 +1,11 @@
 package de.frosner.dds.core
 
-import de.frosner.dds.analytics.MutualInformationAggregator._
 import de.frosner.dds.analytics.{DateColumnStatisticsAggregator, ColumnsStatisticsAggregator, MutualInformationAggregator, CorrelationAggregator}
 import de.frosner.dds.servables.composite.{EmptyServable, CompositeServable}
 import de.frosner.dds.servables.histogram.Histogram
 import de.frosner.dds.servables.tabular.KeyValueSequence
 import de.frosner.dds.util.DataFrameUtils._
+import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{Column, DataFrame}
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types.{LongType, FloatType, IntegerType, DoubleType}
@@ -50,54 +50,14 @@ object SparkSqlFunctions {
 
   private[core] def createHistogram[N: ClassTag](dataFrame: DataFrame, buckets: Seq[N])
                                                 (implicit num: Numeric[N]): Option[Servable] = {
-    requireSingleColumned(dataFrame, "histogram") {
-      val fieldType = dataFrame.schema.fields.head
-      val rdd = dataFrame.rdd
-      (fieldType.dataType, fieldType.nullable) match {
-        case (DoubleType, true) => SparkCoreFunctions.createHistogram(rdd.flatMap(row =>
-          if (row.isNullAt(0)) Option.empty[Double] else Option(row.getDouble(0))
-        ), buckets)
-        case (DoubleType, false) => SparkCoreFunctions.createHistogram(rdd.map(row => row.getDouble(0)), buckets)
-        case (IntegerType, true) => SparkCoreFunctions.createHistogram(rdd.flatMap(row =>
-          if (row.isNullAt(0)) Option.empty[Int] else Option(row.getInt(0))
-        ), buckets)
-        case (IntegerType, false) => SparkCoreFunctions.createHistogram(rdd.map(row => row.getInt(0)), buckets)
-        case (FloatType, true) => SparkCoreFunctions.createHistogram(rdd.flatMap(row =>
-          if (row.isNullAt(0)) Option.empty[Float] else Option(row.getFloat(0))
-        ), buckets)
-        case (FloatType, false) => SparkCoreFunctions.createHistogram(rdd.map(row => row.getFloat(0)), buckets)
-        case (LongType, true) => SparkCoreFunctions.createHistogram(rdd.flatMap(row =>
-          if (row.isNullAt(0)) Option.empty[Long] else Option(row.getLong(0))
-        ), buckets)
-        case (LongType, false) => SparkCoreFunctions.createHistogram(rdd.map(row => row.getLong(0)), buckets)
-        case _ => println("Histogram only supported for numerical columns."); Option.empty
-      }
+    createSomethingOnNumericColumn(dataFrame, "histogram") {
+      doubleRdd => SparkCoreFunctions.createHistogram(doubleRdd, buckets)
     }
   }
 
   private[core] def createHistogram(dataFrame: DataFrame, numBuckets: Option[Int]): Option[Servable] = {
-    requireSingleColumned(dataFrame, "histogram") {
-      val fieldType = dataFrame.schema.fields.head
-      val rdd = dataFrame.rdd
-      (fieldType.dataType, fieldType.nullable) match {
-        case (DoubleType, true) => SparkCoreFunctions.createHistogram(rdd.flatMap(row =>
-          if (row.isNullAt(0)) Option.empty[Double] else Option(row.getDouble(0))
-        ), numBuckets)
-        case (DoubleType, false) => SparkCoreFunctions.createHistogram(rdd.map(row => row.getDouble(0)), numBuckets)
-        case (IntegerType, true) => SparkCoreFunctions.createHistogram(rdd.flatMap(row =>
-          if (row.isNullAt(0)) Option.empty[Int] else Option(row.getInt(0))
-        ), numBuckets)
-        case (IntegerType, false) => SparkCoreFunctions.createHistogram(rdd.map(row => row.getInt(0)), numBuckets)
-        case (FloatType, true) => SparkCoreFunctions.createHistogram(rdd.flatMap(row =>
-          if (row.isNullAt(0)) Option.empty[Float] else Option(row.getFloat(0))
-        ), numBuckets)
-        case (FloatType, false) => SparkCoreFunctions.createHistogram(rdd.map(row => row.getFloat(0)), numBuckets)
-        case (LongType, true) => SparkCoreFunctions.createHistogram(rdd.flatMap(row =>
-          if (row.isNullAt(0)) Option.empty[Long] else Option(row.getLong(0))
-        ), numBuckets)
-        case (LongType, false) => SparkCoreFunctions.createHistogram(rdd.map(row => row.getLong(0)), numBuckets)
-        case _ => println("Histogram only supported for numerical columns."); Option.empty
-      }
+    createSomethingOnNumericColumn(dataFrame, "histogram") {
+      doubleRdd => SparkCoreFunctions.createHistogram(doubleRdd, numBuckets)
     }
   }
 
@@ -261,28 +221,8 @@ object SparkSqlFunctions {
   }
 
   private[core] def createMedian(dataFrame: DataFrame): Option[Servable] = {
-    requireSingleColumned(dataFrame, "median") {
-      val field = dataFrame.schema.fields.head
-      val rdd = dataFrame.rdd
-      (field.dataType, field.nullable) match {
-        case (DoubleType, true) => SparkCoreFunctions.createMedian(rdd.flatMap(row =>
-          if (row.isNullAt(0)) Option.empty[Double] else Option(row.getDouble(0))
-        ))
-        case (DoubleType, false) => SparkCoreFunctions.createMedian(rdd.map(row => row.getDouble(0)))
-        case (IntegerType, true) => SparkCoreFunctions.createMedian(rdd.flatMap(row =>
-          if (row.isNullAt(0)) Option.empty[Int] else Option(row.getInt(0))
-        ))
-        case (IntegerType, false) => SparkCoreFunctions.createMedian(rdd.map(row => row.getInt(0)))
-        case (FloatType, true) => SparkCoreFunctions.createMedian(rdd.flatMap(row =>
-          if (row.isNullAt(0)) Option.empty[Float] else Option(row.getFloat(0))
-        ))
-        case (FloatType, false) => SparkCoreFunctions.createMedian(rdd.map(row => row.getFloat(0)))
-        case (LongType, true) => SparkCoreFunctions.createMedian(rdd.flatMap(row =>
-          if (row.isNullAt(0)) Option.empty[Long] else Option(row.getLong(0))
-        ))
-        case (LongType, false) => SparkCoreFunctions.createMedian(rdd.map(row => row.getLong(0)))
-        case _ => println("Median only supported for numerical columns."); Option.empty
-      }
+    createSomethingOnNumericColumn(dataFrame, "median") {
+      doubleRdd => SparkCoreFunctions.createMedian(doubleRdd)
     }
   }
 
@@ -396,6 +336,24 @@ object SparkSqlFunctions {
       toCell(createCorrelation(dataFrame, "Pearson Correlation")) ++ toCell(createMutualInformation(dataFrame, title = "Mutual Information")),
       toCell(createSummarize(dataFrame, "Summary Statistics"))
     )))
+  }
+
+  private def createSomethingOnNumericColumn(dataFrame: DataFrame, name: String)
+                                            (creator: RDD[Double] => Option[Servable]): Option[Servable] = {
+    requireSingleColumned(dataFrame, name) {
+      val field = dataFrame.schema.fields.head
+      if (isNumeric(field.dataType)) {
+        val rdd = dataFrame.select(new Column(field.name).cast(DoubleType)).rdd
+        val doubleRdd = if (field.nullable)
+          rdd.flatMap(row => if (row.isNullAt(0)) Option.empty[Double] else Option(row.getDouble(0)))
+        else
+          rdd.map(row => row.getDouble(0))
+        creator(doubleRdd)
+      } else {
+        println(s"$name only supported for numerical columns.")
+        Option.empty
+      }
+    }
   }
 
 }
