@@ -7,10 +7,12 @@ define(function(require) {
 
   function checkForUpdate() {
     $.ajax({
-      url: "/chart/update",
+      url: "/servables/latest" + ((document.lastServedId != null) ? "?current=" + document.lastServedId : ""),
       success: function(response) {
         if (response != "{}") {
-          var servable = JSON.parse(response);
+          var servableAndId = JSON.parse(response);
+          var servable = servableAndId.servable;
+          document.lastServedId = servableAndId.id;
           document.isNewVisualization = true;
           Util.doAndRedoOnResizeOf(window, function() {
             var contentId = "content";
