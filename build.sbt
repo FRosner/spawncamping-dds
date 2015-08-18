@@ -20,9 +20,9 @@ shortScalaVersion := scalaVersion.value.split("\\.").take(2).mkString(".")
 
 lazy val currentBranch = System.getenv("TRAVIS_BRANCH")
 
-val isMasterBranch = settingKey[Boolean]("Master branch is active")
+val isSnapshotBranch = settingKey[Boolean]("Snapshot branch is active")
 
-isMasterBranch := currentBranch == "master"
+isSnapshotBranch := (currentBranch != null) && (currentBranch == "master" || currentBranch.startsWith("release/"))
 
 lazy val finalArtifactName = settingKey[String]("Name of the final artifact.")
 
@@ -73,10 +73,10 @@ dontPublishTask <<= (streams) map { (s) => {
   }
 }
 
-val publishOrDontPublishTask = TaskKey[Unit]("publish-master-snapshot", "Publish depending on the current branch.")
+val publishOrDontPublishTask = TaskKey[Unit]("publish-snapshot", "Publish depending on the current branch.")
 
 publishOrDontPublishTask := Def.taskDyn({
-  if(isMasterBranch.value) S3.upload.toTask
+  if(isSnapshotBranch.value) S3.upload.toTask
   else dontPublishTask.toTask
 }).value
 
