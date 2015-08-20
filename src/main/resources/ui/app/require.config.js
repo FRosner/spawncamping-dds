@@ -7,7 +7,7 @@ require.config({
     dragevent:     ['jquery'],
     "d3.parcoords": {
       deps: [
-        "d3"
+        "d3-global"
       ],
       exports: "d3.parcoords"
     },
@@ -34,4 +34,8 @@ require.config({
     slickdataview: libFolder + slickGridFolder + "slick.dataview.min",
     slickpager: libFolder + slickGridFolder + "slick.pager.min"
   }
+});
+
+define("d3-global", ["d3"], function(_) {
+  window.d3 = _;
 });
