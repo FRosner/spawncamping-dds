@@ -2,9 +2,11 @@ package de.frosner.dds.core
 
 import java.awt.Desktop
 import java.net.URI
+import java.util.Date
 
 import akka.actor.ActorSystem
 import com.typesafe.config.ConfigFactory
+import spray.json._
 import spray.routing.SimpleRoutingApp
 import spray.routing.authentication._
 import spray.routing.Route
@@ -29,10 +31,11 @@ case class SprayServer(name: String,
                        launchBrowser: Boolean = true,
                        interface: String = SprayServer.DEFAULT_INTERFACE,
                        port: Int = SprayServer.DEFAULT_PORT,
-                       password: Option[String] = Option.empty)
+                       password: Option[String] = Option.empty,
+                       enableHistory: Boolean = true)
   extends SimpleRoutingApp with Server {
 
-  private var servable: Option[Servable] = Option.empty
+  private var servables: Seq[(Servable, Date)] = Vector.empty
 
   private implicit val system = ActorSystem(name + "-system", {
     val conf = ConfigFactory.parseResources("dds.typesafe-conf")
@@ -72,13 +75,49 @@ case class SprayServer(name: String,
             getFromResource("ui/index.html")
           }
         } ~
-        path("chart" / "update") {
+        path("servables") {
           withAuthentication {
             get {
               complete {
-                val response = servable.map(_.toJsonString).getOrElse("{}")
-                servable = Option.empty
-                response
+                val servableObjects = servables.zipWithIndex.map{
+                  case ((servable, date), index) => JsObject(Map(
+                    ("id", JsNumber(index)),
+                    ("type", JsString(servable.servableType)),
+                    ("time", JsNumber(date.getTime))
+                  ))
+                }
+                JsArray(servableObjects.toVector).compactPrint
+              }
+            }
+          }
+        } ~
+        path("servables" / IntNumber) { id =>
+          withAuthentication {
+            get {
+              if (id < servables.size)
+                complete {
+                  val (servable, date) = servables(id)
+                  SprayServer.wrapIdAndServable(id, servable)
+                }
+              else
+                failWith(new IllegalArgumentException(
+                  s"There is no servable with id $id. Id needs to be within (0, ${servables.size})"
+                ))
+            }
+          }
+        } ~
+        (path("servables" / "latest") & parameter('current ?)) { currentServableIdParameter =>
+          withAuthentication {
+            get {
+              complete {
+                val currentServableIndex = currentServableIdParameter.map(_.toInt)
+                val lastServableIndex = servables.size - 1
+                if (lastServableIndex >= 0 && currentServableIndex.forall(_ != lastServableIndex)) {
+                  val (servable, date) = servables(lastServableIndex)
+                  SprayServer.wrapIdAndServable(lastServableIndex, servable)
+                } else {
+                  "{}"
+                }
               }
             }
           }
@@ -100,12 +139,16 @@ case class SprayServer(name: String,
 
   def stop() = {
     println("Stopping server")
-    servable = Option.empty
+    servables = Seq.empty
     system.scheduler.scheduleOnce(1.milli)(system.shutdown())(system.dispatcher)
   }
 
   def serve(servable: Servable) = {
-    this.servable = Option(servable)
+    val toAdd = (servable, new Date())
+    if (enableHistory)
+      servables = servables :+ toAdd
+    else
+      servables = Vector(toAdd)
   }
 
 }
@@ -122,5 +165,12 @@ object SprayServer {
    * @return A server bound to default port and interface.
    */
   def withoutLaunchingBrowser(name: String) = SprayServer(name, launchBrowser = false)
+
+  private def wrapIdAndServable(id: Int, servable: Servable): String = {
+    JsObject(
+      ("servable", servable.toJson),
+      ("id", JsNumber(id))
+    ).compactPrint
+  }
 
 }
