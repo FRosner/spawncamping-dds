@@ -105,7 +105,29 @@ class SprayServerTest extends FlatSpec with Matchers with BeforeAndAfter{
   }
 
   it should "not save a history if started with the corresponding parameter" in {
-    // TODO
+    val chartServer = new SprayServer(name = "server-" + testNumber, launchBrowser = false, enableHistory = false)
+    chartServer.start()
+    Thread.sleep(waitTime)
+
+    val dummyServable1 = DummyServable(1)
+    val dummyServable2 = Table(List("1"), List(List(1)))
+    val now = new Date()
+    chartServer.serve(dummyServable1)
+    chartServer.serve(dummyServable2)
+
+    val answer = Http(s"http://$DEFAULT_INTERFACE:$DEFAULT_PORT/servables").asString.body
+
+    val answerArray = JsonParser(answer).asInstanceOf[JsArray]
+    val answerArrayElements = answerArray.elements
+    answerArrayElements.size shouldBe 1
+    val Vector(firstServable) = answerArrayElements
+
+    val firstServableFields = firstServable.asJsObject.fields
+    firstServableFields("id") shouldBe JsNumber(0)
+    new Date(firstServableFields("time").asInstanceOf[JsNumber].value.longValue()).getTime / 1000 shouldBe now.getTime / 1000
+    firstServableFields("type") shouldBe JsString(dummyServable2.servableType)
+
+    chartServer.stop()
   }
 
   "/servables/<id>" should "return the servable with the given id" in {
@@ -307,6 +329,3 @@ class SprayServerTest extends FlatSpec with Matchers with BeforeAndAfter{
   }
 
 }
-
-
-
