@@ -3,20 +3,6 @@ var appFolder = "../app/";
 var slickGridFolder = "slickgrid/";
 
 require.config({
-  shim: {
-    dragevent:     ['jquery'],
-    "d3.parcoords": {
-      deps: [
-        "d3-global"
-      ],
-      exports: "d3.parcoords"
-    },
-
-    slickcore:     ['dragevent'],
-    slickgrid:     ['slickcore', 'dragevent'],
-    slickdataview: ['slickgrid'],
-    slickpager:    ['slickgrid']
-  },
   paths: {
     jquery: libFolder + "jquery-1.7.min",
     dragevent: libFolder + "jquery.event.drag-2.2.min",
@@ -36,6 +22,20 @@ require.config({
   }
 });
 
-define("d3-global", ["d3"], function(_) {
-  window.d3 = _;
+require(['d3'], function(d3) {
+  console.debug("Loading d3 v" + d3.version);
+});
+
+require.config({
+  shim: {
+    dragevent:     ['jquery'],
+    "d3.parcoords": {
+      exports: "d3.parcoords"
+    },
+
+    slickcore:     ['dragevent'],
+    slickgrid:     ['slickcore', 'dragevent'],
+    slickdataview: ['slickgrid'],
+    slickpager:    ['slickgrid']
+  }
 });
