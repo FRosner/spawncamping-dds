@@ -4,7 +4,7 @@ import uk.gov.hmrc.GitStampPlugin._
 
 organization  := "de.frosner"
 
-version       := "2.3.1-SNAPSHOT"
+version       := "2.3.1"
 
 name          := "spawncamping-dds"
 
