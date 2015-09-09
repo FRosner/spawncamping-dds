@@ -13,54 +13,43 @@ import scala.reflect.runtime.universe._
 
 object ScalaFunctions {
 
-  private[core] def createIndexedPlot[N](series: Iterable[Series[N]], chartTypes: ChartTypes)
-                                        (implicit num: Numeric[N]): Option[Servable] = {
-    Option(Chart(SeriesData(series, chartTypes)))
-  }
-
-  private[core] def createIndexedPlot[N](series: Iterable[Series[N]], chartType: ChartType)
-                                        (implicit num: Numeric[N]): Option[Servable] = {
-    createIndexedPlot(series, ChartTypes.multiple(chartType, series.size))
-  }
-
-  private[core] def createCategoricalPlot[N](series: Iterable[Series[N]],
-                                             categories: Seq[String],
-                                             chartType: ChartType)(implicit num: Numeric[N]): Option[Servable] = {
-    Option(Chart(SeriesData(series, ChartTypes.multiple(chartType, series.size)), XAxis.categorical(categories)))
-  }
-
-  private[core] def createBar[N](values: Seq[N], categories: Seq[String], title: String)
+  private[core] def createBar[N](values: Seq[N], categories: Seq[String], title: Option[String])
                                 (implicit num: Numeric[N]): Option[Servable] = {
-    createBars(List(title), List(values), categories)
+    val actualTitle = title.getOrElse(Servable.DEFAULT_TITLE)
+    createBars(List(actualTitle), List(values), categories, Some(actualTitle))
   }
 
-  private[core] def createBar[N](values: Seq[N], title: String)(implicit num: Numeric[N]): Option[Servable] = {
-    createBars(List(title), List(values))
+  private[core] def createBar[N](values: Seq[N], title: Option[String])
+                                (implicit num: Numeric[N]): Option[Servable] = {
+    val actualTitle = title.getOrElse(Servable.DEFAULT_TITLE)
+    createBars(List(actualTitle), List(values), Some(actualTitle))
   }
 
-  private[core] def createBars[N](labels: Seq[String], values: Seq[Seq[N]], categories: Seq[String])
+  private[core] def createBars[N](labels: Seq[String],
+                                  values: Seq[Seq[N]],
+                                  categories: Seq[String],
+                                  title: Option[String])
                                  (implicit num: Numeric[N]): Option[Servable] = {
-    val series = labels.zip(values).map{ case (label, values) => Series(label, values) }
-    createCategoricalPlot(series, categories, ChartTypeEnum.Bar)
+    Option(CategoricalBarChart(labels, values, categories, title.getOrElse(Servable.DEFAULT_TITLE)))
   }
 
-  private[core] def createBars[N](labels: Seq[String], values: Seq[Seq[N]])
+  private[core] def createBars[N](labels: Seq[String], values: Seq[Seq[N]], title: Option[String])
                                  (implicit num: Numeric[N]): Option[Servable] = {
-    val series = labels.zip(values).map{ case (label, values) => Series(label, values) }
-    createIndexedPlot(series, ChartTypeEnum.Bar)
+    Option(IndexedBarChart(labels, values, title.getOrElse(Servable.DEFAULT_TITLE)))
   }
 
   private[core] def createLine[N](values: Seq[N])(implicit num: Numeric[N]): Option[Servable] = {
     createLines(List("data"), List(values))
   }
 
-  private[core] def createLines[N](labels: Seq[String], values: Seq[Seq[N]])(implicit num: Numeric[N]): Option[Servable] = {
-    val series = labels.zip(values).map{ case (label, values) => Series(label, values) }
-    createIndexedPlot(series, ChartTypeEnum.Line)
+  private[core] def createLines[N](labels: Seq[String], values: Seq[Seq[N]], title: String = Servable.DEFAULT_TITLE)
+                                  (implicit num: Numeric[N]): Option[Servable] = {
+    Option(LineChart(labels, values, title))
   }
 
-  def createPie[K, V](keyValuePairs: Iterable[(K, V)])(implicit num: Numeric[V]): Option[Servable] = {
-    createIndexedPlot(keyValuePairs.map{ case (key, value) => Series(key.toString, List(value))}, ChartTypeEnum.Pie)
+  def createPie[K, V](keyValuePairs: Iterable[(K, V)], title: String = Servable.DEFAULT_TITLE)
+                     (implicit num: Numeric[V]): Option[Servable] = {
+    Option(PieChart(keyValuePairs, title))
   }
 
   private[core] def createHeatmap[N](values: Seq[Seq[N]], rowNames: Seq[String] = null,

@@ -14,7 +14,7 @@ object SparkCoreFunctions {
   private[core] def createBar[V: ClassTag](values: RDD[V], title: String): Option[Servable] = {
     val (distinctValues, distinctCounts) =
       values.map((_, 1)).reduceByKey(_ + _).collect.sortBy{ case (value, count) => count }.reverse.unzip
-    ScalaFunctions.createBar(distinctCounts, distinctValues.map(_.toString), title)
+    ScalaFunctions.createBar(distinctCounts, distinctValues.map(_.toString), Some(title))
   }
 
   private[core] def createPie[V: ClassTag](values: RDD[V]): Option[Servable] = {
