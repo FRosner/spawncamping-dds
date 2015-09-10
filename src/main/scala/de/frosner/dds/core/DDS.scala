@@ -219,7 +219,7 @@ object DDS {
     parameters = "values: Seq[NumericValue], (optional) title: String"
   )
   def bar[N](values: Seq[N], title: String)(implicit num: Numeric[N]): Unit = {
-    serve(ScalaFunctions.createBar(values, title)(num))
+    serve(ScalaFunctions.createBar(values, Some(title))(num))
   }
 
   def bar[N](values: Seq[N])(implicit num: Numeric[N]): Unit =
@@ -232,7 +232,7 @@ object DDS {
     parameters = "values: Seq[NumericValue], categories: Seq[String], (optional) title: String"
   )
   def bar[N](values: Seq[N], categories: Seq[String], title: String)(implicit num: Numeric[N]): Unit = {
-    serve(ScalaFunctions.createBar(values, categories, title)(num))
+    serve(ScalaFunctions.createBar(values, categories, Some(title))(num))
   }
 
   def bar[N](values: Seq[N], categories: Seq[String])(implicit num: Numeric[N]): Unit =
@@ -247,7 +247,7 @@ object DDS {
     parameters = "labels: Seq[String], values: Seq[Seq[NumericValue]]"
   )
   def bars[N](labels: Seq[String], values: Seq[Seq[N]])(implicit num: Numeric[N]) = {
-    serve(ScalaFunctions.createBars(labels, values)(num))
+    serve(ScalaFunctions.createBars(labels, values, None)(num))
   }
 
   @Help(
@@ -259,7 +259,7 @@ object DDS {
     parameters = "labels: Seq[String], values: Seq[Seq[NumericValue]], categories: Seq[String]"
   )
   def bars[N](labels: Seq[String], values: Seq[Seq[N]], categories: Seq[String])(implicit num: Numeric[N]) = {
-    serve(ScalaFunctions.createBars(labels, values, categories)(num))
+    serve(ScalaFunctions.createBars(labels, values, categories, None)(num))
   }
 
   @Help(

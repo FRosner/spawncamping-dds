@@ -93,13 +93,10 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
       ("c", 5)
     ))
 
-    val expectedChartTypes = ChartTypes.multiple(ChartTypeEnum.Pie, 3)
-    val expectedChartSeries = List(
-      Series("a", List(3)),
-      Series("b", List(3)),
-      Series("c", List(5))
+    val expectedChart = PieChart(
+      keyValuePairs = List(("a", 3), ("b", 3), ("c", 5)),
+      title = Servable.DEFAULT_TITLE
     )
-    val expectedChart = Chart(SeriesData(expectedChartSeries, expectedChartTypes))
     (stubbedServer.serve _).verify(expectedChart)
   }
 
@@ -107,9 +104,11 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     DDS.start(stubbedServer)
     DDS.line(List(1,2,3))
 
-    val expectedChartType = ChartTypes(ChartTypeEnum.Line)
-    val expectedChartSeries = List(Series("data", List(1,2,3)))
-    val expectedChart = Chart(SeriesData(expectedChartSeries, expectedChartType))
+    val expectedChart = LineChart(
+      labels = List("data"),
+      values = List(List(1,2,3)),
+      title = Servable.DEFAULT_TITLE
+    )
     (stubbedServer.serve _).verify(expectedChart)
   }
 
@@ -117,12 +116,11 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     DDS.start(stubbedServer)
     DDS.lines(List("a", "b"), List(List(1,2,3), List(3,2,1)))
 
-    val expectedChartTypes = ChartTypes.multiple(ChartTypeEnum.Line, 2)
-    val expectedChartSeries = List(
-      Series("a", List(1,2,3)),
-      Series("b", List(3,2,1))
+    val expectedChart = LineChart(
+      labels = List("a", "b"),
+      values = List(List(1,2,3), List(3,2,1)),
+      title = Servable.DEFAULT_TITLE
     )
-    val expectedChart = Chart(SeriesData(expectedChartSeries, expectedChartTypes))
     (stubbedServer.serve _).verify(expectedChart)
   }
 
@@ -130,9 +128,11 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     DDS.start(stubbedServer)
     DDS.bar(List(1,2,3))
 
-    val expectedChartType = ChartTypes(ChartTypeEnum.Bar)
-    val expectedChartSeries = List(Series("data", List(1,2,3)))
-    val expectedChart = Chart(SeriesData(expectedChartSeries, expectedChartType))
+    val expectedChart = IndexedBarChart(
+      labels = List("data"),
+      values = List(List(1,2,3)),
+      title = "data"
+    )
     (stubbedServer.serve _).verify(expectedChart)
   }
 
@@ -140,12 +140,11 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     DDS.start(stubbedServer)
     DDS.bars(List("a", "b"), List(List(1,2,3), List(3,2,1)))
 
-    val expectedChartTypes = ChartTypes.multiple(ChartTypeEnum.Bar, 2)
-    val expectedChartSeries = List(
-      Series("a", List(1,2,3)),
-      Series("b", List(3,2,1))
+    val expectedChart = IndexedBarChart(
+      labels = List("a", "b"),
+      values = List(List(1,2,3), List(3,2,1)),
+      title = Servable.DEFAULT_TITLE
     )
-    val expectedChart = Chart(SeriesData(expectedChartSeries, expectedChartTypes))
     (stubbedServer.serve _).verify(expectedChart)
   }
 
@@ -153,11 +152,11 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     DDS.start(stubbedServer)
     DDS.bar(List(1,2,3), List("a", "b", "c"))
 
-    val expectedChartType = ChartTypes(ChartTypeEnum.Bar)
-    val expectedChartSeries = List(Series("data", List(1,2,3)))
-    val expectedChart = Chart(
-      SeriesData(expectedChartSeries, expectedChartType),
-      XAxis.categorical(List("a", "b", "c"))
+    val expectedChart = CategoricalBarChart(
+      labels = List("data"),
+      values = List(List(1,2,3)),
+      categories = List("a", "b", "c"),
+      title = "data"
     )
     (stubbedServer.serve _).verify(expectedChart)
   }
@@ -166,14 +165,11 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     DDS.start(stubbedServer)
     DDS.bars(List("a", "b"), List(List(1,2,3), List(3,2,1)), List("x", "y", "z"))
 
-    val expectedChartTypes = ChartTypes.multiple(ChartTypeEnum.Bar, 2)
-    val expectedChartSeries = List(
-      Series("a", List(1,2,3)),
-      Series("b", List(3,2,1))
-    )
-    val expectedChart = Chart(
-      SeriesData(expectedChartSeries, expectedChartTypes),
-      XAxis.categorical(List("x", "y", "z"))
+    val expectedChart = CategoricalBarChart(
+      labels = List("a", "b"),
+      values = List(List(1,2,3), List(3,2,1)),
+      categories = List("x", "y", "z"),
+      title = Servable.DEFAULT_TITLE
     )
     (stubbedServer.serve _).verify(expectedChart)
   }
@@ -208,13 +204,13 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     val values = sc.makeRDD(List(1,1,1,2,3,3))
     DDS.pie(values)
 
-    val actualChartData = mockedServer.lastServed.get.asInstanceOf[Chart].data.asInstanceOf[SeriesData[Int]]
-    actualChartData.series.toList shouldBe List(
-      Series("1", List(3)),
-      Series("3", List(2)),
-      Series("2", List(1))
+    val actualPieChart = mockedServer.lastServed.get.asInstanceOf[PieChart[Int, Int]]
+    actualPieChart.keyValuePairs.map{ case (key, value) => (key.toInt, value.toInt) }.toList shouldBe List(
+      (1, 3),
+      (3, 2),
+      (2, 1)
     )
-    actualChartData.types shouldBe ChartTypes.multiple(ChartTypeEnum.Pie, 3)
+    actualPieChart.title shouldBe Servable.DEFAULT_TITLE
   }
 
   it should "be served from a single columned non-null numerical data frame" in {
@@ -224,13 +220,13 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     val dataFrame = sql.createDataFrame(values, schema)
     DDS.pie(dataFrame)
 
-    val actualChartData = mockedServer.lastServed.get.asInstanceOf[Chart].data.asInstanceOf[SeriesData[Int]]
-    actualChartData.series.toList shouldBe List(
-      Series("1", List(3)),
-      Series("3", List(2)),
-      Series("2", List(1))
+    val actualPieChart = mockedServer.lastServed.get.asInstanceOf[PieChart[Integer, Integer]]
+    actualPieChart.keyValuePairs.map{ case (key, value) => (key.toInt, value.toInt) }.toList shouldBe List(
+      (1, 3),
+      (3, 2),
+      (2, 1)
     )
-    actualChartData.types shouldBe ChartTypes.multiple(ChartTypeEnum.Pie, 3)
+    actualPieChart.title shouldBe Servable.DEFAULT_TITLE
   }
 
   it should "be served from a single columned non-null string data frame" in {
@@ -240,13 +236,13 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     val dataFrame = sql.createDataFrame(values, schema)
     DDS.pie(dataFrame)
 
-    val actualChartData = mockedServer.lastServed.get.asInstanceOf[Chart].data.asInstanceOf[SeriesData[Int]]
-    actualChartData.series.toSet shouldBe Set(
-      Series("a", List(3)),
-      Series("c", List(2)),
-      Series("b", List(1))
+    val actualPieChart = mockedServer.lastServed.get.asInstanceOf[PieChart[String, Integer]]
+    actualPieChart.keyValuePairs.map{ case (key, value) => (key, value.toInt) }.toSet shouldBe Set(
+      ("a", 3),
+      ("c", 2),
+      ("b", 1)
     )
-    actualChartData.types shouldBe ChartTypes.multiple(ChartTypeEnum.Pie, 3)
+    actualPieChart.title shouldBe Servable.DEFAULT_TITLE
   }
 
   it should "be served from a single columned nullable data frame" in {
@@ -256,13 +252,13 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     val dataFrame = sql.createDataFrame(values, schema)
     DDS.pie(dataFrame)
 
-    val actualChartData = mockedServer.lastServed.get.asInstanceOf[Chart].data.asInstanceOf[SeriesData[Int]]
-    actualChartData.series.toSet shouldBe Set(
-      Series("Some(1)", List(3)),
-      Series("Some(3)", List(2)),
-      Series("None", List(1))
+    val actualPieChart = mockedServer.lastServed.get.asInstanceOf[PieChart[Option[Integer], Int]]
+    actualPieChart.keyValuePairs.map{ case (key, value) => (key.map(_.toInt), value.toInt) }.toSet shouldBe Set(
+      (Some(1), 3),
+      (Some(3), 2),
+      (None, 1)
     )
-    actualChartData.types shouldBe ChartTypes.multiple(ChartTypeEnum.Pie, 3)
+    actualPieChart.title shouldBe Servable.DEFAULT_TITLE
   }
 
   it should "be served from a single columned data frame with a custom null value" in {
@@ -272,13 +268,13 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     val dataFrame = sql.createDataFrame(values, schema)
     DDS.pie(dataFrame, "NA")
 
-    val actualChartData = mockedServer.lastServed.get.asInstanceOf[Chart].data.asInstanceOf[SeriesData[Int]]
-    actualChartData.series.toSet shouldBe Set(
-      Series("1", List(3)),
-      Series("3", List(2)),
-      Series("NA", List(1))
+    val actualPieChart = mockedServer.lastServed.get.asInstanceOf[PieChart[Any, Integer]]
+    actualPieChart.keyValuePairs.map{ case (key, value) => (key.toString, value.toInt) }.toSet shouldBe Set(
+      ("1", 3),
+      ("3", 2),
+      ("NA", 1)
     )
-    actualChartData.types shouldBe ChartTypes.multiple(ChartTypeEnum.Pie, 3)
+    actualPieChart.title shouldBe Servable.DEFAULT_TITLE
   }
 
   it should "not be served from a multi columned data frame" in {
@@ -296,13 +292,11 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     val values = sc.makeRDD(List(1,1,1,2,3,3))
     DDS.bar(values)
 
-    val actualChart = mockedServer.lastServed.get.asInstanceOf[Chart]
-    actualChart.xAxis shouldBe XAxis.categorical(List("1", "3", "2"))
-    val actualChartData = actualChart.data.asInstanceOf[SeriesData[Int]]
-    actualChartData.series.toList shouldBe List(
-      Series("data", List(3, 2, 1))
-    )
-    actualChartData.types shouldBe ChartTypes.multiple(ChartTypeEnum.Bar, 1)
+    val actualChart = mockedServer.lastServed.get.asInstanceOf[CategoricalBarChart[Int]]
+    actualChart.labels shouldBe List("data")
+    actualChart.values.toList shouldBe List(List(3,2,1))
+    actualChart.categories.toList shouldBe List("1", "3", "2")
+    actualChart.title shouldBe "data"
   }
 
   it should "be served from a single columned non-null numerical data frame" in {
@@ -312,13 +306,11 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     val dataFrame = sql.createDataFrame(values, schema)
     DDS.bar(dataFrame)
 
-    val actualChart = mockedServer.lastServed.get.asInstanceOf[Chart]
-    actualChart.xAxis shouldBe XAxis.categorical(List("1", "3", "2"))
-    val actualChartData = actualChart.data.asInstanceOf[SeriesData[Int]]
-    actualChartData.series.toList shouldBe List(
-      Series("values", List(3, 2, 1))
-    )
-    actualChartData.types shouldBe ChartTypes.multiple(ChartTypeEnum.Bar, 1)
+    val actualChart = mockedServer.lastServed.get.asInstanceOf[CategoricalBarChart[Int]]
+    actualChart.labels shouldBe List("values")
+    actualChart.values.toList shouldBe List(List(3,2,1))
+    actualChart.categories.toList shouldBe List("1", "3", "2")
+    actualChart.title shouldBe "values"
   }
 
   it should "be served from a single columned non-null string data frame" in {
@@ -328,13 +320,11 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     val dataFrame = sql.createDataFrame(values, schema)
     DDS.bar(dataFrame)
 
-    val actualChart = mockedServer.lastServed.get.asInstanceOf[Chart]
-    actualChart.xAxis shouldBe XAxis.categorical(List("a", "c", "b"))
-    val actualChartData = actualChart.data.asInstanceOf[SeriesData[Int]]
-    actualChartData.series.toList shouldBe List(
-      Series("values", List(3, 2, 1))
-    )
-    actualChartData.types shouldBe ChartTypes.multiple(ChartTypeEnum.Bar, 1)
+    val actualChart = mockedServer.lastServed.get.asInstanceOf[CategoricalBarChart[Int]]
+    actualChart.labels shouldBe List("values")
+    actualChart.values.toList shouldBe List(List(3,2,1))
+    actualChart.categories.toList shouldBe List("a", "c", "b")
+    actualChart.title shouldBe "values"
   }
 
   it should "be served from a single columned nullable data frame" in {
@@ -344,13 +334,11 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     val dataFrame = sql.createDataFrame(values, schema)
     DDS.bar(dataFrame)
 
-    val actualChart = mockedServer.lastServed.get.asInstanceOf[Chart]
-    actualChart.xAxis shouldBe XAxis.categorical(List("Some(1)", "Some(3)", "None"))
-    val actualChartData = actualChart.data.asInstanceOf[SeriesData[Int]]
-    actualChartData.series.toList shouldBe List(
-      Series("values", List(3, 2, 1))
-    )
-    actualChartData.types shouldBe ChartTypes.multiple(ChartTypeEnum.Bar, 1)
+    val actualChart = mockedServer.lastServed.get.asInstanceOf[CategoricalBarChart[Int]]
+    actualChart.labels shouldBe List("values")
+    actualChart.values.toList shouldBe List(List(3,2,1))
+    actualChart.categories.toList shouldBe List("Some(1)", "Some(3)", "None")
+    actualChart.title shouldBe "values"
   }
 
   it should "be served from a single columned data frame with a custom null value" in {
@@ -360,13 +348,11 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     val dataFrame = sql.createDataFrame(values, schema)
     DDS.bar(dataFrame, "NA")
 
-    val actualChart = mockedServer.lastServed.get.asInstanceOf[Chart]
-    actualChart.xAxis shouldBe XAxis.categorical(List("1", "3", "NA"))
-    val actualChartData = actualChart.data.asInstanceOf[SeriesData[Int]]
-    actualChartData.series.toList shouldBe List(
-      Series("values", List(3, 2, 1))
-    )
-    actualChartData.types shouldBe ChartTypes.multiple(ChartTypeEnum.Bar, 1)
+    val actualChart = mockedServer.lastServed.get.asInstanceOf[CategoricalBarChart[Int]]
+    actualChart.labels shouldBe List("values")
+    actualChart.values.toList shouldBe List(List(3,2,1))
+    actualChart.categories.toList shouldBe List("1", "3", "NA")
+    actualChart.title shouldBe "values"
   }
 
   it should "not be served from a multi columned data frame" in {
@@ -527,13 +513,10 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
       mapValues(values => values.map{ case (key, value) => value} )
     DDS.pieGroups(groupedRdd)(_ + _)
 
-    val expectedChartTypes = ChartTypes.multiple(ChartTypeEnum.Pie, 3)
-    val expectedChartSeries = List(
-      Series("a", List(3)),
-      Series("b", List(3)),
-      Series("c", List(5))
+    val expectedChart = PieChart(
+      keyValuePairs = List(("a", 3), ("b", 3), ("c", 5)),
+      title = Servable.DEFAULT_TITLE
     )
-    val expectedChart = Chart(SeriesData(expectedChartSeries, expectedChartTypes))
     (stubbedServer.serve _).verify(expectedChart)
   }
 
@@ -548,7 +531,10 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
       Series("b", List(3)),
       Series("c", List(5))
     )
-    val expectedChart = Chart(SeriesData(expectedChartSeries, expectedChartTypes))
+    val expectedChart = PieChart(
+      keyValuePairs = List(("a", 3), ("b", 3), ("c", 5)),
+      title = Servable.DEFAULT_TITLE
+    )
     (stubbedServer.serve _).verify(expectedChart)
   }
 
@@ -1512,14 +1498,10 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
       ("Cardinality", 2l)
     )
 
-    val secondBar = resultServables(1)(1).asInstanceOf[Chart]
-    val secondBarData = secondBar.data.asInstanceOf[SeriesData[Integer]]
-    secondBarData.types shouldBe ChartTypes(ChartTypeEnum.Bar)
-    val secondBarDataSeries = secondBarData.series
-    secondBarDataSeries.size shouldBe 1
-    val secondBarFrequencies = secondBarDataSeries.head
-    secondBarFrequencies.label shouldBe "second"
-    secondBarFrequencies.values.toList shouldBe List(2, 1)
+    val secondBar = resultServables(1)(1).asInstanceOf[CategoricalBarChart[Int]]
+    secondBar.labels.toList shouldBe List("second")
+    secondBar.categories.toList shouldBe List("g", "5")
+    secondBar.values.map(_.toList).toList shouldBe List(List(2, 1))
 
     val thirdKeyValueSequence = resultServables(2)(0).asInstanceOf[KeyValueSequence]
     thirdKeyValueSequence.keyValueSequence shouldBe List(
@@ -1531,32 +1513,20 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
       ("Top Day", ("Thu", 2l))
     )
 
-    val thirdYearBar = resultServables(2)(1).asInstanceOf[Chart]
-    val thirdYearBarData = thirdYearBar.data.asInstanceOf[SeriesData[String]]
-    thirdYearBarData.types shouldBe ChartTypes(ChartTypeEnum.Bar)
-    val thirdYearBarDataSeries = thirdYearBarData.series
-    thirdYearBarDataSeries.size shouldBe 1
-    val thirdYearBarFrequencies = thirdYearBarDataSeries.head
-    thirdYearBarFrequencies.label shouldBe "Years in third"
-    thirdYearBarFrequencies.values.toList shouldBe List(2, 1)
+    val thirdYearBar = resultServables(2)(1).asInstanceOf[CategoricalBarChart[Int]]
+    thirdYearBar.labels.toList shouldBe List("Years in third")
+    thirdYearBar.categories.toList shouldBe List("1970", "NULL")
+    thirdYearBar.values.map(_.toList).toList shouldBe List(List(2, 1))
 
-    val thirdMonthBar = resultServables(2)(2).asInstanceOf[Chart]
-    val thirdMonthBarData = thirdMonthBar.data.asInstanceOf[SeriesData[String]]
-    thirdMonthBarData.types shouldBe ChartTypes(ChartTypeEnum.Bar)
-    val thirdMonthBarDataSeries = thirdMonthBarData.series
-    thirdMonthBarDataSeries.size shouldBe 1
-    val thirdMonthBarFrequencies = thirdMonthBarDataSeries.head
-    thirdMonthBarFrequencies.label shouldBe "Months in third"
-    thirdMonthBarFrequencies.values.toList shouldBe List(2, 1)
+    val thirdMonthBar = resultServables(2)(2).asInstanceOf[CategoricalBarChart[Int]]
+    thirdMonthBar.labels.toList shouldBe List("Months in third")
+    thirdMonthBar.categories.toList shouldBe List("Jan", "NULL")
+    thirdMonthBar.values.map(_.toList).toList shouldBe List(List(2, 1))
 
-    val thirdDayBar = resultServables(2)(3).asInstanceOf[Chart]
-    val thirdDayBarData = thirdDayBar.data.asInstanceOf[SeriesData[String]]
-    thirdDayBarData.types shouldBe ChartTypes(ChartTypeEnum.Bar)
-    val thirdDayBarDataSeries = thirdDayBarData.series
-    thirdDayBarDataSeries.size shouldBe 1
-    val thirdDayBarFrequencies = thirdDayBarDataSeries.head
-    thirdDayBarFrequencies.label shouldBe "Days in third"
-    thirdDayBarFrequencies.values.toList shouldBe List(2, 1)
+    val thirdDayBar = resultServables(2)(3).asInstanceOf[CategoricalBarChart[Int]]
+    thirdDayBar.labels.toList shouldBe List("Days in third")
+    thirdDayBar.categories.toList shouldBe List("Thu", "NULL")
+    thirdDayBar.values.map(_.toList).toList shouldBe List(List(2, 1))
   }
 
   it should "be served for data frames having all null values" in {
@@ -1604,14 +1574,10 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
       ("Cardinality", 1l)
     )
 
-    val secondBar = resultServables(1)(1).asInstanceOf[Chart]
-    val secondBarData = secondBar.data.asInstanceOf[SeriesData[Integer]]
-    secondBarData.types shouldBe ChartTypes(ChartTypeEnum.Bar)
-    val secondBarDataSeries = secondBarData.series
-    secondBarDataSeries.size shouldBe 1
-    val secondBarFrequencies = secondBarDataSeries.head
-    secondBarFrequencies.label shouldBe "second"
-    secondBarFrequencies.values.toList shouldBe List(3)
+    val secondBar = resultServables(1)(1).asInstanceOf[CategoricalBarChart[Int]]
+    secondBar.labels.toList shouldBe List("second")
+    secondBar.categories.toList shouldBe List("NULL")
+    secondBar.values.map(_.toList).toList shouldBe List(List(3))
 
     val thirdKeyValues = resultServables(2)(0).asInstanceOf[KeyValueSequence]
     thirdKeyValues.keyValueSequence shouldBe List(
@@ -1623,32 +1589,20 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
       ("Top Day", ("NULL", 3l))
     )
 
-    val thirdYearBar = resultServables(2)(1).asInstanceOf[Chart]
-    val thirdYearBarData = thirdYearBar.data.asInstanceOf[SeriesData[String]]
-    thirdYearBarData.types shouldBe ChartTypes(ChartTypeEnum.Bar)
-    val thirdYearBarDataSeries = thirdYearBarData.series
-    thirdYearBarDataSeries.size shouldBe 1
-    val thirdYearBarFrequencies = thirdYearBarDataSeries.head
-    thirdYearBarFrequencies.label shouldBe "Years in third"
-    thirdYearBarFrequencies.values.toList shouldBe List(3)
+    val thirdYearBar = resultServables(2)(1).asInstanceOf[CategoricalBarChart[Int]]
+    thirdYearBar.labels.toList shouldBe List("Years in third")
+    thirdYearBar.categories.toList shouldBe List("NULL")
+    thirdYearBar.values.map(_.toList).toList shouldBe List(List(3))
 
-    val thirdMonthBar = resultServables(2)(2).asInstanceOf[Chart]
-    val thirdMonthBarData = thirdMonthBar.data.asInstanceOf[SeriesData[String]]
-    thirdMonthBarData.types shouldBe ChartTypes(ChartTypeEnum.Bar)
-    val thirdMonthBarDataSeries = thirdMonthBarData.series
-    thirdMonthBarDataSeries.size shouldBe 1
-    val thirdMonthBarFrequencies = thirdMonthBarDataSeries.head
-    thirdMonthBarFrequencies.label shouldBe "Months in third"
-    thirdMonthBarFrequencies.values.toList shouldBe List(3)
+    val thirdMonthBar = resultServables(2)(2).asInstanceOf[CategoricalBarChart[Int]]
+    thirdMonthBar.labels.toList shouldBe List("Months in third")
+    thirdMonthBar.categories.toList shouldBe List("NULL")
+    thirdMonthBar.values.map(_.toList).toList shouldBe List(List(3))
 
-    val thirdDayBar = resultServables(2)(3).asInstanceOf[Chart]
-    val thirdDayBarData = thirdDayBar.data.asInstanceOf[SeriesData[String]]
-    thirdDayBarData.types shouldBe ChartTypes(ChartTypeEnum.Bar)
-    val thirdDayBarDataSeries = thirdDayBarData.series
-    thirdDayBarDataSeries.size shouldBe 1
-    val thirdDayBarFrequencies = thirdDayBarDataSeries.head
-    thirdDayBarFrequencies.label shouldBe "Days in third"
-    thirdDayBarFrequencies.values.toList shouldBe List(3)
+    val thirdDayBar = resultServables(2)(3).asInstanceOf[CategoricalBarChart[Int]]
+    thirdDayBar.labels.toList shouldBe List("Days in third")
+    thirdDayBar.categories.toList shouldBe List("NULL")
+    thirdDayBar.values.map(_.toList).toList shouldBe List(List(3))
   }
 
   "Help" should "work" in {

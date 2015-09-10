@@ -258,15 +258,15 @@ object SparkSqlFunctions {
       val (years, yearFrequencies) = agg.yearFrequencies.toList.sortBy(_._1).map { case (year, count) => {
         (DateColumnStatisticsAggregator.calendarYearToString(year), count)
       }}.unzip
-      val yearBar = ScalaFunctions.createBar(yearFrequencies, years, s"Years in ${field.name}")
+      val yearBar = ScalaFunctions.createBar(yearFrequencies, years, Some(s"Years in ${field.name}"))
       val (months, monthFrequencies) = agg.monthFrequencies.toList.sortBy(_._1).map { case (month, count) => {
         (DateColumnStatisticsAggregator.calendarMonthToString(month), count)
       }}.unzip
-      val monthBar = ScalaFunctions.createBar(monthFrequencies, months, s"Months in ${field.name}")
+      val monthBar = ScalaFunctions.createBar(monthFrequencies, months, Some(s"Months in ${field.name}"))
       val (days, dayFrequencies) = agg.dayOfWeekFrequencies.toList.sortBy(_._1).map { case (day, count) => {
         (DateColumnStatisticsAggregator.calendarDayToString(day), count)
       }}.unzip
-      val dayBar = ScalaFunctions.createBar(dayFrequencies, days, s"Days in ${field.name}")
+      val dayBar = ScalaFunctions.createBar(dayFrequencies, days, Some(s"Days in ${field.name}"))
       val table = KeyValueSequence(List(
         ("Total Count", agg.totalCount),
         ("Missing Count", agg.missingCount),
@@ -293,13 +293,13 @@ object SparkSqlFunctions {
       val mode = orderedCounts.first
       val barPlot = if (cardinality <= 10) {
         val (values, counts) = orderedCounts.collect.unzip
-        ScalaFunctions.createBar(counts, values, field.name)
+        ScalaFunctions.createBar(counts, values, Some(field.name))
       } else {
         val (top10Values, top10Counts) = orderedCounts.take(10).unzip
         val top10CountsSum = top10Counts.sum
         val totalCountsSum = orderedCounts.map { case (value, counts) => counts }.reduce(_ + _)
         val otherCount = totalCountsSum - top10CountsSum
-        ScalaFunctions.createBar(top10Counts ++ List(otherCount), top10Values ++ List("..."), field.name)
+        ScalaFunctions.createBar(top10Counts ++ List(otherCount), top10Values ++ List("..."), Some(field.name))
       }
       val (agg, _) = nominalColumnStatistics(index)
       val table = KeyValueSequence(List(

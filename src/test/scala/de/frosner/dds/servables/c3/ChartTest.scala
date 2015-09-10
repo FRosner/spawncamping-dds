@@ -5,21 +5,19 @@ import spray.json.{JsObject, JsString}
 
 class ChartTest extends FlatSpec with Matchers {
 
-  "A chart" should "have the correct JSON format with default x-axis" in {
-    val data = new DummyData("data", "1")
-    Chart(data).contentAsJson shouldBe JsObject(
-      ("data", data.toJson),
-      ("axis", JsObject(
-        ("x", XAxis.indexed.toJson)
-      ))
-    )
+  private case class DummyChart(data: Data, xAxis: XAxis, title: String) extends Chart(data, xAxis, title) {
+    val servableType = "dummy-chart"
   }
 
-  it should "include a custom axis type in the JSON format" in {
+  "A chart" should "have the correct JSON format with default x-axis" in {
     val data = new DummyData("data", "1")
-    val categoricalAxis = XAxis.categorical(List("a", "b"))
-    Chart(data, categoricalAxis).contentAsJson.asJsObject.fields("axis") shouldBe
-      JsObject(("x", categoricalAxis.toJson))
+    val axis = XAxis.indexed
+    DummyChart(data, axis, "myTitle").contentAsJson shouldBe JsObject(
+      ("data", data.toJson),
+      ("axis", JsObject(
+        ("x", axis.toJson)
+      ))
+    )
   }
 
 }

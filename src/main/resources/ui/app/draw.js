@@ -27,7 +27,7 @@ define(function(require) {
     } else if (servable.type == "keyValue") {
       toDraw = new KeyValueSequence()
         .data(servable.content);
-    } else if (servable.type == "chart") {
+    } else if (servable.type == "bar (indexed)" || servable.type == "bar (categorical)" || servable.type == "pie" || servable.type == "line") {
       toDraw = new C3Chart()
         .margin({
           top: 5,
