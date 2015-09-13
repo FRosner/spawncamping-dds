@@ -55,7 +55,7 @@ define(function(require) {
         })
         .data(servable.content);
     } else if (servable.type == "graph") {
-      toDraw = new Graph()
+      toDraw = new Graph(id)
         .data(servable.content);
     } else if (servable.type == "points-2d") {
       toDraw = new Scatter2D(id)
