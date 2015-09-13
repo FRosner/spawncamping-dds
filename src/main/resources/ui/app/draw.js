@@ -67,7 +67,7 @@ define(function(require) {
         })
         .data(servable.content);
     } else if (servable.type == "matrix") {
-      toDraw = new Matrix()
+      toDraw = new Matrix(id)
         .margin({
           top: 10,
           right: 15,

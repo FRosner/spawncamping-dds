@@ -1,9 +1,21 @@
 define(function(require) {
 
   var Visualization = require("Visualization"),
-    Util = require("util");
+    Util = require("util"),
+    Cache = require("Cache");
 
-  function Matrix() {}
+  function Matrix(id) {
+    if (Cache.existsConfig(id)) {
+      this.config = Cache.getConfig(id);
+    } else {
+      this.config = {
+        heatMapScale: "YlOrRd",
+        lowerBound: null,
+        upperBound: null
+      };
+      Cache.setConfig(id, this.config);
+    }
+  }
 
   Matrix.prototype = new Visualization();
   Matrix.prototype.constructor = Visualization;
@@ -11,11 +23,10 @@ define(function(require) {
 
   Matrix.prototype._draw = function(matrixAndNames) {
     var d3 = require("d3"),
-      chroma = require("chroma"),
-      Cache = require("Cache");
+      chroma = require("chroma");
 
     var vizId = this._content.id;
-    var cache = Cache.getConfig(vizId);
+    var config = this.config;
     var matrix = Util.flatMap(matrixAndNames.entries, function(row, i) {
       return row.map(function(entry, j) {
         return {
@@ -46,20 +57,15 @@ define(function(require) {
     var zValues = matrix.map(function(v) {
       return v.z;
     });
-    var zMin = (document.isNewVisualization) ? Math.min.apply(null, zValues) : cache.lowerBoundInput.value;
-    var zMax = (document.isNewVisualization) ? Math.max.apply(null, zValues) : cache.upperBoundInput.value;
+    var zMin = (config.lowerBound == null) ? Math.min.apply(null, zValues) : config.lowerBound;
+    var zMax = (config.upperBound == null) ? Math.max.apply(null, zValues) : config.upperBound;
+    config.lowerBound = zMin;
+    config.upperBound = zMax;
     var zDomain = [
       zMin,
       zMax
     ];
-    this._defaultScale = "YlOrRd";
-    var zScaleString;
-    if (cache.heatMapScale) {
-      zScaleString = cache.heatMapScale;
-    } else {
-      zScaleString = this._defaultScale;
-      cache.heatMapScale = zScaleString;
-    }
+    var zScaleString = config.heatMapScale;
     var z = chroma.scale(zScaleString)
       .domain(zDomain);
 
@@ -130,14 +136,14 @@ define(function(require) {
         lowerBoundInput.value,
         upperBoundInput.value
       ];
-      var customZ = chroma.scale(cache.heatMapScale)
+      config.lowerBound = lowerBoundInput.value;
+      var customZ = chroma.scale(config.heatMapScale)
         .domain(customZDomain);
       rects.attr("fill", function(value) {
         return (value.z != null) ? customZ(value.z) : "#000000";
       });
     };
     this._lowerBoundInput = lowerBoundInput;
-    cache.lowerBoundInput = lowerBoundInput;
     var zText2 = Util.generateSpan(this._boundArea, "");
     zText2.innerHTML = " - ";
     var upperBoundInput = Util.generateTextInput(this._boundArea, "upperBoundInput" + vizId);
@@ -148,21 +154,21 @@ define(function(require) {
         lowerBoundInput.value,
         upperBoundInput.value
       ];
-      var customZ = chroma.scale(cache.heatMapScale)
+      config.upperBound = upperBoundInput.value;
+      var customZ = chroma.scale(config.heatMapScale)
         .domain(customZDomain);
       rects.attr("fill", function(value) {
         return (value.z != null) ? customZ(value.z) : "#000000";
       });
     };
     this._upperBoundInput = upperBoundInput;
-    cache.upperBoundInput = upperBoundInput;
 
     var redrawWithDifferentScale = function(scale) {
       return function() {
-        if (cache.heatMapScale != scale) {
-          cache.heatMapScale = scale;
-          var zMin = cache.lowerBoundInput.value;
-          var zMax = cache.upperBoundInput.value;
+        if (config.heatMapScale != scale) {
+          config.heatMapScale = scale;
+          var zMin = config.lowerBound;
+          var zMax = config.upperBound;
           var zDomain = [
             zMin,
             zMax
