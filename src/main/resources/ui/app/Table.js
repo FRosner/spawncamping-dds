@@ -24,7 +24,7 @@ define(function(require) {
       Histogram = require("Histogram");
 
     var divId = "table-" + this._content.id;
-    var cache = Cache.getCache(divId);
+    var cache = Cache.getConfig(divId);
 
     var table = tableAndTypes.rows;
     var types = {};

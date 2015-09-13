@@ -15,7 +15,7 @@ define(function(require) {
       Cache = require("Cache");
 
     var vizId = this._content.id;
-    var cache = Cache.getCache(vizId);
+    var cache = Cache.getConfig(vizId);
     var matrix = Util.flatMap(matrixAndNames.entries, function(row, i) {
       return row.map(function(entry, j) {
         return {

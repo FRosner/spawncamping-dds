@@ -13,6 +13,7 @@ define(function(require) {
       Table = require("Table");
 
     var toDraw;
+    var id = servable.id;
     if (servable.type == "composite") {
       toDraw = new Composite()
         .margin({
@@ -57,7 +58,7 @@ define(function(require) {
       toDraw = new Graph()
         .data(servable.content);
     } else if (servable.type == "points-2d") {
-      toDraw = new Scatter2D()
+      toDraw = new Scatter2D(id)
         .margin({
           top: 10,
           right: 15,

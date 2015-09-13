@@ -15,7 +15,7 @@ define(function(require) {
       Cache = require("Cache");
 
     var divId = "graph-" + this._content.id;
-    var cache = Cache.getCache(divId);
+    var cache = Cache.getConfig(divId);
 
     var width = this._width,
       height = this._height;
