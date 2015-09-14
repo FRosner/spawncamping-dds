@@ -2,7 +2,9 @@ define(function(require) {
 
   var Visualization = require("Visualization");
 
-  function Composite() {}
+  function Composite(id) {
+    this.id = id;
+  }
 
   Composite.prototype = new Visualization();
   Composite.prototype.constructor = Visualization;
@@ -13,6 +15,8 @@ define(function(require) {
       Util = require("util"),
       d3 = require("d3"),
       Drawer = require("draw");
+
+    var id = this.id;
 
     var servedComponents = [];
     var thisContent = this._content;
@@ -87,9 +91,12 @@ define(function(require) {
       })
       .each(function(cell) {
         var servable = cell;
+        // TODO this will not be required anymore once the id is part of the servable
+        // TODO also then we don't need to hack the id hopefully...
+        servable.id = id + cell.contentId;
         var contentId = cell.contentId;
         var headerId = cell.headerId;
-        servedComponents.push(Drawer.drawServable(cell, headerId, contentId));
+        servedComponents.push(Drawer.drawServable(servable, headerId, contentId));
       });
     this._servedComponents = servedComponents;
   }

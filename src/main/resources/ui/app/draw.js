@@ -15,7 +15,7 @@ define(function(require) {
     var toDraw;
     var id = servable.id;
     if (servable.type == "composite") {
-      toDraw = new Composite()
+      toDraw = new Composite(id)
         .margin({
           top: 30,
           right: 0,
