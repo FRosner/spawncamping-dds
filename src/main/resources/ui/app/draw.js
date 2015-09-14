@@ -37,7 +37,7 @@ define(function(require) {
         })
         .data(servable.content);
     } else if (servable.type == "table") {
-      toDraw = new Table()
+      toDraw = new Table(id)
         .margin({
           top: 30,
           right: 0,
