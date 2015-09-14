@@ -1402,6 +1402,14 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     miMatrix(1)(1) should be (0d +- epsilon)
   }
 
+  it should "return None if called with empty dataframe as an argument" in {
+    DDS.start(mockedServer)
+    val rdd = sc.makeRDD(List(Row()))
+    val dataFrame = sql.createDataFrame(rdd, StructType(List()))
+    DDS.mutualInformation(dataFrame, MutualInformationAggregator.NO_NORMALIZATION)
+    mockedServer.lastServed shouldBe None
+  }
+
   "A correct dashboard" should "be served" in {
     DDS.start(mockedServer)
     val rdd = sc.parallelize(List(Row(1, "5", 5d), Row(3, "g", 5d), Row(5, "g", 6d)))
