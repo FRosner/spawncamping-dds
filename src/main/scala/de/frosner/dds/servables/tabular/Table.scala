@@ -13,6 +13,7 @@ case class Table(head: Seq[String], rows: Seq[Seq[Any]], title: String = Servabl
     head.zip(row).map{ case (columnName, value) => {
       val (jsValue, jsType) = value match {
         case None => (JsNull, NULL_TYPE)
+        case null => (JsNull, NULL_TYPE)
         case Some(int: Int) => (JsNumber(int), NUMERIC_TYPE)
         case int: Int => (JsNumber(int), NUMERIC_TYPE)
         case Some(double: Double) => (JsNumber(double), NUMERIC_TYPE)
