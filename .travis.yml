@@ -3,6 +3,7 @@ scala:
    - 2.10.5
    - 2.11.6
 script:
+  - sbt ++$TRAVIS_SCALA_VERSION build
   - sbt ++$TRAVIS_SCALA_VERSION coverage test
-  - sbt ++$TRAVIS_SCALA_VERSION clean build publish-snapshot
+  - sbt ++$TRAVIS_SCALA_VERSION publish-snapshot
 after_success: "sbt coveralls"
