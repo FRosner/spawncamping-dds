@@ -97,6 +97,24 @@ class TableTest extends FlatSpec with Matchers {
       )
   }
 
+  it should "be able to handle null fields" in {
+    val table = Table(List("a", "b"), List(List("va1", null)))
+    val actualTableJson = table.contentAsJson.asJsObject
+    val actualTableTypes = actualTableJson.fields("types")
+    val actualTableRows = actualTableJson.fields("rows")
+    actualTableTypes shouldBe JsObject(
+      ("a", JsString(Table.DISCRETE_TYPE)),
+      ("b", JsString(Table.DISCRETE_TYPE))
+    )
+    actualTableRows shouldBe
+      JsArray(
+        JsObject(
+          ("a", JsString("va1")),
+          ("b", JsNull)
+        )
+      )
+  }
+
   it should "work well with optional String values" in {
     val table = Table(List("data"), List(List(Option("a")), List(Option.empty[String])))
     table.contentAsJson.asJsObject.fields("rows") shouldBe
@@ -147,8 +165,13 @@ class TableTest extends FlatSpec with Matchers {
     table.contentAsJson.asJsObject.fields("types").asJsObject.fields shouldBe Map("letters" -> JsString("string"))
   }
 
-  it should "be present when all rows are null" in {
-    val table = Table(List("nulls"), List(List(Option.empty), List(Option.empty), List(Option.empty)))
+  it should "be present when all rows are none" in {
+    val table = Table(List("nones"), List(List(Option.empty), List(Option.empty), List(Option.empty)))
+    table.contentAsJson.asJsObject.fields("types").asJsObject.fields shouldBe Map("nones" -> JsString("string"))
+  }
+
+  it should "be present when all rows are nulls" in {
+    val table = Table(List("nulls"), List(List(null), List(null)))
     table.contentAsJson.asJsObject.fields("types").asJsObject.fields shouldBe Map("nulls" -> JsString("string"))
   }
 
