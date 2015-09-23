@@ -37,6 +37,8 @@ define(function(require) {
       updateServableSelector();
       var servableAndId = JSON.parse(response);
       var servable = servableAndId.servable;
+      // TODO put the ID in also in the back-end
+      servable.id = servableAndId.id;
       document.lastServedId = servableAndId.id;
       document.isNewVisualization = true;
       Util.doAndRedoOnResizeOf(window, function() {
@@ -81,7 +83,6 @@ define(function(require) {
 
   return {
     start: function() {
-      Cache.resetCache();
       $(document)
         .ready(toggleUpdating);
       $(document).ready(function() {

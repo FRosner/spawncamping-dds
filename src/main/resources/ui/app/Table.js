@@ -1,21 +1,33 @@
 define(function(require) {
 
   var Visualization = require("Visualization"),
-    Util = require("util");
+    Util = require("util"),
+    Cache = require("Cache");
 
   require("slickgrid");
   require("slickdataview");
   require("slickpager");
 
-  function Table() {};
+  function Table(id) {
+    this.id = id;
+    if (Cache.existsConfig(id)) {
+      this.config = Cache.getConfig(id);
+    } else {
+      this.config = {
+        coloredDimension: null,
+        tickLabelsHidden: false,
+        jitterEnabled: false
+      };
+      Cache.setConfig(id, this.config);
+    }
+  };
 
   Table.prototype = new Visualization();
   Table.prototype.constructor = Visualization;
   Table.prototype.parent = Visualization.prototype;
 
   Table.prototype._draw = function(tableAndTypes) {
-    var Cache = require("Cache"),
-      d3 = require("d3"),
+    var d3 = require("d3"),
       c3 = require("c3"),
       parcoords = require("parcoords"),
       _ = require("underscore"),
@@ -24,7 +36,8 @@ define(function(require) {
       Histogram = require("Histogram");
 
     var divId = "table-" + this._content.id;
-    var cache = Cache.getCache(divId);
+    var config = this.config;
+    var id = this.id;
 
     var table = tableAndTypes.rows;
     var types = {};
@@ -107,55 +120,57 @@ define(function(require) {
         .attr("stop-color", "#ff5500")
         .attr("stop-opacity", 1);
 
+      function colorDimension(dimensions, dimension) {
+        dimensions.filter(function(d) {
+            return d == dimension;
+          })
+          .selectAll("circle")
+          .attr("class", "colorSelector-selected");
+        var values = data.map(function(row) {
+          return row[dimension];
+        });
+        var scale;
+        if (types[dimension] == "string") {
+          var uniqValues = _.uniq(values)
+            .reduce(function(uniqIndexes, value, index) {
+              uniqIndexes[value] = index;
+              return uniqIndexes;
+            }, {});
+          var domain = [0, Object.keys(uniqValues)
+            .length - 1
+          ];
+          var chromaScale = chroma.scale('Set1')
+            .domain(domain);
+          scale = function(v) {
+            return chromaScale(uniqValues[v]);
+          };
+        } else {
+          var domain = [Math.min.apply(null, values), Math.max.apply(null, values)];
+          var chromaScale = chroma.scale(['orange', 'maroon'])
+            .domain(domain);
+          scale = function(v) {
+            return chromaScale(v);
+          };
+        }
+
+        parcoords.color(function(d) {
+            // color depending on selected dimension
+            var value = d[dimension];
+            return scale(value);
+          })
+          .render();
+      }
+
       function changeColor(dimension) {
         var dimensions = parcoords.svg.selectAll(".dimension");
         dimensions.selectAll("circle")
           .attr("class", "colorSelector");
-        if (!cache.coloringEnabled || cache.lastColoredDimension != dimension) {
-          dimensions.filter(function(d) {
-              return d == dimension;
-            })
-            .selectAll("circle")
-            .attr("class", "colorSelector-selected");
-          cache.coloredDimension = dimension;
-          var values = data.map(function(row) {
-            return row[dimension];
-          });
-          var scale;
-          if (types[dimension] == "string") {
-            var uniqValues = _.uniq(values)
-              .reduce(function(uniqIndexes, value, index) {
-                uniqIndexes[value] = index;
-                return uniqIndexes;
-              }, {});
-            var domain = [0, Object.keys(uniqValues)
-              .length - 1
-            ];
-            var chromaScale = chroma.scale('Set1')
-              .domain(domain);
-            scale = function(v) {
-              return chromaScale(uniqValues[v]);
-            };
-          } else {
-            var domain = [Math.min.apply(null, values), Math.max.apply(null, values)];
-            var chromaScale = chroma.scale(['orange', 'maroon'])
-              .domain(domain);
-            scale = function(v) {
-              return chromaScale(v);
-            };
-          }
-
-          parcoords.color(function(d) {
-              // color depending on selected dimension
-              var value = d[dimension];
-              return scale(value);
-            })
-            .render()
-          cache.coloringEnabled = true;
-          cache.lastColoredDimension = dimension;
+        if (config.coloredDimension != dimension) {
+          config.coloredDimension = dimension;
+          colorDimension(dimensions, dimension);
         } else {
           parcoords.color("#1f77b4");
-          cache.coloringEnabled = false;
+          config.coloredDimension = null;
         }
       }
 
@@ -172,23 +187,27 @@ define(function(require) {
         .append("svg:title")
         .text("Color data based on this dimension");
 
+      if (config.coloredDimension != null) {
+        colorDimension(parcoords.svg.selectAll(".dimension"), config.coloredDimension);
+      }
+
       var labels = parcoords.svg.selectAll(".tick")
         .selectAll("text");
       var button = this._hideLabelButton;
       button.onclick = function() {
-        if (cache.tickLabelsHidden) {
+        if (config.tickLabelsHidden) {
           labels.attr("visibility", "visible");
           button.setAttribute("class", "hideLabelButton headerButton unhidden");
           button.setAttribute("title", "Hide Ticks Labels");
-          cache.tickLabelsHidden = false;
+          config.tickLabelsHidden = false;
         } else {
           labels.attr("visibility", "hidden");
           button.setAttribute("class", "hideLabelButton headerButton hidden");
           button.setAttribute("title", "Show Ticks Labels");
-          cache.tickLabelsHidden = true;
+          config.tickLabelsHidden = true;
         }
       };
-      if (!cache.tickLabelsHidden) {
+      if (!config.tickLabelsHidden) {
         labels.attr("visibility", "visible");
         button.setAttribute("class", "hideLabelButton headerButton unhidden");
         button.setAttribute("title", "Hide Ticks Labels");
@@ -197,8 +216,6 @@ define(function(require) {
         button.setAttribute("class", "hideLabelButton headerButton hidden");
         button.setAttribute("title", "Show Ticks Labels");
       }
-
-      cache.coloringEnabled = false;
     } else if (shouldDrawScatter) {
       var scatterPoints = table.map(function(row) {
         columnKeys = Object.keys(row);
@@ -213,7 +230,8 @@ define(function(require) {
       };
       var scatterDivId = divId + "-scatter"
       this._graphDiv = Util.generateDiv(this._content, scatterDivId);
-      this._scatter = new Scatter2D()
+      // TODO Visualizations stateless and button handling moved to UI part? See comment in #237.
+      this._scatter = new Scatter2D(id)
         .header(this._header.id)
         .content(scatterDivId)
         .width(this._width)

@@ -1,21 +1,30 @@
 define(function(require) {
 
   var Visualization = require("Visualization"),
-    Util = require("util");
+    Util = require("util"),
+    Cache = require("Cache");
 
-  function Scatter2D() {}
+  function Scatter2D(id) {
+    if (Cache.existsConfig(id)) {
+      this.config = Cache.getConfig(id);
+    } else {
+      this.config = {
+        jitterEnabled: false
+      };
+      Cache.setConfig(id, this.config);
+    }
+  }
 
   Scatter2D.prototype = new Visualization();
   Scatter2D.prototype.constructor = Visualization;
   Scatter2D.prototype.parent = Visualization.prototype;
 
   Scatter2D.prototype._draw = function(pointsWithTypes) {
-    var d3 = require("d3"),
-      Cache = require("Cache");
+    var d3 = require("d3");
 
     var scatterVis = this;
     var divId = "scatter-" + this._content.id;
-    var cache = Cache.getCache(divId);
+    var config = this.config;
 
     function drawScatter() {
       var points = pointsWithTypes.points;
@@ -108,7 +117,7 @@ define(function(require) {
           if (types.x == "number") {
             return x(p.x)
           } else {
-            var jitter = (cache.jitterEnabled) ? (x.rangeBand() * (Math.random(1) - 0.5) * 0.4) : 0;
+            var jitter = (config.jitterEnabled) ? (x.rangeBand() * (Math.random(1) - 0.5) * 0.4) : 0;
             return x(p.x) + (x.rangeBand() / 2) + jitter;
           }
         })
@@ -116,7 +125,7 @@ define(function(require) {
           if (types.y == "number") {
             return y(p.y)
           } else {
-            var jitter = (cache.jitterEnabled) ? (y.rangeBand() * (Math.random(1) - 0.5) * 0.4) : 0;
+            var jitter = (config.jitterEnabled) ? (y.rangeBand() * (Math.random(1) - 0.5) * 0.4) : 0;
             return y(p.y) + (y.rangeBand() / 2) + jitter;
           }
         })
@@ -128,12 +137,12 @@ define(function(require) {
     this._header.appendChild(enableJitterButton);
     var contentId = this._content.id;
     enableJitterButton.onclick = function() {
-      if (cache.jitterEnabled) {
-        cache.jitterEnabled = false;
+      if (config.jitterEnabled) {
+        config.jitterEnabled = false;
         enableJitterButton.setAttribute("class", "headerButton disabled");
         enableJitterButton.setAttribute("title", "Enable Jitter");
       } else {
-        cache.jitterEnabled = true;
+        config.jitterEnabled = true;
         enableJitterButton.setAttribute("class", "headerButton enabled");
         enableJitterButton.setAttribute("title", "Disable Jitter");
       }
@@ -141,7 +150,7 @@ define(function(require) {
         .innerHTML = "";
       drawScatter();
     };
-    if (cache.jitterEnabled) {
+    if (config.jitterEnabled) {
       enableJitterButton.setAttribute("class", "headerButton enabled");
       enableJitterButton.setAttribute("title", "Disable Jitter");
     } else {

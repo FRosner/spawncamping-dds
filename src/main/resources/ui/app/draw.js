@@ -13,8 +13,9 @@ define(function(require) {
       Table = require("Table");
 
     var toDraw;
+    var id = servable.id;
     if (servable.type == "composite") {
-      toDraw = new Composite()
+      toDraw = new Composite(id)
         .margin({
           top: 30,
           right: 0,
@@ -36,7 +37,7 @@ define(function(require) {
         })
         .data(servable.content);
     } else if (servable.type == "table") {
-      toDraw = new Table()
+      toDraw = new Table(id)
         .margin({
           top: 30,
           right: 0,
@@ -54,10 +55,10 @@ define(function(require) {
         })
         .data(servable.content);
     } else if (servable.type == "graph") {
-      toDraw = new Graph()
+      toDraw = new Graph(id)
         .data(servable.content);
     } else if (servable.type == "points-2d") {
-      toDraw = new Scatter2D()
+      toDraw = new Scatter2D(id)
         .margin({
           top: 10,
           right: 15,
@@ -66,7 +67,7 @@ define(function(require) {
         })
         .data(servable.content);
     } else if (servable.type == "matrix") {
-      toDraw = new Matrix()
+      toDraw = new Matrix(id)
         .margin({
           top: 10,
           right: 15,
