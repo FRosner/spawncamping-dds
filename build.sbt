@@ -5,84 +5,52 @@ import uk.gov.hmrc.GitStampPlugin._
 
 import S3._
 
-//////////////////////////////
-// Project Meta Information //
-//////////////////////////////
-organization  := "de.frosner"
+import Dependencies._
 
-version       := "3.1.0-SNAPSHOT"
+////////////////////////////////////////////////
+// Common Settings Shared Across Sub-Projects //
+////////////////////////////////////////////////
+lazy val rootProjectName = settingKey[String]("Name of the root project")
 
-name          := "spawncamping-dds"
+lazy val commonMetaInformationSettings = Seq(
+  organization      := "de.frosner",
+  version           := "4.0.0-SNAPSHOT",
+  scalaVersion      := "2.10.6",
+  rootProjectName   := "spawncamping-dds"
+)
 
-scalaVersion  := "2.10.5"
+lazy val commonCompileSettings = Seq(
+  fork in Compile := true,
+  scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8"),
+  resolvers += "jitpack" at "https://jitpack.io"
+)
 
+lazy val commonSettings = commonMetaInformationSettings ++ commonCompileSettings
+
+commonSettings
+
+////////////////////////////////
+// Root Project Only Settings //
+////////////////////////////////
 lazy val shortScalaVersion = settingKey[String]("Scala major and minor version.")
-
-shortScalaVersion := scalaVersion.value.split("\\.").take(2).mkString(".")
 
 lazy val finalArtifactName = settingKey[String]("Name of the final artifact.")
 
-finalArtifactName := s"${name.value}-${version.value}_${shortScalaVersion.value}.jar"
+lazy val rootMetaInformationSettings = Seq(
+  name := rootProjectName.value
+)
 
-//////////////////////////
-// Library Dependencies //
-//////////////////////////
-libraryDependencies ++= {
-  val sprayV = "1.3.2"
-  val sparkV = "1.4.0"
-  Seq(
-    "io.spray"            %% "spray-can"                   % sprayV,
-    "io.spray"            %% "spray-routing"               % sprayV,
-    "io.spray"            %% "spray-caching"               % sprayV,
-    "io.spray"            %% "spray-json"                  % "1.3.1",
-    "com.typesafe.akka"   %% "akka-actor"                  % "2.3.6",
-    "org.scalaj"          %% "scalaj-http"                 % "1.1.4",
-    "org.scalaz"          %% "scalaz-core"                 % "7.1.3",
-    "org.slf4j"           %  "slf4j-log4j12"               % "1.7.10",
-    "org.apache.spark"    %% "spark-core"                  % sparkV     % "provided",
-    "org.apache.spark"    %% "spark-graphx"                % sparkV     % "provided",
-    "org.apache.spark"    %% "spark-sql"                   % sparkV     % "provided",
-    "org.scalatest"       %% "scalatest"                   % "2.2.4"    % "test",
-    "org.scalamock"       %% "scalamock-scalatest-support" % "3.2.1"    % "test"
-  )
-}
+lazy val rootAssemblySettings = Seq(gitStampSettings:_*) ++ Seq(
+  shortScalaVersion := scalaVersion.value.split("\\.").take(2).mkString("."),
+  finalArtifactName := s"${name.value}-${version.value}_${shortScalaVersion.value}.jar",
+  test in assembly := {},
+  assemblyOption in assembly := (assemblyOption in assembly).value.copy(includeScala = false),
+  assemblyJarName in assembly := finalArtifactName.value
+)
 
-/////////////////////
-// Compile Options //
-/////////////////////
-fork in Compile := true
+lazy val rootSettings = rootMetaInformationSettings ++ rootAssemblySettings
 
-crossScalaVersions := Seq("2.11.6", scalaVersion.value)
-
-scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
-
-//////////////////
-// Test Options //
-//////////////////
-Seq(jasmineSettings: _*)
-
-(test in Test) <<= (test in Test) dependsOn (jasmine)
-
-appJsDir <+= sourceDirectory { src => src / "main" / "resources" / "ui" / "app" }
-
-appJsLibDir <+= sourceDirectory {  src => src / "main" / "resources" / "ui" / "lib" }
-
-jasmineTestDir <+= sourceDirectory { src => src / "test" / "resources" / "ui" }
-
-jasmineConfFile <+= sourceDirectory { src => src / "test" / "resources" / "ui" / "test.dependencies.js" }
-
-jasmineRequireJsFile <+= sourceDirectory { src => src / "main" / "resources" / "ui" / "lib" / "require.js" }
-
-//////////////////////
-// Assembly Options //
-//////////////////////
-Seq(gitStampSettings: _*)
-
-test in assembly := {}
-
-assemblyOption in assembly := (assemblyOption in assembly).value.copy(includeScala = false)
-
-assemblyJarName in assembly := finalArtifactName.value
+rootSettings // TODO check where we need these settings and if it makes sense to include them into common settings?
 
 ///////////////////////
 // Custom Build Task //
@@ -121,3 +89,36 @@ mappings in upload := Seq((new java.io.File(s"${System.getProperty("user.dir")}/
 host in upload := "spawncamping-dds-snapshots.s3.amazonaws.com"
 
 credentials += Credentials("Amazon S3", "spawncamping-dds-snapshots.s3.amazonaws.com", System.getenv("ARTIFACTS_KEY"), System.getenv("ARTIFACTS_SECRET"))
+
+///////////////////////
+// Project Structure //
+///////////////////////
+lazy val root = (project in file(".")).
+  settings((commonSettings ++ rootSettings): _*).
+  settings(
+    name := rootProjectName.value
+  ).
+  aggregate(core, datasets, webUi).
+  dependsOn(core, datasets, webUi)
+
+lazy val core = (project in file("core")).
+  settings((commonSettings ++ rootSettings): _*).
+  settings(
+    name := rootProjectName.value + "-core",
+    libraryDependencies ++= coreDependencies
+  )
+
+lazy val datasets = (project in file("datasets")).
+  settings((commonSettings ++ rootSettings): _*).
+  settings(
+    name := rootProjectName.value + "-datasets",
+    libraryDependencies ++= datasetsDependencies
+  )
+
+lazy val webUi = (project in file("web-ui")).
+  dependsOn(core).
+  settings((commonSettings ++ rootSettings): _*).
+  settings(
+    name := rootProjectName.value + "-web-ui",
+    libraryDependencies ++= webUiDependencies
+  )

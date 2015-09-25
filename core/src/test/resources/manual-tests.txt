@@ -1,0 +1,97 @@
+import de.frosner.dds.core.DDS._
+import de.frosner.dds.webui.server.SprayServer._
+
+start
+
+val sql = new org.apache.spark.sql.SQLContext(sc)
+val golf = de.frosner.dds.datasets.golf(sc)
+val sqlGolf = de.frosner.dds.datasets.golf(sc, sql)
+val flights = de.frosner.dds.datasets.flights(sc, sql)
+val sqlFlights = de.frosner.dds.datasets.flights(sc, sql)
+
+bar(sqlGolf.select("Play"))
+bars(List("Group A", "Group B", "Group C"), List(List(1,2,3), List(2,3,2), List(4,1,2)), List("Product A", "Product B", "Product C"))
+graph(List((1, "Frank"), (2, "Daniel"), (3, "Lucas"), (4, "Pietro"), (5, "Marco")), List((1,2,"Friend"), (1,3,"Friend"), (4,5,"Colleague")))
+show(sqlGolf)
+show(List((2, 3), (3, 4), (3, 1)))
+show(sqlFlights.select("Carrier"))
+median(golf.map(_.humidity))
+dashboard(sqlFlights.select("Flight Date", "Carrier", "Carrier Delay"))
+summarize(sqlFlights.select("Flight Date", "Carrier", "Carrier Delay"))
+heatmap(List(List(1d,2d), List(3d,Double.NaN)))
+correlation(sqlGolf)
+mutualInformation(sqlGolf)
+histogram(sqlGolf.select("Humidity"))
+pie(sqlGolf.select(sqlGolf("Outlook")))
+scatter(List(("1",1), ("2",5), (3,5), (10,1)))
+keyValuePairs(List((1,2), (3,4)))
+
+import org.apache.spark.sql.Row
+import org.apache.spark.sql.types._
+
+val schema = StructType(List(
+  StructField("0", ByteType, false),
+  StructField("1", ByteType, true),
+  StructField("2", ShortType, false),
+  StructField("3", ShortType, true),
+  StructField("4", IntegerType, false),
+  StructField("5", IntegerType, true),
+  StructField("6", LongType, false),
+  StructField("7", LongType, true),
+  StructField("8", FloatType, false),
+  StructField("9", FloatType, true),
+  StructField("10", DoubleType, false),
+  StructField("11", DoubleType, true),
+  StructField("12", DecimalType.Unlimited, true),
+  StructField("13", StringType, true),
+  StructField("14", BinaryType, true),
+  StructField("15", BooleanType, false),
+  StructField("16", BooleanType, true),
+  StructField("17", TimestampType, true),
+  StructField("18", DateType, true),
+  StructField("19", ArrayType(StringType), true),
+  StructField("20", MapType(StringType, IntegerType, valueContainsNull = false), true),
+  StructField("21", StructType(List(
+    StructField("a", IntegerType, false),
+    StructField("b", IntegerType, false),
+    StructField("c", IntegerType, false)
+  )), true)
+))
+val content = sc.parallelize(Seq(
+  Row(
+    0.toByte, new java.lang.Byte(0.toByte),
+    1.toShort, new java.lang.Short(1.toShort),
+    2, new java.lang.Integer(2),
+    3l, new java.lang.Long(3l),
+    4f, new java.lang.Float(4f),
+    5d, new java.lang.Double(5d),
+    new java.math.BigDecimal(6d),
+    "abc",
+    Array(8.toByte, 8.toByte, 8.toByte),
+    true, new java.lang.Boolean(true),
+    new java.sql.Timestamp(10000),
+    new java.sql.Date(10000),
+    Seq("a", "b", "c"),
+    Map("a" -> 1, "b" -> 2, "c" -> 3),
+    Row(1, 2, 3)
+  ),
+  Row(
+    0.toByte, null,
+    1.toShort, null,
+    2, null,
+    3l, null,
+    4f, null,
+    5d, null,
+    null,
+    null,
+    null,
+    true, null,
+    null,
+    null,
+    null,
+    null,
+    null
+  )
+))
+val df = sql.createDataFrame(content, schema)
+show(df)
