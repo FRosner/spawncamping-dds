@@ -73,7 +73,8 @@ class CorrelationAggregatorTest extends FlatSpec with Matchers {
     agg.iterateWithoutNulls(List(1d,-10d))
     agg.iterateWithoutNulls(List(80d,20d))
     agg.iterateWithoutNulls(List(3d,5d))
-    agg.runningCov.toMap shouldBe Map((0, 1) -> 256.91999999999996)
+    val result = agg.runningCov.toMap
+    result((0,1)) should be (256.91999999999996 +- epsilon)
   }
 
   it should "merge two numerical aggregators correctly" in {
