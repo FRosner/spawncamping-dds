@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# TODO: check if python is available and show error if not
+hash python 2>/dev/null || { echo >&2 "Python executable needed but not installed. Aborting."; exit 1; }
 
 ugly=$1
 if [ -d "${ugly}" ] ; then
