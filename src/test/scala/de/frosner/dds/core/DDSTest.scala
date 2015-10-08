@@ -1184,6 +1184,56 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     miMatrix(2)(2) should be (1.098612 +- epsilon)
   }
 
+  it should "be served from an RDD with three columns and metric normalization" in {
+    DDS.start(mockedServer)
+    val rdd = sc.makeRDD(List(Row("1", "a", "1d"), Row("1", "b", "2d"), Row("2", "b", "3d")))
+    val dataFrame = sql.createDataFrame(rdd, StructType(List(
+      StructField("first", StringType, false),
+      StructField("second", StringType, false),
+      StructField("third", StringType, false)
+    )))
+    DDS.mutualInformation(dataFrame, MutualInformationAggregator.METRIC_NORMALIZATION)
+
+    val resultMatrix = mockedServer.lastServed.get.asInstanceOf[Matrix2D]
+    resultMatrix.colNames.toList shouldBe List("first", "second", "third")
+    resultMatrix.rowNames.toList shouldBe List("first", "second", "third")
+    val miMatrix = resultMatrix.entries.map(_.toSeq)
+    miMatrix(0)(0) should be (1.0000000 +- epsilon)
+    miMatrix(0)(1) should be (0.2740175 +- epsilon)
+    miMatrix(0)(2) should be (0.5793803 +- epsilon)
+    miMatrix(1)(0) should be (0.2740175 +- epsilon)
+    miMatrix(1)(1) should be (1.0000000 +- epsilon)
+    miMatrix(1)(2) should be (0.5793803 +- epsilon)
+    miMatrix(2)(0) should be (0.5793803 +- epsilon)
+    miMatrix(2)(1) should be (0.5793803 +- epsilon)
+    miMatrix(2)(2) should be (1.0000000 +- epsilon)
+  }
+
+  it should "be served from an RDD with three columns and redundancy normalization" in {
+    DDS.start(mockedServer)
+    val rdd = sc.makeRDD(List(Row("1", "a", "1d"), Row("1", "b", "2d"), Row("2", "b", "3d")))
+    val dataFrame = sql.createDataFrame(rdd, StructType(List(
+      StructField("first", StringType, false),
+      StructField("second", StringType, false),
+      StructField("third", StringType, false)
+    )))
+    DDS.mutualInformation(dataFrame, MutualInformationAggregator.REDUNDANCY_NORMALIZATION)
+
+    val resultMatrix = mockedServer.lastServed.get.asInstanceOf[Matrix2D]
+    resultMatrix.colNames.toList shouldBe List("first", "second", "third")
+    resultMatrix.rowNames.toList shouldBe List("first", "second", "third")
+    val miMatrix = resultMatrix.entries.map(_.toSeq)
+    miMatrix(0)(0) should be (0.5000000 +- epsilon)
+    miMatrix(0)(1) should be (0.1370087 +- epsilon)
+    miMatrix(0)(2) should be (0.3668403 +- epsilon)
+    miMatrix(1)(0) should be (0.1370087 +- epsilon)
+    miMatrix(1)(1) should be (0.5000000 +- epsilon)
+    miMatrix(1)(2) should be (0.3668403 +- epsilon)
+    miMatrix(2)(0) should be (0.3668403 +- epsilon)
+    miMatrix(2)(1) should be (0.3668403 +- epsilon)
+    miMatrix(2)(2) should be (0.500000 +- epsilon)
+  }
+
   it should "be served from an RDD with one column and no normalization" in {
     DDS.start(mockedServer)
     val rdd = sc.makeRDD(List(Row("1"), Row("1"), Row("2")))

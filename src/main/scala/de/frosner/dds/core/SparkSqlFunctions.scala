@@ -206,6 +206,7 @@ object SparkSqlFunctions {
       }
 
       for (((i, j), mi) <- actualNormalization match {
+        case REDUNDANCY_NORMALIZATION => miAgg.mutualInformationRedundancy
         case METRIC_NORMALIZATION => miAgg.mutualInformationMetric
         case NO_NORMALIZATION => miAgg.mutualInformation
       }) {

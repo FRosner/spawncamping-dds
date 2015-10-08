@@ -84,12 +84,19 @@ class MutualInformationAggregator(val numColumns: Int) extends Serializable {
       yield ((i, j), (mi / Math.max(mutualInformationMatrix(i,i), mutualInformationMatrix(j,j))))
   }
 
+  def mutualInformationRedundancy: Map[(Int, Int), Double] = {
+    val mutualInformationMatrix = mutualInformation
+    for (((i, j), mi) <- mutualInformationMatrix)
+    yield ((i, j), (mi / (mutualInformationMatrix(i,i) + mutualInformationMatrix(j,j))))
+  }
+
 }
 
 object MutualInformationAggregator {
   val NO_NORMALIZATION = "none"
   val METRIC_NORMALIZATION = "metric"
+  val REDUNDANCY_NORMALIZATION = "redundancy"
   val DEFAULT_NORMALIZATION = METRIC_NORMALIZATION
 
-  def isValidNormalization(normalization: String) = Set(NO_NORMALIZATION, METRIC_NORMALIZATION).contains(normalization)
+  def isValidNormalization(normalization: String) = Set(NO_NORMALIZATION, METRIC_NORMALIZATION, REDUNDANCY_NORMALIZATION).contains(normalization)
 }

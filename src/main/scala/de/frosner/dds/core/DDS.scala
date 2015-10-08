@@ -513,8 +513,8 @@ object DDS {
     shortDescription = "Computes mutual information between columns",
     longDescription = "Computes mutual information between columns. It will treat all columns as nominal variables and " +
       "thus not work well with real numerical data. Internally it uses the natural logarithm. It offers the pure " +
-      "mutual information as well as a metric variant.\n\n" +
-      "Possible normalization options: \"metric\" (default), \"none\".",
+      "mutual information as well as two normalized variants, a metric and a symmetric version.\n\n" +
+      "Possible normalization options: \"redundancy\", \"metric\" (default), \"none\".",
     parameters = "dataFrame: DataFrame, (optional) normalization: String"
   )
   def mutualInformation(dataFrame: DataFrame, normalization: String = MutualInformationAggregator.DEFAULT_NORMALIZATION) = {
