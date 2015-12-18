@@ -8,6 +8,7 @@ import java.net.URL;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
+// TODO move this to root project or keep here? is it even working?
 public class ManifestMetaData {
 
     private static Logger logger = Logger.getLogger("DDS");
