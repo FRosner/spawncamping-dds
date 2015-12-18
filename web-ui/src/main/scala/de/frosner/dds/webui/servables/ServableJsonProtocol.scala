@@ -1,6 +1,6 @@
 package de.frosner.dds.webui.servables
 
-import java.util.Base64
+import javax.xml.bind.DatatypeConverter
 
 import de.frosner.dds.servables._
 import org.apache.spark.sql.Row
@@ -58,7 +58,7 @@ object ServableJsonProtocol extends DefaultJsonProtocol {
       case StringType =>
         if (row.isNullAt(index)) JsNull else JsString(row.getString(index))
       case BinaryType =>
-        if (row.isNullAt(index)) JsNull else JsString(new String(Base64.getEncoder.encode(row.getAs[Array[Byte]](index))))
+        if (row.isNullAt(index)) JsNull else JsString(DatatypeConverter.printBase64Binary(row.getAs[Array[Byte]](index)))
       case BooleanType =>
         if (row.isNullAt(index)) JsNull else JsBoolean(row.getBoolean(index))
       case TimestampType =>
@@ -130,7 +130,7 @@ object ServableJsonProtocol extends DefaultJsonProtocol {
       case (StringType, _) =>
         nullOrElse[UTF8String, JsString](jsValue)(jsValue => UTF8String(jsValue.value))
       case (BinaryType, _) =>
-        nullOrElse[Array[Byte], JsString](jsValue)(jsValue => Base64.getDecoder.decode(jsValue.value))
+        nullOrElse[Array[Byte], JsString](jsValue)(jsValue => DatatypeConverter.parseBase64Binary(jsValue.value))
       case (BooleanType, true) =>
         nullOrElse[java.lang.Boolean, JsBoolean](jsValue)(jsValue => jsValue.value)
       case (BooleanType, false) =>
