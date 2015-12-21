@@ -13,10 +13,11 @@ when working on the cluster with the Spark REPL. It does not offer a fully flexi
     ```sh
     ./bin/spark-shell --jars spawncamping-dds-<ddsVersion>_<scalaVersion>.jar
     ```
-2. Import core functions
+2. Import core functions and web UI
 
     ```scala
     import de.frosner.dds.core.DDS._
+    import de.frosner.dds.webui.server.SprayServer._
     ```
 
 3. Start the web server + user interface
@@ -52,10 +53,11 @@ See the [User Guide](https://github.com/FRosner/spawncamping-dds/wiki/User-Guide
 
 ### Get Data-Driven Spark
 
-You can either grab the [latest release artifact](https://github.com/FRosner/spawncamping-dds/releases), use the most recent [SNAPSHOT](http://spawncamping-dds-snapshots.s3-website-us-east-1.amazonaws.com/) or build from source (`sbt build`). Data-Driven Spark (DDS) 3.x is currently developed and built against Spark 1.4. It can be cross built against Scala version 2.10 and 2.11, depending on which version was used to build your Spark. For older versions of Spark, please refer to the following table:
+You can either grab the [latest release artifact](https://github.com/FRosner/spawncamping-dds/releases), use the most recent [SNAPSHOT](http://spawncamping-dds-snapshots.s3-website-us-east-1.amazonaws.com/) or build from source (`sbt build`). Data-Driven Spark (DDS) 4.x.y is currently developed and built against Spark 1.5. It can be cross built against Scala version 2.10 and 2.11, depending on which version was used to build your Spark. For older versions of Spark, please refer to the following table:
 
 | DDS Versions | Spark Versions |
 | --- | --- |
+| 4.x.y | 1.5.x |
 | 3.x.y | 1.4.x |
 | 2.x.y | 1.3.x |
 | 1.x.y | 1.2.x |
