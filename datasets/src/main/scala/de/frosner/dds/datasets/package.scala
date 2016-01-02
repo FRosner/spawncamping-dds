@@ -22,7 +22,7 @@ package object datasets {
 
   private lazy val readGolf = readCsvWithHeader("/de/frosner/dds/datasets/golf.csv")
 
-  def golf(implicit sc: SparkContext): RDD[GolfRow] = {
+  def golf(sc: SparkContext): RDD[GolfRow] = {
     val (rawHead, rawBody) = readGolf
     sc.parallelize(rawBody).map(line => {
       val split = line.split(",", -1)
@@ -38,7 +38,7 @@ package object datasets {
 
   private lazy val readNetwork = readCsvWithHeader("/de/frosner/dds/datasets/enron.csv")
 
-  def enron(implicit sc: SparkContext): Graph[Int, String] = {
+  def enron(sc: SparkContext): Graph[Int, String] = {
     val (rawHead, rawBody) = readNetwork
 
     val edgeRdd = sc.parallelize(rawBody).map(line => {
@@ -56,7 +56,7 @@ package object datasets {
     Graph(vertexRdd, edgeRdd)
   }
 
-  def golf(implicit sc: SparkContext, sql: SQLContext): DataFrame = {
+  def golf(sc: SparkContext, sql: SQLContext): DataFrame = {
     val (rawHead, rawBody) = readGolf
     val schema = rawHead.split(",", -1).map(columnName => StructField(
       name = columnName,
@@ -81,7 +81,7 @@ package object datasets {
   private lazy val flightDateFormat = new SimpleDateFormat("yyyy-MM-dd")
   private lazy val hourMinuteDateFormat = new SimpleDateFormat("HHmm")
 
-  def flights(implicit sc: SparkContext): RDD[FlightsRow] = {
+  def flights(sc: SparkContext): RDD[FlightsRow] = {
     val (rawHead, rawBody) = readFlights
     sc.parallelize(rawBody.map(line => {
       val split = line.split(",", -1).map(_.replace("\"", ""))
@@ -110,7 +110,7 @@ package object datasets {
     }), 100)
   }
 
-  def flights(implicit sc: SparkContext, sql: SQLContext): DataFrame = {
+  def flights(sc: SparkContext, sql: SQLContext): DataFrame = {
     val (rawHead, rawBody) = readFlights
     val schema = rawHead.split(",").map(_.replace("\"", "")).map{
       case "FL_DATE" => StructField("Flight Date", TimestampType, false)
