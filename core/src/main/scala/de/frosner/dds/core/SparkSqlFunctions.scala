@@ -1,7 +1,7 @@
 package de.frosner.dds.core
 
 import de.frosner.dds.analytics.{DateColumnStatisticsAggregator, ColumnsStatisticsAggregator, MutualInformationAggregator, CorrelationAggregator}
-import de.frosner.dds.servables.{Composite, Blank, KeyValueSequence, Servable}
+import de.frosner.dds.servables.{Composite, Blank, Servable}
 import de.frosner.dds.util.{ServableUtils, DataFrameUtils}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{Column, DataFrame}

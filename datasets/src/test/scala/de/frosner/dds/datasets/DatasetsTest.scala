@@ -2,7 +2,7 @@ package de.frosner.dds.datasets
 
 import java.util.{GregorianCalendar, Calendar}
 
-import org.apache.spark.sql.catalyst.expressions.Row
+import org.apache.spark.sql.Row
 import org.apache.spark.sql.types._
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.sql.SQLContext

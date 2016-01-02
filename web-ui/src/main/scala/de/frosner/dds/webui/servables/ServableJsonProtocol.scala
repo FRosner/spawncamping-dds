@@ -128,7 +128,7 @@ object ServableJsonProtocol extends DefaultJsonProtocol {
       case (decimalType: DecimalType, _) =>
         nullOrElse[java.math.BigDecimal, JsNumber](jsValue)(jsValue => jsValue.value.bigDecimal)
       case (StringType, _) =>
-        nullOrElse[UTF8String, JsString](jsValue)(jsValue => UTF8String(jsValue.value))
+        nullOrElse[String, JsString](jsValue)(jsValue => jsValue.value)
       case (BinaryType, _) =>
         nullOrElse[Array[Byte], JsString](jsValue)(jsValue => DatatypeConverter.parseBase64Binary(jsValue.value))
       case (BooleanType, true) =>
@@ -137,7 +137,7 @@ object ServableJsonProtocol extends DefaultJsonProtocol {
         jsValue.asInstanceOf[JsBoolean].value
       case (TimestampType, _) =>
         nullOrElse[java.sql.Timestamp, JsNumber](jsValue)(jsValue => new java.sql.Timestamp(jsValue.value.toLongExact))
-      case (DateType, _) => // TODO internal represenation = Int? does it mean days or ms?
+      case (DateType, _) =>
         nullOrElse[java.sql.Date, JsNumber](jsValue)(jsValue => new java.sql.Date(jsValue.value.toLongExact))
       case (ArrayType(elementType, containsNull), _) =>
         nullOrElse[Seq[Any], JsArray](jsValue)(jsValue => jsValue.elements.map(jsValueToValue(elementType, containsNull)))
