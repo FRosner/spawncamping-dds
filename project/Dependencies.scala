@@ -11,8 +11,7 @@ object Dependencies {
   val sparkDependencies = Seq(
     "org.apache.spark" %% "spark-core"    % sparkVersion % "provided",
     "org.apache.spark" %% "spark-graphx"  % sparkVersion % "provided",
-    "org.apache.spark" %% "spark-sql"     % sparkVersion % "provided",
-    "org.slf4j"        %  "slf4j-log4j12" % "1.7.10"
+    "org.apache.spark" %% "spark-sql"     % sparkVersion % "provided"
   )
   val scalaTestDependencies = Seq(
     "org.scalatest" %% "scalatest"                   % "2.2.4" % "test",
