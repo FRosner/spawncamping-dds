@@ -56,24 +56,9 @@ package object datasets {
     Graph(vertexRdd, edgeRdd)
   }
 
-  def golf(sc: SparkContext, sql: SQLContext): DataFrame = {
-    val (rawHead, rawBody) = readGolf
-    val schema = rawHead.split(",", -1).map(columnName => StructField(
-      name = columnName,
-      dataType = columnName match {
-        case "Outlook" => StringType
-        case "Temperature" => DoubleType
-        case "Humidity" => DoubleType
-        case "Wind" => BooleanType
-        case "Play" => BooleanType
-      },
-      nullable = false
-    ))
-    val data = sc.parallelize(rawBody).map(line => {
-      val split = line.split(",", -1)
-      Row(split(0), split(1).toDouble, split(2).toDouble, split(3).toBoolean, split(4) == "yes")
-    })
-    sql.createDataFrame(data, StructType(schema))
+  def golf(sql: SQLContext): DataFrame = {
+    import sql.implicits._
+    golf(sql.sparkContext).toDF
   }
 
   lazy val readFlights = readCsvWithHeader("/de/frosner/dds/datasets/flights.csv")
@@ -110,56 +95,9 @@ package object datasets {
     }), 100)
   }
 
-  def flights(sc: SparkContext, sql: SQLContext): DataFrame = {
-    val (rawHead, rawBody) = readFlights
-    val schema = rawHead.split(",").map(_.replace("\"", "")).map{
-      case "FL_DATE" => StructField("Flight Date", TimestampType, false)
-      case "UNIQUE_CARRIER" => StructField("Carrier", StringType, false)
-      case "TAIL_NUM" => StructField("Tail Number", StringType, true)
-      case "FL_NUM" => StructField("Flight Number", StringType, false)
-      case "ORIGIN_AIRPORT_ID" => StructField("Origin Airport", StringType, false)
-      case "DEST_AIRPORT_ID" => StructField("Destination Airport", StringType, false)
-      case "CRS_DEP_TIME" => StructField("CRS Departure Time", TimestampType, false)
-      case "DEP_TIME" => StructField("Departure Time", TimestampType, true)
-      case "DEP_DELAY_NEW" => StructField("Departure Delay", DoubleType, true)
-      case "WHEELS_OFF" => StructField("Wheels-Off Time", TimestampType, true)
-      case "WHEELS_ON" => StructField("Wheels-On Time", TimestampType, true)
-      case "CRS_ARR_TIME" => StructField("CRS Arrival Time", TimestampType, false)
-      case "ARR_TIME" => StructField("Arrival Time", TimestampType, true)
-      case "ARR_DELAY_NEW" => StructField("Arrival Delay", DoubleType, true)
-      case "AIR_TIME" => StructField("Air Time", DoubleType, true)
-      case "CARRIER_DELAY" => StructField("Carrier Delay", DoubleType, true)
-      case "WEATHER_DELAY" => StructField("Weather Delay", DoubleType, true)
-      case "NAS_DELAY" => StructField("NAS Delay", DoubleType, true)
-      case "SECURITY_DELAY" => StructField("Security Delay", DoubleType, true)
-      case "LATE_AIRCRAFT_DELAY" => StructField("Late Aircraft Delay", DoubleType, true)
-    }
-    val data = sc.parallelize(rawBody.map(line => {
-      val split = line.split(",", -1).map(_.replace("\"", ""))
-      Row(
-        new java.sql.Timestamp(flightDateFormat.parse(split(0)).getTime),
-        split(1),
-        if (split(2).isEmpty) null else split(2),
-        split(3),
-        split(4),
-        split(5),
-        new java.sql.Timestamp(hourMinuteDateFormat.parse(split(6)).getTime),
-        Try(new java.sql.Timestamp(hourMinuteDateFormat.parse(split(7)).getTime)).toOption.orNull,
-        Try(split(8).toDouble).toOption.orNull,
-        Try(new java.sql.Timestamp(hourMinuteDateFormat.parse(split(9)).getTime)).toOption.orNull,
-        Try(new java.sql.Timestamp(hourMinuteDateFormat.parse(split(10)).getTime)).toOption.orNull,
-        new java.sql.Timestamp(hourMinuteDateFormat.parse(split(11)).getTime),
-        Try(new java.sql.Timestamp(hourMinuteDateFormat.parse(split(12)).getTime)).toOption.orNull,
-        Try(split(13).toDouble).toOption.orNull,
-        Try(split(14).toDouble).toOption.orNull,
-        Try(split(15).toDouble).toOption.orNull,
-        Try(split(16).toDouble).toOption.orNull,
-        Try(split(17).toDouble).toOption.orNull,
-        Try(split(18).toDouble).toOption.orNull,
-        Try(split(19).toDouble).toOption.orNull
-      )
-    }), 100)
-    sql.createDataFrame(data, StructType(schema))
+  def flights(sql: SQLContext): DataFrame = {
+    import sql.implicits._
+    flights(sql.sparkContext).toDF
   }
 
 }

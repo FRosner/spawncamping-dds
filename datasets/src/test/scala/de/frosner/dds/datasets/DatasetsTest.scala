@@ -28,17 +28,17 @@ class DatasetsTest extends FlatSpec with Matchers with BeforeAndAfterAll {
   }
 
   "Golf CSV SchemaRDD" should "have the correct schema" in {
-    golf(sc, sql).schema shouldBe StructType(List(
-      StructField("Outlook", StringType, false),
-      StructField("Temperature", DoubleType, false),
-      StructField("Humidity", DoubleType, false),
-      StructField("Wind", BooleanType, false),
-      StructField("Play", BooleanType, false)
+    golf(sql).schema shouldBe StructType(List(
+      StructField("outlook", StringType, true),
+      StructField("temperature", DoubleType, false),
+      StructField("humidity", DoubleType, false),
+      StructField("wind", BooleanType, false),
+      StructField("play", BooleanType, false)
     ))
   }
 
   it should "have the correct data" in {
-    golf(sc, sql).collect shouldBe Array(
+    golf(sql).collect shouldBe Array(
       Row("sunny",85,85,false,false),
       Row("sunny",80,90,true,false),
       Row("overcast",83,78,false,true),
@@ -125,32 +125,32 @@ class DatasetsTest extends FlatSpec with Matchers with BeforeAndAfterAll {
   }
 
   "Flights CSV SchemaRDD" should "have the correct schema" in {
-    flights(sc, sql).schema shouldBe StructType(ArrayBuffer(
-      StructField("Flight Date", TimestampType, false),
-      StructField("Carrier", StringType, false),
-      StructField("Tail Number", StringType, true),
-      StructField("Flight Number", StringType, false),
-      StructField("Origin Airport", StringType, false),
-      StructField("Destination Airport", StringType, false),
-      StructField("CRS Departure Time", TimestampType, false),
-      StructField("Departure Time", TimestampType, true),
-      StructField("Departure Delay", DoubleType, true),
-      StructField("Wheels-Off Time", TimestampType, true),
-      StructField("Wheels-On Time", TimestampType, true),
-      StructField("CRS Arrival Time", TimestampType, false),
-      StructField("Arrival Time", TimestampType, true),
-      StructField("Arrival Delay", DoubleType, true),
-      StructField("Air Time", DoubleType, true),
-      StructField("Carrier Delay", DoubleType, true),
-      StructField("Weather Delay", DoubleType, true),
-      StructField("NAS Delay", DoubleType, true),
-      StructField("Security Delay", DoubleType, true),
-      StructField("Late Aircraft Delay", DoubleType, true)
+    flights(sql).schema shouldBe StructType(ArrayBuffer(
+      StructField("flightDate", TimestampType, true),
+      StructField("carrier", StringType, true),
+      StructField("tailNumber", StringType, true),
+      StructField("flightNumber", StringType, true),
+      StructField("originAirport", StringType, true),
+      StructField("destinationAirport", StringType, true),
+      StructField("crsDepartureTime", TimestampType, true),
+      StructField("departureTime", TimestampType, true),
+      StructField("departureDelay", DoubleType, true),
+      StructField("wheelsOffTime", TimestampType, true),
+      StructField("wheelsOnTime", TimestampType, true),
+      StructField("crsArrivalTime", TimestampType, true),
+      StructField("arrivalTime", TimestampType, true),
+      StructField("arrivalDelay", DoubleType, true),
+      StructField("airTime", DoubleType, true),
+      StructField("carrierDelay", DoubleType, true),
+      StructField("weatherDelay", DoubleType, true),
+      StructField("nasDelay", DoubleType, true),
+      StructField("securityDelay", DoubleType, true),
+      StructField("lateAircraftDelay", DoubleType, true)
     ))
   }
 
   it should "have the correct data" in {
-    val flightsArray = flights(sc, sql).collect
+    val flightsArray = flights(sql).collect
     flightsArray.head shouldBe Row(
       new java.sql.Timestamp(new GregorianCalendar(2015, Calendar.JANUARY, 1).getTimeInMillis),
       "AA",
