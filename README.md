@@ -31,7 +31,7 @@ when working on the cluster with the Spark REPL. It does not offer a fully flexi
     ```scala
     // load example data set
     val sql = new org.apache.spark.sql.SQLContext(sc)
-    val golf = de.frosner.dds.datasets.golf(sc, sql)
+    val golf = de.frosner.dds.datasets.golf(sql)
 
     // look at a sample of your data set
     show(golf)
