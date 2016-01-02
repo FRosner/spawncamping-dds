@@ -69,13 +69,13 @@ object ServableJsonProtocol extends DefaultJsonProtocol {
         if (row.isNullAt(index)) JsNull else {
           val innerSeq = row.getSeq[Any](index)
           val innerRow = Row.fromSeq(innerSeq)
-          JsArray((0 until innerSeq.size).map(index => valueToJsValue(innerRow)(elementType, index)).toVector)
+          JsArray(innerSeq.indices.map(index => valueToJsValue(innerRow)(elementType, index)).toVector)
         }
       case MapType(keyType, valueType, valueContainsNull) =>
         if (row.isNullAt(index)) JsNull else {
           val (keys, values) = row.getMap(index).asInstanceOf[Map[Any, Any]].toSeq.unzip
           val (keysRow, valuesRow) = (Row.fromSeq(keys), Row.fromSeq(values))
-          val keyValuePairs = for (i <- 0 until keys.size) yield {
+          val keyValuePairs = for (i <- keys.indices) yield {
             JsObject(
               (keyNameType, valueToJsValue(keysRow)(keyType, i)),
               (valueNameType, valueToJsValue(valuesRow)(valueType, i))
