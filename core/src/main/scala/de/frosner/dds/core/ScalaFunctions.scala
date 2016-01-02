@@ -3,11 +3,12 @@ package de.frosner.dds.core
 import de.frosner.dds.servables._
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.ScalaReflection.Schema
-import org.apache.spark.sql.catalyst.{CatalystTypeConvertersAdapter, CatalystTypeConverters, ScalaReflection}
+import org.apache.spark.sql.catalyst.{CatalystTypeConverters, CatalystTypeConvertersAdapter, ScalaReflection}
 import org.apache.spark.sql.catalyst.expressions.GenericMutableRow
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
+import org.apache.spark.unsafe.types.UTF8String
 
-import scala.reflect.ClassTag
+import scala.collection.mutable.ArrayBuffer
 import scala.reflect.runtime.universe._
 import scala.util.{Failure, Success}
 
@@ -131,17 +132,15 @@ object ScalaFunctions {
       val inferredSchema = scala.util.Try(ScalaReflection.schemaFor(tag))
       val result = inferredSchema match {
         case Success(Schema(struct: StructType, nullable)) => {
-          // convert product to row like in RDDConversions.productToRowRdd
-          val numColumns = struct.length
-          val converters = struct.fields.map(_.dataType).map(CatalystTypeConvertersAdapter.createToCatalystConverter)
-          val rows = sequence.asInstanceOf[Seq[Product]].map { r =>
-            var i = 0
-            val mutableRow = new GenericMutableRow(numColumns)
-            while (i < numColumns) {
-              mutableRow(i) = converters(i)(r.productElement(i))
-              i += 1
-            }
-            mutableRow
+          // convert product to row like in RDDConversions.productToRowRdd, but imitate a conversion back to Row (like
+          // in DataFrame.take) to get the Scala types in th end
+          val dataTypes = struct.fields.map(_.dataType)
+          val catalystConverters = dataTypes.map(CatalystTypeConvertersAdapter.createToCatalystConverter)
+          val scalaConverters = dataTypes.map(CatalystTypeConvertersAdapter.createToScalaConverter)
+          val rows = sequence.asInstanceOf[Seq[Product]].map { product =>
+            val rowSeq = for (i <- struct.indices) yield
+              scalaConverters(i)(catalystConverters(i)(product.productElement(i)))
+            Row.fromSeq(rowSeq)
           }
           Table(title, struct, rows)
         }

@@ -7,4 +7,7 @@ object CatalystTypeConvertersAdapter {
   def createToCatalystConverter(dataType: DataType): Any => Any =
     CatalystTypeConverters.createToCatalystConverter(dataType)
 
+  def createToScalaConverter(dataType: DataType): Any => Any =
+    CatalystTypeConverters.createToScalaConverter(dataType)
+
 }
