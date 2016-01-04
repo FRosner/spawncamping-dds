@@ -1,4 +1,4 @@
-## Data-Driven Spark [![Build Status](https://travis-ci.org/FRosner/spawncamping-dds.svg?branch=master)](https://travis-ci.org/FRosner/spawncamping-dds) [![Codacy Badge](https://api.codacy.com/project/badge/grade/0a6362a32754458f83a160eef13de7ae)](https://www.codacy.com/app/frank_7/spawncamping-dds) [![Coverage Status](https://coveralls.io/repos/FRosner/spawncamping-dds/badge.svg?branch=master&service=github)](https://coveralls.io/github/FRosner/spawncamping-dds?branch=master)
+## Data-Driven Spark [![Build Status](https://travis-ci.org/FRosner/spawncamping-dds.svg?branch=master)](https://travis-ci.org/FRosner/spawncamping-dds) [![Codacy Badge](https://api.codacy.com/project/badge/grade/0a6362a32754458f83a160eef13de7ae)](https://www.codacy.com/app/frank_7/spawncamping-dds) [![codecov.io](https://codecov.io/github/FRosner/spawncamping-dds/coverage.svg?branch=master)](https://codecov.io/github/FRosner/spawncamping-dds?branch=master)
 ### Description
 
 This library provides a comprehensible and simple interface for quick data exploration based on
