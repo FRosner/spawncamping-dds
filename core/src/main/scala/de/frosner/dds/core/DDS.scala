@@ -44,7 +44,7 @@ object DDS {
     category = "Servers",
     shortDescription = "Use a given server to serve DDS results",
     longDescription = "Use a given server to serve DDS results. Results from DDS core functions will be processed " +
-      "by the specified server. It may have side effects."
+      "by the specified server. It may have side effects. If no server is set, results will be returned unchanged."
   )
   def setServer(server: Server): Unit = {
       logger.debug(s"Attempting to register $server")
