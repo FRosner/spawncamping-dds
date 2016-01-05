@@ -5,7 +5,7 @@ scala:
 script:
   - sbt ++$TRAVIS_SCALA_VERSION build
   - sbt ++$TRAVIS_SCALA_VERSION coverage test
-  - sbt ++$TRAVIS_SCALA_VERSION publish-snapshot
+  - '[ "${TRAVIS_PULL_REQUEST}" = "false" ] && sbt ++$TRAVIS_SCALA_VERSION publish-snapshot || true'
 cache:
   directories:
   - $HOME/.m2
