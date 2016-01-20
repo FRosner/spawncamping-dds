@@ -20,12 +20,6 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
   
   class MockedServer extends Server {
     var lastServed: Option[Servable] = Option.empty
-    @Help(
-      category = "MockedHelp",
-      shortDescription = "Short Mocked Description",
-      longDescription = "Long Mocked Description"
-    )
-    def mockedMethodWithHelp: Unit = {}
     override def init(): Unit = {}
     override def tearDown(): Unit = {}
     override def serve(servable: Servable): Any = lastServed = Option(servable); lastServed
@@ -118,15 +112,9 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     DDS.pie(dataFrame) shouldBe None
   }
 
-  "Help" should "print all DDS methods with @Help" in {
+  "Help" should "print all methods with @Help" in {
     DDS.help()
     DDS.help("start")
-  }
-
-  it should "print all server methods with @Help" in {
-    DDS.setServer(mockedServer)
-    DDS.help()
-    DDS.help("mockedMethodWithHelp")
   }
 
   "Generic plot functions" should "serve correct pie chart" in {
