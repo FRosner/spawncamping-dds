@@ -4,7 +4,6 @@ import java.sql.Date
 
 import de.frosner.dds.analytics.MutualInformationAggregator
 import de.frosner.dds.servables._
-import de.frosner.replhelper.Help
 import org.apache.spark.graphx.{Edge, VertexId}
 import org.apache.spark.{SparkConf, SparkContext, graphx}
 import org.apache.spark.rdd.RDD
