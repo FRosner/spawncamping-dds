@@ -113,7 +113,7 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
 
   "Help" should "print all methods with @Help" in {
     DDS.help()
-    DDS.help("start")
+    DDS.help("show")
   }
 
   "Generic plot functions" should "serve correct pie chart" in {
