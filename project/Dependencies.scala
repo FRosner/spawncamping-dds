@@ -5,7 +5,7 @@ object Dependencies {
   // Versions
   lazy val sparkVersion = "1.5.0"
   lazy val sprayVersion = "1.3.2"
-  lazy val replHelperVersion = "1.1.0"
+  lazy val replHelperVersion = "2.0.0"
 
   // Dependencies
   val sparkDependencies = Seq(
