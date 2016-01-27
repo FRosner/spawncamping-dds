@@ -12,6 +12,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._
 import org.apache.spark.sql.types.{StructType, StringType, StructField}
 
+import org.reflections.util.ClasspathHelper
 
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
@@ -35,10 +36,8 @@ object DDS {
 
   private val logger = Logger.getLogger("DDS")
 
-  private val coreHelper = Helper(this.getClass)
+  private val helper = Helper(ClasspathHelper.forClass(this.getClass))
   
-  private var serverHelper: Option[Helper[_ <: Server]] = Option.empty
-
   private var server: Option[Server] = Option.empty
 
   @Help(
@@ -54,7 +53,6 @@ object DDS {
         "Please unregister it before registering a new one using 'unsetServer()'.")
     } else {
       this.server = Some(server)
-      serverHelper = Some(Helper(server.getClass))
       this.server.map(_.init())
     }
   }
@@ -79,7 +77,6 @@ object DDS {
 
   private[core] def resetServers(): Unit = {
     server = None
-    serverHelper = None
   }
 
   @Help(
@@ -88,10 +85,7 @@ object DDS {
     longDescription = "Shows all commands available in DDS."
   )
   def help() = {
-    val out = System.out
-    coreHelper.printAllMethods(out)
-    out.println("")
-    serverHelper.foreach(_.printAllMethods(out))
+    helper.printAllMethods(System.out)
   }
 
   @Help(
@@ -101,9 +95,7 @@ object DDS {
     parameters = "commandName: String"
   )
   def help(methodName: String) = {
-    val out = System.out
-    coreHelper.printMethods(methodName, out)
-    serverHelper.foreach(_.printMethods(methodName, out))
+    helper.printMethods(methodName, System.out)
   }
 
   private def serve(maybeServable: Option[Servable]): Option[TransformedServable] =
