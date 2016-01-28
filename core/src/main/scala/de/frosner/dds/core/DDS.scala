@@ -212,7 +212,7 @@ object DDS {
     category = "Scala",
     shortDescription = "Plots a bar chart with a categorical x-axis.",
     longDescription = "Plots a bar chart with a categorical x-axis visualizing the given value sequence.",
-    parameters = "values: Seq[NumericValue], categories: Seq[String], (optional) title: String"
+    parameters = "values: Seq[NumericValue], categories: Seq[String]"
   )
   def bar[N](values: Seq[N], categories: Seq[String])(implicit num: Numeric[N]): Option[Any] = {
     serve(ScalaFunctions.createBar(
