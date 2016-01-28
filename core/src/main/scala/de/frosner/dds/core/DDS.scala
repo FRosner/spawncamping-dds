@@ -169,7 +169,7 @@ object DDS {
   def heatmap[N](values: Seq[Seq[N]], rowNames: Seq[String] = null, colNames: Seq[String] = null)
                 (implicit num: Numeric[N]): Option[Any] = {
     serve(ScalaFunctions.createHeatmap(
-      values = values.map(_.map(num.toDouble(_))),
+      values = values.map(_.map(num.toDouble)),
       rowNames = rowNames,
       colNames = colNames,
       title = s"Heatmap (${values.size} x ${values.head.size})"
@@ -188,8 +188,8 @@ object DDS {
   )
   def histogram[N1, N2](bins: Seq[N1], frequencies: Seq[N2])(implicit num1: Numeric[N1], num2: Numeric[N2]): Option[Any] = {
     serve(ScalaFunctions.createHistogram(
-      bins = bins.map(num1.toDouble(_)),
-      frequencies = frequencies.map(num2.toLong(_)),
+      bins = bins.map(num1.toDouble),
+      frequencies = frequencies.map(num2.toLong),
       title = s"Histogram (${bins.size} bins)"
     ))
   }
@@ -202,7 +202,7 @@ object DDS {
   )
   def bar[N](values: Seq[N])(implicit num: Numeric[N]): Option[Any] = {
     serve(ScalaFunctions.createBar(
-      values = values.map(num.toDouble(_)),
+      values = values.map(num.toDouble),
       seriesName = "values",
       title = s"Indexed bar chart ${sampleString(values, 2)}"
     ))
@@ -216,7 +216,7 @@ object DDS {
   )
   def bar[N](values: Seq[N], categories: Seq[String])(implicit num: Numeric[N]): Option[Any] = {
     serve(ScalaFunctions.createBar(
-      values = values.map(num.toDouble(_)),
+      values = values.map(num.toDouble),
       categories = categories,
       seriesName = "values",
       title = s"Categorical bar chart ${sampleString(categories, 2)}"
@@ -234,7 +234,7 @@ object DDS {
   def bars[N](labels: Seq[String], values: Seq[Seq[N]])(implicit num: Numeric[N]): Option[Any] = {
     serve(ScalaFunctions.createBars(
       labels = labels,
-      values = values.map(_.map(num.toDouble(_))),
+      values = values.map(_.map(num.toDouble)),
       title = s"Indexed multi-bar chart (${labels.size} bars)"
     ))
   }
@@ -250,7 +250,7 @@ object DDS {
   def bars[N](labels: Seq[String], values: Seq[Seq[N]], categories: Seq[String])(implicit num: Numeric[N]): Option[Any] = {
     serve(ScalaFunctions.createBars(
       labels = labels,
-      values = values.map(_.map(num.toDouble(_))),
+      values = values.map(_.map(num.toDouble)),
       categories = categories,
       title = s"Categorical multi-bar chart (${labels.size} bars)"
     ))
@@ -345,7 +345,7 @@ object DDS {
                        (implicit num1: Numeric[N1], num2: Numeric[N2]): Option[Any] = {
     serve(SparkCoreFunctions.createHistogram(
       values = values,
-      buckets = buckets.map(num2.toDouble(_)),
+      buckets = buckets.map(num2.toDouble),
       title = s"Histogram of $values (manual ${buckets.size} buckets)"
     ))
   }
