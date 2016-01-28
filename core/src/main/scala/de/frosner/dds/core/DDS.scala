@@ -72,10 +72,10 @@ object DDS {
       logger.debug(s"Sending tear down request to server $actualServer")
       actualServer.tearDown()
     }
-    resetServers()
+    setServerToNone()
   }
 
-  private[core] def resetServers(): Unit = {
+  private[core] def setServerToNone(): Unit = {
     server = None
   }
 
