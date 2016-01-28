@@ -49,8 +49,8 @@ object DDS {
   def setServer(server: Server): Unit = {
       logger.debug(s"Attempting to register $server")
     if (this.server.isDefined) {
-      println("There is already a server registered! " +
-        "Please unregister it before registering a new one using 'unsetServer()'.")
+      println("There is already a server set! " +
+        "Please unset it using 'unsetServer()' before registering a new one.")
     } else {
       this.server = Some(server)
       this.server.map(_.init())
