@@ -118,7 +118,7 @@ object DDS {
   @Help(
     category = "Scala",
     shortDescription = "Plots a graph",
-    longDescription = "Plots a graph layouted by the D3 force layout.",
+    longDescription = "Plots a graph with the given vertices and edges.",
     parameters = "vertices: Seq[(VertexId, Label)], edges: Seq[(SourceVertexId, TargetVertexId, Label)]"
   )
   def graph[ID, VL, EL](vertices: Seq[(ID, VL)], edges: Iterable[(ID, ID, EL)]): Option[Any] = {
