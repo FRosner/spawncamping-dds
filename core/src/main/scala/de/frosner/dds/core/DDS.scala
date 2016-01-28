@@ -287,8 +287,8 @@ object DDS {
   @Help(
     category = "Scala",
     shortDescription = "Shows a sequence",
-    longDescription = "Shows a sequence. In addition to a tabular view DDS also shows visualizations" +
-      "of the data.",
+    longDescription = "Shows a sequence. If the element type is a case class, " +
+      "it will be treated as one column per field.",
     parameters = "sequence: Seq[T]"
   )
   def show[V](sequence: Seq[V])(implicit tag: TypeTag[V]): Option[Any] = {
