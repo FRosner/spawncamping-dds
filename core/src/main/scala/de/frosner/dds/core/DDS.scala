@@ -66,7 +66,7 @@ object DDS {
   def unsetServer(): Unit = {
     logger.debug("Attempting to unregister a registered server.")
     if (!server.isDefined) {
-      println("No server set. Register one using the 'setServer(server: Server)'.")
+      println("No server set. Set one using the 'setServer(server: Server)'.")
     } else {
       val actualServer = server.get
       logger.debug(s"Sending tear down request to server $actualServer")
