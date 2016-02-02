@@ -494,8 +494,8 @@ object DDS {
   @Help(
     category = "Spark SQL",
     shortDescription = "Shows the first rows of a DataFrame",
-    longDescription = "Shows the first rows of a DataFrame. In addition to a tabular view DDS also shows visualizations" +
-      "of the data. The second argument is optional and determines the sample size.",
+    longDescription = "Shows the first rows of a DataFrame. If the element type is a case class, " +
+      "it will be treated as one column per field. The second argument is optional and determines the sample size.",
     parameters = "rdd: DataFrame, (optional) sampleSize: Int"
   )
   def show(dataFrame: DataFrame, sampleSize: Int): Option[Any] =
