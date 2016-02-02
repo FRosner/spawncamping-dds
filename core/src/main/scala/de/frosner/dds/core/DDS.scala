@@ -369,7 +369,7 @@ object DDS {
     shortDescription = "Plots a pie chart of the reduced values per group",
     longDescription = "Groups the given pair RDD, reduces the values in each group and compares the group using a pie chart.",
     parameters = "toBeGroupedValues: RDD[(Key, NumericValue)]",
-    parameters2 = "reduceFunction: (NumericValue, NumericValue => NumericValue)"
+    parameters2 = "reduceFunction: ((NumericValue, NumericValue) => NumericValue)"
   )
   def groupAndPie[K: ClassTag, N: ClassTag](toBeGroupedValues: RDD[(K, N)])
                                            (reduceFunction: (N, N) => N)
