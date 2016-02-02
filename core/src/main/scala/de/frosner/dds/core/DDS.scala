@@ -355,7 +355,7 @@ object DDS {
     shortDescription = "Plots a pie chart of the reduced values per group",
     longDescription = "Given the already grouped RDD, reduces the values in each group and compares the group using a pie chart.",
     parameters = "groupedValues: RDD[(Key, Iterable[NumericValue])]",
-    parameters2 = "reduceFunction: (NumericValue, NumericValue => NumericValue)"
+    parameters2 = "reduceFunction: ((NumericValue, NumericValue) => NumericValue)"
   )
   def pieGroups[K, N](groupValues: RDD[(K, Iterable[N])])
                      (reduceFunction: (N, N) => N)
