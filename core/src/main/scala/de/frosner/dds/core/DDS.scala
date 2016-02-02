@@ -381,8 +381,8 @@ object DDS {
   @Help(
     category = "Spark Core",
     shortDescription = "Shows the first rows of an RDD",
-    longDescription = "Shows the first rows of an RDD. In addition to a tabular view DDS also shows visualizations" +
-      "of the data. The second argument is optional and determines the sample size.",
+    longDescription = "Shows the first rows of an RDD. If the element type is a case class, " +
+      "it will be treated as one column per field. The second argument is optional and determines the sample size.",
     parameters = "rdd: RDD[T], (optional) sampleSize: Int"
   )
   def show[V](rdd: RDD[V], sampleSize: Int)(implicit tag: TypeTag[V]): Option[Any] = {
