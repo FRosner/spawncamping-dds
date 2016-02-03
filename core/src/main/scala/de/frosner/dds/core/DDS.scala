@@ -44,13 +44,13 @@ object DDS {
     category = "Servers",
     shortDescription = "Use a given server to serve DDS results",
     longDescription = "Use a given server to serve DDS results. Results from DDS core functions will be processed " +
-      "by the specified server. It may have side effects."
+      "by the specified server. It may have side effects. If no server is set, results will be returned unchanged."
   )
   def setServer(server: Server): Unit = {
       logger.debug(s"Attempting to register $server")
     if (this.server.isDefined) {
-      println("There is already a server registered! " +
-        "Please unregister it before registering a new one using 'unsetServer()'.")
+      println("There is already a server set! " +
+        "Please unset it using 'unsetServer()' before registering a new one.")
     } else {
       this.server = Some(server)
       this.server.map(_.init())
@@ -66,16 +66,16 @@ object DDS {
   def unsetServer(): Unit = {
     logger.debug("Attempting to unregister a registered server.")
     if (!server.isDefined) {
-      println("No server set. Register one using the 'setServer(server: Server)'.")
+      println("No server set. Set one using the 'setServer(server: Server)'.")
     } else {
       val actualServer = server.get
       logger.debug(s"Sending tear down request to server $actualServer")
       actualServer.tearDown()
     }
-    resetServers()
+    setServerToNone()
   }
 
-  private[core] def resetServers(): Unit = {
+  private[core] def setServerToNone(): Unit = {
     server = None
   }
 
@@ -118,7 +118,7 @@ object DDS {
   @Help(
     category = "Scala",
     shortDescription = "Plots a graph",
-    longDescription = "Plots a graph layouted by the D3 force layout.",
+    longDescription = "Plots a graph with the given vertices and edges.",
     parameters = "vertices: Seq[(VertexId, Label)], edges: Seq[(SourceVertexId, TargetVertexId, Label)]"
   )
   def graph[ID, VL, EL](vertices: Seq[(ID, VL)], edges: Iterable[(ID, ID, EL)]): Option[Any] = {
@@ -169,7 +169,7 @@ object DDS {
   def heatmap[N](values: Seq[Seq[N]], rowNames: Seq[String] = null, colNames: Seq[String] = null)
                 (implicit num: Numeric[N]): Option[Any] = {
     serve(ScalaFunctions.createHeatmap(
-      values = values.map(_.map(num.toDouble(_))),
+      values = values.map(_.map(num.toDouble)),
       rowNames = rowNames,
       colNames = colNames,
       title = s"Heatmap (${values.size} x ${values.head.size})"
@@ -188,8 +188,8 @@ object DDS {
   )
   def histogram[N1, N2](bins: Seq[N1], frequencies: Seq[N2])(implicit num1: Numeric[N1], num2: Numeric[N2]): Option[Any] = {
     serve(ScalaFunctions.createHistogram(
-      bins = bins.map(num1.toDouble(_)),
-      frequencies = frequencies.map(num2.toLong(_)),
+      bins = bins.map(num1.toDouble),
+      frequencies = frequencies.map(num2.toLong),
       title = s"Histogram (${bins.size} bins)"
     ))
   }
@@ -198,11 +198,11 @@ object DDS {
     category = "Scala",
     shortDescription = "Plots a bar chart with an indexed x-axis.",
     longDescription = "Plots a bar chart with an indexed x-axis visualizing the given value sequence.",
-    parameters = "values: Seq[NumericValue], (optional) title: String"
+    parameters = "values: Seq[NumericValue]"
   )
   def bar[N](values: Seq[N])(implicit num: Numeric[N]): Option[Any] = {
     serve(ScalaFunctions.createBar(
-      values = values.map(num.toDouble(_)),
+      values = values.map(num.toDouble),
       seriesName = "values",
       title = s"Indexed bar chart ${sampleString(values, 2)}"
     ))
@@ -212,11 +212,11 @@ object DDS {
     category = "Scala",
     shortDescription = "Plots a bar chart with a categorical x-axis.",
     longDescription = "Plots a bar chart with a categorical x-axis visualizing the given value sequence.",
-    parameters = "values: Seq[NumericValue], categories: Seq[String], (optional) title: String"
+    parameters = "values: Seq[NumericValue], categories: Seq[String]"
   )
   def bar[N](values: Seq[N], categories: Seq[String])(implicit num: Numeric[N]): Option[Any] = {
     serve(ScalaFunctions.createBar(
-      values = values.map(num.toDouble(_)),
+      values = values.map(num.toDouble),
       categories = categories,
       seriesName = "values",
       title = s"Categorical bar chart ${sampleString(categories, 2)}"
@@ -234,7 +234,7 @@ object DDS {
   def bars[N](labels: Seq[String], values: Seq[Seq[N]])(implicit num: Numeric[N]): Option[Any] = {
     serve(ScalaFunctions.createBars(
       labels = labels,
-      values = values.map(_.map(num.toDouble(_))),
+      values = values.map(_.map(num.toDouble)),
       title = s"Indexed multi-bar chart (${labels.size} bars)"
     ))
   }
@@ -250,7 +250,7 @@ object DDS {
   def bars[N](labels: Seq[String], values: Seq[Seq[N]], categories: Seq[String])(implicit num: Numeric[N]): Option[Any] = {
     serve(ScalaFunctions.createBars(
       labels = labels,
-      values = values.map(_.map(num.toDouble(_))),
+      values = values.map(_.map(num.toDouble)),
       categories = categories,
       title = s"Categorical multi-bar chart (${labels.size} bars)"
     ))
@@ -287,8 +287,8 @@ object DDS {
   @Help(
     category = "Scala",
     shortDescription = "Shows a sequence",
-    longDescription = "Shows a sequence. In addition to a tabular view DDS also shows visualizations" +
-      "of the data.",
+    longDescription = "Shows a sequence. If the element type is a case class, " +
+      "it will be treated as one column per field.",
     parameters = "sequence: Seq[T]"
   )
   def show[V](sequence: Seq[V])(implicit tag: TypeTag[V]): Option[Any] = {
@@ -345,7 +345,7 @@ object DDS {
                        (implicit num1: Numeric[N1], num2: Numeric[N2]): Option[Any] = {
     serve(SparkCoreFunctions.createHistogram(
       values = values,
-      buckets = buckets.map(num2.toDouble(_)),
+      buckets = buckets.map(num2.toDouble),
       title = s"Histogram of $values (manual ${buckets.size} buckets)"
     ))
   }
@@ -355,7 +355,7 @@ object DDS {
     shortDescription = "Plots a pie chart of the reduced values per group",
     longDescription = "Given the already grouped RDD, reduces the values in each group and compares the group using a pie chart.",
     parameters = "groupedValues: RDD[(Key, Iterable[NumericValue])]",
-    parameters2 = "reduceFunction: (NumericValue, NumericValue => NumericValue)"
+    parameters2 = "reduceFunction: ((NumericValue, NumericValue) => NumericValue)"
   )
   def pieGroups[K, N](groupValues: RDD[(K, Iterable[N])])
                      (reduceFunction: (N, N) => N)
@@ -369,7 +369,7 @@ object DDS {
     shortDescription = "Plots a pie chart of the reduced values per group",
     longDescription = "Groups the given pair RDD, reduces the values in each group and compares the group using a pie chart.",
     parameters = "toBeGroupedValues: RDD[(Key, NumericValue)]",
-    parameters2 = "reduceFunction: (NumericValue, NumericValue => NumericValue)"
+    parameters2 = "reduceFunction: ((NumericValue, NumericValue) => NumericValue)"
   )
   def groupAndPie[K: ClassTag, N: ClassTag](toBeGroupedValues: RDD[(K, N)])
                                            (reduceFunction: (N, N) => N)
@@ -381,8 +381,8 @@ object DDS {
   @Help(
     category = "Spark Core",
     shortDescription = "Shows the first rows of an RDD",
-    longDescription = "Shows the first rows of an RDD. In addition to a tabular view DDS also shows visualizations" +
-      "of the data. The second argument is optional and determines the sample size.",
+    longDescription = "Shows the first rows of an RDD. If the element type is a case class, " +
+      "it will be treated as one column per field. The second argument is optional and determines the sample size.",
     parameters = "rdd: RDD[T], (optional) sampleSize: Int"
   )
   def show[V](rdd: RDD[V], sampleSize: Int)(implicit tag: TypeTag[V]): Option[Any] = {
@@ -494,8 +494,8 @@ object DDS {
   @Help(
     category = "Spark SQL",
     shortDescription = "Shows the first rows of a DataFrame",
-    longDescription = "Shows the first rows of a DataFrame. In addition to a tabular view DDS also shows visualizations" +
-      "of the data. The second argument is optional and determines the sample size.",
+    longDescription = "Shows the first rows of a DataFrame. If the element type is a case class, " +
+      "it will be treated as one column per field. The second argument is optional and determines the sample size.",
     parameters = "rdd: DataFrame, (optional) sampleSize: Int"
   )
   def show(dataFrame: DataFrame, sampleSize: Int): Option[Any] =

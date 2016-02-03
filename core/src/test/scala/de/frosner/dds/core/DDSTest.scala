@@ -45,7 +45,7 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
   }
 
   override def afterEach {
-    DDS.resetServers()
+    DDS.setServerToNone()
   }
 
   "DDS" should "start the chart server when start() is executed" in {
