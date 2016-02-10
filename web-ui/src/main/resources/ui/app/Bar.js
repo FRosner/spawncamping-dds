@@ -2,7 +2,7 @@ define(function(require) {
 
   var Visualization = require("Visualization");
 
-  function Bar() {}
+  function Bar() {};
 
   Bar.prototype = new Visualization();
   Bar.prototype.constructor = Visualization;
@@ -12,9 +12,9 @@ define(function(require) {
     var dds = require("dds");
     this._chartDiv = dds.barchart(servable.title, servable.xDomain, servable.heights, servable.series);
     this._content.appendChild(this._chartDiv);
-  }
+  };
 
-  Bar.prototype._clear = function() {}
+  Bar.prototype._clear = function() {};
 
   return Bar;
 
