@@ -15,22 +15,31 @@ define(function(require) {
     }
   }
 
+  function updateJitterButton(button, jitterEnabled){
+      if (jitterEnabled) {
+        button.setAttribute("class", "headerButton disabled");
+        button.setAttribute("title", "Enable Jitter");
+      } else {
+        button.setAttribute("class", "headerButton enabled");
+        button.setAttribute("title", "Disable Jitter");
+      }
+  }
+
   Scatter2D.prototype = new Visualization();
   Scatter2D.prototype.constructor = Visualization;
   Scatter2D.prototype.parent = Visualization.prototype;
 
   Scatter2D.prototype._draw = function(pointsWithTypes) {
-    console.log(pointsWithTypes);
     var dds = require("dds");
     var scatterVis = this;
     var config = this.config;
 
-    if(typeof pointsWithTypes.xIsNumeric === 'undefined' || pointsWithTypes.xIsNumeric === null) {
+    if(typeof pointsWithTypes.xIsNumeric === "undefined" || pointsWithTypes.xIsNumeric === null) {
         pointsWithTypes.xIsNumeric = false;
     }
 
-    if(typeof pointsWithTypes.yIsNumeric === 'undefined' || pointsWithTypes.yIsNumeric === null) {
-            pointsWithTypes.yIsNumeric = false;
+    if(typeof pointsWithTypes.yIsNumeric === "undefined" || pointsWithTypes.yIsNumeric === null) {
+        pointsWithTypes.yIsNumeric = false;
     }
 
     function drawScatter(){
@@ -40,33 +49,22 @@ define(function(require) {
         scatterVis._content.appendChild(scatterVis._chartDiv);
     }
 
-    var enableJitterButton = document.createElement('div');
-    enableJitterButton.setAttribute("id", "enableJitterButton");
-    this._header.appendChild(enableJitterButton);
-    enableJitterButton.onclick = function() {
+    var jitterButton = document.createElement('div');
+    jitterButton.setAttribute("id", "enableJitterButton");
+    this._header.appendChild(jitterButton);
+    jitterButton.onclick = function() {
       config.jitterEnabled = !config.jitterEnabled;
-      if (config.jitterEnabled) {
-        enableJitterButton.setAttribute("class", "headerButton disabled");
-        enableJitterButton.setAttribute("title", "Enable Jitter");
-      } else {
-        enableJitterButton.setAttribute("class", "headerButton enabled");
-        enableJitterButton.setAttribute("title", "Disable Jitter");
-      }
+      updateJitterButton(jitterButton, config.jitterEnabled);
       drawScatter();
     };
-    if (config.jitterEnabled) {
-      enableJitterButton.setAttribute("class", "headerButton enabled");
-      enableJitterButton.setAttribute("title", "Disable Jitter");
-    } else {
-      enableJitterButton.setAttribute("class", "headerButton disabled");
-      enableJitterButton.setAttribute("title", "Enable Jitter");
-    }
-    this._enableJitterButton = enableJitterButton;
+
+    updateJitterButton(jitterButton, config.jitterEnabled);
+    this.jitterButton = jitterButton;
     drawScatter();
   }
 
   Scatter2D.prototype._clear = function() {
-    Util.removeElementIfExists(this._enableJitterButton);
+    Util.removeElementIfExists(this.jitterButton);
   }
 
   return Scatter2D;
