@@ -1,18 +1,3 @@
-.node {
-  fill: #ccc;
-  stroke: #777;
-  stroke-width: 1px;
-}
-
-.link {
-  stroke: #777;
-  stroke-width: 1px;
-}
-
-.arrowHead {
-  fill: #555;
-}
-
 .triggerNodeLabelsButton {
   background-image:url("/ui/img/nodeLabel.png");
 }

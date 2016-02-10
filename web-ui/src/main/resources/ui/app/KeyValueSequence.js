@@ -9,43 +9,9 @@ define(function(require) {
   KeyValueSequence.prototype.parent = Visualization.prototype;
 
   KeyValueSequence.prototype._draw = function(servable) {
-    var Util = require("util"),
-      d3 = require("d3");
-
-    var contentId = this._content.id;
-    var table = Util.generateElement(this._content, contentId + "-listing", "table");
-    this._content.style.display = "table-cell";
-    this._content.style.verticalAlign = "middle";
-    this._content.style.textAlign = "center";
-    this._content.style.width = "5000px";
-    table.setAttribute("class", "keyValueTable");
-    var keyValueArray = servable.keyValuePairs
-      .map(function(keyValuePair) {
-        return [{
-          entry: keyValuePair.key,
-          class: "key"
-        }, {
-          entry: keyValuePair.val,
-          class: "value"
-        }];
-      });
-    var rows = d3.select(table)
-      .selectAll("tr")
-      .data(keyValueArray)
-      .enter()
-      .append("tr");
-    rows.selectAll("td")
-      .data(function(row) {
-        return row;
-      })
-      .enter()
-      .append("td")
-      .text(function(cell) {
-        return cell.entry;
-      })
-      .attr("class", function(cell) {
-        return cell.class;
-      });
+    var dds = require("dds");
+    this._chartDiv = dds.key_value_sequence(servable.title, servable.keyValuePairs);
+    this._content.appendChild(this._chartDiv);
   }
 
   KeyValueSequence.prototype._clear = function() {}
