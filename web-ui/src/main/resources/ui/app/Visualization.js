@@ -44,8 +44,6 @@
  */
  define(function(require) {
 
-  var Util = require("util")
-
   function Visualization() {
     this._defaultMargin = {
       top: 0,
