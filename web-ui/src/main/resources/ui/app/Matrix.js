@@ -1,8 +1,6 @@
 define(function(require) {
 
-  var Visualization = require("Visualization"),
-    Util = require("util"),
-    Cache = require("Cache");
+  var Visualization = require("Visualization");
 
   function Matrix(id) {
   }
