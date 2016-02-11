@@ -17,7 +17,6 @@ define(function(require) {
     }
   }
 
-
   Graph.prototype = new Visualization();
   Graph.prototype.constructor = Visualization;
   Graph.prototype.parent = Visualization.prototype;
