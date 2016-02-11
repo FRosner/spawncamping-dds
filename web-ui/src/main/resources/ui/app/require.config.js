@@ -19,7 +19,7 @@ require.config({
     slickdataview: libFolder + slickGridFolder + "slick.dataview.min",
     slickpager: libFolder + slickGridFolder + "slick.pager.min",
 
-    dds: libFolder + "dds",
+    dds: libFolder + "dds.min",
 
   }
 });
