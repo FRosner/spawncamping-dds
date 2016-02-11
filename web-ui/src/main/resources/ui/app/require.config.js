@@ -24,18 +24,18 @@ require.config({
   }
 });
 
-require(['d3'], function(d3) {
+require(["d3"], function(d3) {
   console.debug("Loading d3 v" + d3.version);
 });
 
 require.config({
   shim: {
-    dragevent:     ['jquery'],
+    dragevent:     ["jquery"],
 
-    slickcore:     ['dragevent'],
-    slickgrid:     ['slickcore', 'dragevent'],
-    slickdataview: ['slickgrid'],
-    slickpager:    ['slickgrid'],
+    slickcore:     ["dragevent"],
+    slickgrid:     ["slickcore", "dragevent"],
+    slickdataview: ["slickgrid"],
+    slickpager:    ["slickgrid"],
 
     dds: {
         deps: ["c3", "chroma", "slickcore", "slickgrid",
