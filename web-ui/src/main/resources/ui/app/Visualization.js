@@ -42,7 +42,7 @@
  *   - _clear() Subclass implementation of clear method (NEEDS TO BE IMPLEMENTED BY SUBCLASS)
  *
  */
- define(function(require) {
+ define(function() {
 
   function Visualization() {
     this._defaultMargin = {
