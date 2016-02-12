@@ -2,7 +2,7 @@ define(function(require) {
 
   var Visualization = require("Visualization");
 
-  function Bar() {};
+  function Bar() {}
 
   Bar.prototype = new Visualization();
   Bar.prototype.constructor = Visualization;
