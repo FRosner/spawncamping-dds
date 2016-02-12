@@ -10,7 +10,7 @@ define(function(require) {
 
   Pie.prototype._draw = function(servable) {
     var dds = require("dds");
-    this._chartDiv = dds.piechart(servable.title, servable.categoryCountPairs);
+    this._chartDiv = dds.pieChart(servable.title, servable.categoryCountPairs);
     this._content.appendChild(this._chartDiv);
   };
 

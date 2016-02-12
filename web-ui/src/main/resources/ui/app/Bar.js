@@ -10,7 +10,7 @@ define(function(require) {
 
   Bar.prototype._draw = function(servable) {
     var dds = require("dds");
-    this._chartDiv = dds.barchart(servable.title, servable.xDomain, servable.heights, servable.series);
+    this._chartDiv = dds.barChart(servable.title, servable.xDomain, servable.heights, servable.series);
     this._content.appendChild(this._chartDiv);
   };
 

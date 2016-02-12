@@ -10,7 +10,7 @@ define(function(require) {
 
   KeyValueSequence.prototype._draw = function(servable) {
     var dds = require("dds");
-    this._chartDiv = dds.key_value_sequence(servable.title, servable.keyValuePairs);
+    this._chartDiv = dds.keyValueSequence(servable.title, servable.keyValuePairs);
     this._content.appendChild(this._chartDiv);
   }
 

@@ -43,7 +43,7 @@ define(function(require) {
     }
 
     function drawScatter(){
-        scatterVis._chartDiv = dds.scatterplot(pointsWithTypes.title, pointsWithTypes.points, pointsWithTypes.xIsNumeric,
+        scatterVis._chartDiv = dds.scatterPlot(pointsWithTypes.title, pointsWithTypes.points, pointsWithTypes.xIsNumeric,
                                                pointsWithTypes.yIsNumeric, scatterVis.config.jitterEnabled);
         scatterVis._content.innerHTML = "";
         scatterVis._content.appendChild(scatterVis._chartDiv);
