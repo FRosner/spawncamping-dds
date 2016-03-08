@@ -17,11 +17,11 @@ define(function(require) {
 
   function updateJitterButton(button, jitterEnabled){
       if (jitterEnabled) {
-        button.setAttribute("class", "headerButton disabled");
-        button.setAttribute("title", "Enable Jitter");
-      } else {
         button.setAttribute("class", "headerButton enabled");
         button.setAttribute("title", "Disable Jitter");
+      } else {
+        button.setAttribute("class", "headerButton disabled");
+        button.setAttribute("title", "Enable Jitter");
       }
   }
 
