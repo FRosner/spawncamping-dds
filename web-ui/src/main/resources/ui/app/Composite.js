@@ -87,7 +87,7 @@ define(function(require) {
         return cell.contentId;
       })
       .attr("style", function(cell) {
-        return "height: " + Math.ceil(cell.contentWidth / 16 * 9) + "px"
+        return "height: " + Math.max(Math.ceil(cell.contentWidth / 16 * 9), 320) + "px";
       })
       .each(function(cell) {
         var servable = cell;
