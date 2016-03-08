@@ -30,13 +30,14 @@ define(function(require) {
   // TODO byte array with proper toString
   // TODO complex schema does not work (struct, array, etc.)
   Table.prototype._draw = function(tableAndTypes) {
-    var dds = require("dds");
-    //
-    tableAndTypes.schema = tableAndTypes.schema.map(function(dct) {
-        dct["type"] = JSON.parse(dct["type"]);
-        return dct;
-    });
-    this._chartDiv = dds.table(tableAndTypes.title, tableAndTypes.schema, tableAndTypes.content);
+    var dds = require("dds"),
+        schema = tableAndTypes.schema.map(function(dct) {
+            var copyDct = JSON.parse(JSON.stringify(dct));
+            copyDct["type"] = JSON.parse(copyDct["type"]);
+            return copyDct;
+        });
+
+    this._chartDiv = dds.table(tableAndTypes.title, schema, tableAndTypes.content);
     this._content.appendChild(this._chartDiv);
   }
 
