@@ -8,7 +8,7 @@ require.config({
     dragevent: libFolder + "jquery.event.drag-2.2.min",
 
     d3: libFolder + "d3.v3.min",
-    d3tip: libFolder + "d3.tip.v0.6.3",
+    d3tip: libFolder + "d3.tip.v0.6.3.min",
     c3: libFolder + "c3.min",
 
     chroma: libFolder + "chroma.min",
