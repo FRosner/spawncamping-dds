@@ -29,6 +29,16 @@ define(function(require) {
     var edgeButton = document.createElement('div');
     var directionButton = document.createElement('div');
     var instance = this;
+    var chart = dds.graph(graph.title,
+                          graph.vertices,
+                          graph.edges,
+                          config.drawNodeLabels,
+                          config.drawEdgeLabels,
+                          config.drawDirections);
+    var d3Chart = d3.select(chart);
+    instance._chartDiv = chart;
+    instance._content.innerHTML = "";
+    instance._content.appendChild(instance._chartDiv);
 
     function drawGraph() {
         if (config.drawNodeLabels) {
@@ -38,6 +48,7 @@ define(function(require) {
             nodeButton.setAttribute("class", "triggerNodeLabelsButton headerButton hidden");
             nodeButton.setAttribute("title", "Draw node labels");
         }
+        dds.graphUtils.styleNodeLabels(d3Chart.selectAll(".nodeLabel"), config.drawNodeLabels);
 
         if (config.drawEdgeLabels) {
             edgeButton.setAttribute("class", "triggerEdgeLabelsButton headerButton visible");
@@ -46,6 +57,7 @@ define(function(require) {
             edgeButton.setAttribute("class", "triggerEdgeLabelsButton headerButton hidden");
             edgeButton.setAttribute("title", "Draw edge labels");
         }
+        dds.graphUtils.styleEdgeLabels(d3Chart.selectAll(".edgeLabel"), config.drawEdgeLabels);
 
         if (config.drawDirections) {
             directionButton.setAttribute("class", "triggerDirectionsButton headerButton visible");
@@ -54,6 +66,7 @@ define(function(require) {
             directionButton.setAttribute("class", "triggerDirectionsButton headerButton hidden");
             directionButton.setAttribute("title", "Draw directed edges");
         }
+        dds.graphUtils.styleEdgeLines(d3Chart.selectAll(".link"), config.drawDirections);
     }
 
     nodeButton.onclick = function() {
