@@ -8,6 +8,7 @@ require.config({
     dragevent: libFolder + "jquery.event.drag-2.2.min",
 
     d3: libFolder + "d3.v3.min",
+    d3tip: libFolder + "d3.tip.v0.6.3",
     c3: libFolder + "c3.min",
 
     chroma: libFolder + "chroma.min",
@@ -19,7 +20,7 @@ require.config({
     slickdataview: libFolder + slickGridFolder + "slick.dataview.min",
     slickpager: libFolder + slickGridFolder + "slick.pager.min",
 
-    dds: libFolder + "dds.min",
+    dds: libFolder + "dds.min"
 
   }
 });
@@ -37,8 +38,10 @@ require.config({
     slickdataview: ["slickgrid"],
     slickpager:    ["slickgrid"],
 
+    d3tip: ["d3"],
+
     dds: {
-        deps: ["c3", "chroma", "slickcore", "slickgrid",
+        deps: ["d3", "d3tip", "c3", "chroma", "slickcore", "slickgrid",
                "slickdataview", "slickpager"],
         exports: "dds"
     }
