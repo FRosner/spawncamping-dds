@@ -23,6 +23,7 @@ define(function(require) {
 
   Graph.prototype._draw = function(graph) {
     var dds = require("dds");
+    var d3 = require("d3");
     var config = this.config;
     var nodeButton = document.createElement('div');
     var edgeButton = document.createElement('div');
@@ -30,20 +31,15 @@ define(function(require) {
     var instance = this;
 
     function drawGraph() {
-        instance._chartDiv = dds.graph(graph.title, graph.vertices, graph.edges,
-                                       config.drawNodeLabels, config.drawEdgeLabels, config.drawDirections);
-        instance._content.innerHTML = "";
-        instance._content.appendChild(instance._chartDiv);
-
-        if (config.drawNodeLabels === false) {
-            nodeButton.setAttribute("class", "triggerNodeLabelsButton headerButton hidden");
-            nodeButton.setAttribute("title", "Draw node labels");
-        } else {
+        if (config.drawNodeLabels) {
             nodeButton.setAttribute("class", "triggerNodeLabelsButton headerButton visible");
             nodeButton.setAttribute("title", "Hide node labels");
+        } else {
+            nodeButton.setAttribute("class", "triggerNodeLabelsButton headerButton hidden");
+            nodeButton.setAttribute("title", "Draw node labels");
         }
 
-        if (config.drawEdgeLabels === false) {
+        if (config.drawEdgeLabels) {
             edgeButton.setAttribute("class", "triggerEdgeLabelsButton headerButton visible");
             edgeButton.setAttribute("title", "Hide edge labels");
         } else {
@@ -51,7 +47,7 @@ define(function(require) {
             edgeButton.setAttribute("title", "Draw edge labels");
         }
 
-        if (config.drawDirections === false) {
+        if (config.drawDirections) {
             directionButton.setAttribute("class", "triggerDirectionsButton headerButton visible");
             directionButton.setAttribute("title", "Draw undirected edges");
         } else {
