@@ -13,6 +13,9 @@ import org.apache.spark.sql.{SQLContext, Row}
 import org.scalamock.scalatest.MockFactory
 import org.scalatest._
 
+import scala.reflect.ClassTag
+import scala.reflect.runtime.universe.TypeTag
+
 class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfterEach with BeforeAndAfterAll {
 
   val epsilon = 0.000001
@@ -1734,12 +1737,28 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     column3Table.title shouldBe "Summary statistics of third"
   }
 
-  it should "not be served from an empty DataFrame" in {
+  def testEmptyDashboard[T <: Product : ClassTag](implicit tag: TypeTag[T]) = {
     DDS.setServer(mockedServer)
-    val df = sc.makeRDD(List.empty[(String, Double, Date)]).toDF()
+    val df = sc.makeRDD(List.empty[T]).toDF()
     DDS.dashboard(df)
 
     mockedServer.lastServed.isEmpty shouldBe true
+  }
+
+  it should "not be served from an empty DataFrame (String, Double, Date)" in {
+    testEmptyDashboard[(String, Double, Date)]
+  }
+
+  it should "not be served from an empty DataFrame (String)" in {
+    testEmptyDashboard[(String, String)]
+  }
+
+  it should "not be served from an empty DataFrame (Date)" in {
+    testEmptyDashboard[(Date, Date)]
+  }
+
+  it should "not be served from an empty DataFrame (Double)" in {
+    testEmptyDashboard[(Double, Double)]
   }
 
   "A correct column statistics" should "be served for normal data frames" in {
