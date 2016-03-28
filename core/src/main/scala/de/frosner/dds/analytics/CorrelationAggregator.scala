@@ -6,6 +6,9 @@ class CorrelationAggregator(val numColumns: Int) extends Serializable {
 
   require(numColumns > 0, "You need to pass a positive number of columns to use the aggregator.")
 
+  def isEmpty: Boolean = !iteratedOnce
+  private[this] var iteratedOnce = false
+
   private[analytics] var aggregators: mutable.Map[(Int, Int), (NumericColumnStatisticsAggregator, NumericColumnStatisticsAggregator)] =
     initializeMapWith(numColumns)((new NumericColumnStatisticsAggregator(), new NumericColumnStatisticsAggregator()))
 
@@ -17,6 +20,7 @@ class CorrelationAggregator(val numColumns: Int) extends Serializable {
 
   def iterate(columns: Seq[Option[Double]]): CorrelationAggregator = {
     require(columns.size == numColumns)
+    iteratedOnce = true
     val columnsWithIndex = columns.zipWithIndex
     for ((column1, idx1) <- columnsWithIndex; (column2, idx2) <- columnsWithIndex; if idx1 < idx2)
       if (column1.isDefined && column2.isDefined) {
@@ -41,6 +45,7 @@ class CorrelationAggregator(val numColumns: Int) extends Serializable {
 
   def merge(intermediateAggregator: CorrelationAggregator): CorrelationAggregator = {
     require(numColumns == intermediateAggregator.numColumns)
+    iteratedOnce = iteratedOnce || !intermediateAggregator.isEmpty
 
     for (((i, j), (agg1, agg2)) <- aggregators) {
       val (intermediateAgg1, intermediateAgg2) = intermediateAggregator.aggregators((i, j))

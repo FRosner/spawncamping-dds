@@ -124,7 +124,7 @@ object ScalaFunctions {
 
   private[core] def createShow[V](sequence: Seq[V], title: String)(implicit tag: TypeTag[V]): Option[Servable] = {
     val vType = tag.tpe
-    if (sequence.length == 0) {
+    if (sequence.isEmpty) {
       println("Sequence is empty!")
       Option.empty
     } else {

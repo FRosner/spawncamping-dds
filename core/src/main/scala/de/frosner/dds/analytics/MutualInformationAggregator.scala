@@ -17,8 +17,12 @@ class MutualInformationAggregator(val numColumns: Int) extends Serializable {
     pXY
   }
 
+  def isEmpty: Boolean = !iteratedOnce
+  private[this] var iteratedOnce = false
+
   def iterate(columns: Seq[Any]): MutualInformationAggregator = {
     require(columns.size == numColumns)
+    iteratedOnce = true
     for ((value, counts) <- columns.zip(columnCounts)) {
       counts.get(value) match {
         case Some(count) => counts.update(value, count + 1)
@@ -38,6 +42,7 @@ class MutualInformationAggregator(val numColumns: Int) extends Serializable {
 
   def merge(intermediateAggregator: MutualInformationAggregator): MutualInformationAggregator = {
     require(numColumns == intermediateAggregator.numColumns)
+    iteratedOnce = iteratedOnce || !intermediateAggregator.isEmpty
     for ((counts, intermediateCounts) <- columnCounts.zip(intermediateAggregator.columnCounts);
          (intermediateValue, intermediateCount) <- intermediateCounts) {
       counts.get(intermediateValue) match {

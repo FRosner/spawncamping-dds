@@ -13,6 +13,9 @@ import org.apache.spark.sql.{SQLContext, Row}
 import org.scalamock.scalatest.MockFactory
 import org.scalatest._
 
+import scala.reflect.ClassTag
+import scala.reflect.runtime.universe.TypeTag
+
 class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfterEach with BeforeAndAfterAll {
 
   val epsilon = 0.000001
@@ -34,6 +37,7 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     new SparkContext(conf)
   }
   private val sql: SQLContext = new SQLContext(sc)
+  import sql.implicits._
 
   override def afterAll() = {
     sc.stop()
@@ -1337,6 +1341,18 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     corrMatrix(1)(0) should not be (-1d +- epsilon)
   }
 
+  it should "not be served from an empty DataFrame" in {
+    DDS.setServer(mockedServer)
+    val rdd = sc.makeRDD(List.empty[Row])
+    val dataFrame = sql.createDataFrame(rdd, StructType(List(
+      StructField("first", DoubleType, false),
+      StructField("second", DoubleType, false)
+    )))
+    DDS.correlation(dataFrame)
+
+    mockedServer.lastServed.isEmpty shouldBe true
+  }
+
   /**
    * I used R to compute the expected mutual information values. E.g.:
    *
@@ -1632,12 +1648,32 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     miMatrix(1)(1) should be (0d +- epsilon)
   }
 
-  it should "return None if called with empty dataframe as an argument" in {
+  it should "return None if called with a dataframe without a column" in {
     DDS.setServer(mockedServer)
     val rdd = sc.makeRDD(List(Row()))
     val dataFrame = sql.createDataFrame(rdd, StructType(List()))
     DDS.mutualInformation(dataFrame, MutualInformationAggregator.NO_NORMALIZATION)
     mockedServer.lastServed shouldBe None
+  }
+
+  it should "not be served from an empty DataFrame (numerical columns)" in {
+    DDS.setServer(mockedServer)
+    val rdd = sc.makeRDD(List.empty[Row])
+    val dataFrame = sql.createDataFrame(rdd, StructType(List(
+      StructField("first", DoubleType, false),
+      StructField("second", DoubleType, false)
+    )))
+    DDS.mutualInformation(dataFrame, MutualInformationAggregator.NO_NORMALIZATION)
+
+    mockedServer.lastServed.isEmpty shouldBe true
+  }
+
+  it should "not be served from an empty DataFrame (string columns)" in {
+    DDS.setServer(mockedServer)
+    val df = sc.makeRDD(List.empty[String]).toDF()
+    DDS.mutualInformation(df)
+
+    val resultTable = mockedServer.lastServed.isEmpty shouldBe true
   }
 
   "A correct dashboard" should "be served" in {
@@ -1699,6 +1735,30 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     column2Table.title shouldBe "Summary statistics of second"
     val column3Table = columnServables(2)(0).asInstanceOf[KeyValueSequence]
     column3Table.title shouldBe "Summary statistics of third"
+  }
+
+  def testEmptyDashboard[T <: Product : ClassTag](implicit tag: TypeTag[T]) = {
+    DDS.setServer(mockedServer)
+    val df = sc.makeRDD(List.empty[T]).toDF()
+    DDS.dashboard(df)
+
+    mockedServer.lastServed.isEmpty shouldBe true
+  }
+
+  it should "not be served from an empty DataFrame (String, Double, Date)" in {
+    testEmptyDashboard[(String, Double, Date)]
+  }
+
+  it should "not be served from an empty DataFrame (String)" in {
+    testEmptyDashboard[(String, String)]
+  }
+
+  it should "not be served from an empty DataFrame (Date)" in {
+    testEmptyDashboard[(Date, Date)]
+  }
+
+  it should "not be served from an empty DataFrame (Double)" in {
+    testEmptyDashboard[(Double, Double)]
   }
 
   "A correct column statistics" should "be served for normal data frames" in {
@@ -1862,6 +1922,14 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     thirdDayBar.series shouldBe Seq("third")
     thirdDayBar.xDomain shouldBe Seq("NULL")
     thirdDayBar.heights shouldBe Seq(Seq(3d))
+  }
+
+  it should "not be served from an empty DataFrame" in {
+    DDS.setServer(mockedServer)
+    val df = sc.makeRDD(List.empty[String]).toDF()
+    DDS.summarize(df)
+
+    val resultTable = mockedServer.lastServed.isEmpty shouldBe true
   }
 
 }

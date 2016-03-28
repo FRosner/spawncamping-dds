@@ -70,11 +70,19 @@ object SparkSqlFunctions {
     val fields = schema.fields
     val title = s"""Sample of ${DataFrameUtils.dfToString(dataFrame)}"""
     val values = dataFrame.take(sampleSize)
-    ScalaFunctions.createTable(schema, values, title)
+    if (values.nonEmpty) {
+      ScalaFunctions.createTable(schema, values, title)
+    } else {
+      println("You are trying to show an empty data frame.")
+      Option.empty
+    }
   }
 
   private[core] def createCorrelation(dataFrame: DataFrame): Option[Servable] = {
-    def showError = println("Correlation only supported for RDDs with multiple numerical columns.")
+    def showError = {
+      println("Correlation only supported for non-empty data frames with multiple numerical columns.")
+      Option.empty
+    }
     val schema = dataFrame.schema
     val fields = schema.fields
     val title = s"Correlation of ${DataFrameUtils.dfToString(dataFrame)}"
@@ -107,34 +115,39 @@ object SparkSqlFunctions {
           },
           (agg1, agg2) => agg1.merge(agg2)
         )
-        var corrMatrix: mutable.Seq[mutable.Seq[Double]] = new ArrayBuffer(corrAgg.numColumns) ++
-          List.fill(corrAgg.numColumns)(new ArrayBuffer[Double](corrAgg.numColumns) ++
-            List.fill(corrAgg.numColumns)(0d))
-        for (((i, j), corr) <- corrAgg.pearsonCorrelations) {
-          corrMatrix(i)(j) = corr
+        if (!corrAgg.isEmpty) {
+          var corrMatrix: mutable.Seq[mutable.Seq[Double]] = new ArrayBuffer(corrAgg.numColumns) ++
+            List.fill(corrAgg.numColumns)(new ArrayBuffer[Double](corrAgg.numColumns) ++
+              List.fill(corrAgg.numColumns)(0d))
+          for (((i, j), corr) <- corrAgg.pearsonCorrelations) {
+            corrMatrix(i)(j) = corr
+          }
+          val fieldNames = numericalFields.map { case (field, idx) => field.name }
+          ScalaFunctions.createHeatmap(
+            values = corrMatrix,
+            rowNames = fieldNames,
+            colNames = fieldNames,
+            zColorZeroes = Seq(-1d, 0d, 1d),
+            title = title
+          )
+        } else {
+          showError
         }
-        val fieldNames = numericalFields.map{ case (field, idx) => field.name }
-        ScalaFunctions.createHeatmap(
-          values = corrMatrix,
-          rowNames = fieldNames,
-          colNames = fieldNames,
-          zColorZeroes = Seq(-1d, 0d, 1d),
-          title = title
-        )
       } else {
         showError
-        Option.empty
       }
     } else {
       showError
-      Option.empty
     }
   }
 
   private[core] def createMutualInformation(dataFrame: DataFrame,
                                             normalization: String = MutualInformationAggregator.DEFAULT_NORMALIZATION): Option[Servable] = {
     import MutualInformationAggregator.{isValidNormalization, DEFAULT_NORMALIZATION, METRIC_NORMALIZATION, NO_NORMALIZATION}
-    def showError = println("Mutual information only supported for RDDs with at least one column.")
+    def showError = {
+      println("Mutual information only supported for non-empty data frames with at least one column.")
+      Option.empty[Servable]
+    }
 
     // bin all numerical fields by first converting them to double and then perform equal-width binning using sturges
     val schema = dataFrame.schema
@@ -165,60 +178,69 @@ object SparkSqlFunctions {
       }
     }}.unzip
     val numericMinMaxCountValues = dfWithAllNumericColumnsAsDouble.select(numericMinMaxCountColumns:_*).collect
-    val numericMinMaxCountValuesMap = numericMinMaxCountIndexes.zip(numericMinMaxCountValues.head.toSeq).toMap
-    val dfWithBinnedDoubleValues = dfWithAllNumericColumnsAsDouble.select(
-      fields.zipWithIndex.map{ case (field, idx) => {
-        if (isNumeric(field.dataType)) {
-          val max = numericMinMaxCountValuesMap((idx, 0)).asInstanceOf[Double]
-          val min = numericMinMaxCountValuesMap((idx, 1)).asInstanceOf[Double]
-          val count = numericMinMaxCountValuesMap((idx, 2)).asInstanceOf[Long]
-          val optimalNumBins = ServableUtils.optimalNumberOfBins(count)
-          DataFrameUtils.binDoubleUdf(optimalNumBins, min, max)(new Column(field.name))
-        } else {
-          new Column(field.name)
+
+    if (numericMinMaxCountValues.nonEmpty) {
+      val numericMinMaxCountValuesMap = numericMinMaxCountIndexes.zip(numericMinMaxCountValues(0).toSeq).toMap
+      val dfWithBinnedDoubleValues = dfWithAllNumericColumnsAsDouble.select(
+        fields.zipWithIndex.map { case (field, idx) => {
+          if (isNumeric(field.dataType)) {
+            val max = numericMinMaxCountValuesMap((idx, 0)).asInstanceOf[Double]
+            val min = numericMinMaxCountValuesMap((idx, 1)).asInstanceOf[Double]
+            val count = numericMinMaxCountValuesMap((idx, 2)).asInstanceOf[Long]
+            val optimalNumBins = ServableUtils.optimalNumberOfBins(count)
+            DataFrameUtils.binDoubleUdf(optimalNumBins, min, max)(new Column(field.name))
+          } else {
+            new Column(field.name)
+          }
         }
-      }}:_*
-    )
-
-    // compute mutual information matrix
-    val binnedFields = dfWithBinnedDoubleValues.schema.fields
-    if (fields.size >= 1) {
-      val miAgg = dfWithBinnedDoubleValues.rdd.aggregate(new MutualInformationAggregator(binnedFields.size)) (
-        (agg, row) => agg.iterate(row.toSeq),
-        (agg1, agg2) => agg1.merge(agg2)
+        }: _*
       )
-      var mutualInformationMatrix: mutable.Seq[mutable.Seq[Double]] = new ArrayBuffer(miAgg.numColumns) ++
-        List.fill(miAgg.numColumns)(
-          new ArrayBuffer[Double](miAgg.numColumns) ++ List.fill(miAgg.numColumns)(0d)
+
+      // compute mutual information matrix
+      val binnedFields = dfWithBinnedDoubleValues.schema.fields
+      if (fields.length >= 1) {
+        val miAgg = dfWithBinnedDoubleValues.rdd.aggregate(new MutualInformationAggregator(binnedFields.length))(
+          (agg, row) => agg.iterate(row.toSeq),
+          (agg1, agg2) => agg1.merge(agg2)
         )
+        if (!miAgg.isEmpty) {
+          val mutualInformationMatrix: mutable.Seq[mutable.Seq[Double]] = new ArrayBuffer(miAgg.numColumns) ++
+            List.fill(miAgg.numColumns)(
+              new ArrayBuffer[Double](miAgg.numColumns) ++ List.fill(miAgg.numColumns)(0d)
+            )
 
-      val actualNormalization = if (isValidNormalization(normalization)) {
-        normalization
+          val actualNormalization = if (isValidNormalization(normalization)) {
+            normalization
+          } else {
+            println( s"""Not a valid normalization method: $normalization. Falling back to $DEFAULT_NORMALIZATION.""")
+            DEFAULT_NORMALIZATION
+          }
+
+          val title = s"Mutual Information ($actualNormalization) of ${DataFrameUtils.dfToString(dataFrame)}"
+
+          for (((i, j), mi) <- actualNormalization match {
+            case METRIC_NORMALIZATION => miAgg.mutualInformationMetric
+            case NO_NORMALIZATION => miAgg.mutualInformation
+          }) {
+            mutualInformationMatrix(i)(j) = mi
+          }
+
+          val fieldNames = fields.map(_.name)
+          ScalaFunctions.createHeatmap(
+            values = mutualInformationMatrix,
+            rowNames = fieldNames,
+            colNames = fieldNames,
+            zColorZeroes = Seq(0d),
+            title = title
+          )
+        } else {
+          showError
+        }
       } else {
-        println(s"""Not a valid normalization method: $normalization. Falling back to $DEFAULT_NORMALIZATION.""")
-        DEFAULT_NORMALIZATION
+        showError
       }
-
-      val title = s"Mutual Information ($actualNormalization) of ${DataFrameUtils.dfToString(dataFrame)}"
-
-      for (((i, j), mi) <- actualNormalization match {
-        case METRIC_NORMALIZATION => miAgg.mutualInformationMetric
-        case NO_NORMALIZATION => miAgg.mutualInformation
-      }) {
-        mutualInformationMatrix(i)(j) = mi
-      }
-
-      val fieldNames = fields.map(_.name)
-      ScalaFunctions.createHeatmap(
-        values = mutualInformationMatrix,
-        rowNames = fieldNames,
-        colNames = fieldNames,
-        zColorZeroes = Seq(0d),
-        title = title
-      )
     } else {
       showError
-      Option.empty
     }
   }
 
@@ -235,105 +257,119 @@ object SparkSqlFunctions {
       (agg1, agg2) => agg1.merge(agg2)
     )
 
-    val numericColumnStatistics = columnStatistics.numericColumns
-    val numericFields = getNumericFields(dataFrame)
-    val numericServables = for ((index, field) <- numericFields) yield {
-      val hist = createHistogram(dataFrame.select(new Column(field.name)), Option(10))
-      val (agg, _) = numericColumnStatistics(index)
-      val table = ScalaFunctions.createKeyValuePairs(
-        title = s"Summary statistics of ${field.name}",
-        pairs = List(
+    if (columnStatistics.totalCount > 0) {
+      val numericColumnStatistics = columnStatistics.numericColumns
+      val numericFields = getNumericFields(dataFrame)
+      val numericServables = for ((index, field) <- numericFields) yield {
+        val hist = createHistogram(dataFrame.select(new Column(field.name)), Option(10))
+        val (agg, _) = numericColumnStatistics(index)
+        val table = ScalaFunctions.createKeyValuePairs(
+          title = s"Summary statistics of ${field.name}",
+          pairs = List(
+            ("Total Count", agg.totalCount),
+            ("Missing Count", agg.missingCount),
+            ("Non-Missing Count", agg.nonMissingCount),
+            ("Sum", agg.sum),
+            ("Min", agg.min),
+            ("Max", agg.max),
+            ("Mean", agg.mean),
+            ("Stdev", agg.stdev),
+            ("Variance", agg.variance)
+          )
+        )
+        Option((index, List(table.getOrElse(Blank), hist.getOrElse(Blank))))
+      }
+
+      val dateColumnStatistics = columnStatistics.dateColumns
+      val dateFields = getDateFields(dataFrame)
+      val dateServables = for ((index, field) <- dateFields) yield {
+        val (agg, _) = dateColumnStatistics(index)
+        val (years, yearFrequencies) = agg.yearFrequencies.toList.sortBy(_._1).map { case (year, count) => {
+          (DateColumnStatisticsAggregator.calendarYearToString(year), count.toDouble)
+        }
+        }.unzip
+        val yearBar = ScalaFunctions.createBar(yearFrequencies, years, field.name, s"Years in ${field.name}")
+        val (months, monthFrequencies) = agg.monthFrequencies.toList.sortBy(_._1).map { case (month, count) => {
+          (DateColumnStatisticsAggregator.calendarMonthToString(month), count.toDouble)
+        }
+        }.unzip
+        val monthBar = ScalaFunctions.createBar(monthFrequencies, months, field.name, s"Months in ${field.name}")
+        val (days, dayFrequencies) = agg.dayOfWeekFrequencies.toList.sortBy(_._1).map { case (day, count) => {
+          (DateColumnStatisticsAggregator.calendarDayToString(day), count.toDouble)
+        }
+        }.unzip
+        val dayBar = ScalaFunctions.createBar(dayFrequencies, days, field.name, s"Days in ${field.name}")
+        val table = ScalaFunctions.createKeyValuePairs(List(
           ("Total Count", agg.totalCount),
           ("Missing Count", agg.missingCount),
           ("Non-Missing Count", agg.nonMissingCount),
-          ("Sum", agg.sum),
-          ("Min", agg.min),
-          ("Max", agg.max),
-          ("Mean", agg.mean),
-          ("Stdev", agg.stdev),
-          ("Variance", agg.variance)
-        )
-      )
-      Option((index, List(table.getOrElse(Blank), hist.getOrElse(Blank))))
-    }
+          ("Top Year", agg.topYear match {
+            case (year, count) => (DateColumnStatisticsAggregator.calendarYearToString(year), count)
+          }),
+          ("Top Month", agg.topMonth match {
+            case (month, count) => (DateColumnStatisticsAggregator.calendarMonthToString(month), count)
+          }),
+          ("Top Day", agg.topDayOfWeek match {
+            case (day, count) => (DateColumnStatisticsAggregator.calendarDayToString(day), count)
+          })
+        ), s"Summary statistics of ${field.name}")
+        if (table.isDefined && yearBar.isDefined && monthBar.isDefined && dayBar.isDefined) {
+          Option((index, List(table.get, yearBar.get, monthBar.get, dayBar.get)))
+        } else {
+          Option.empty
+        }
+      }
 
-    val dateColumnStatistics = columnStatistics.dateColumns
-    val dateFields = getDateFields(dataFrame)
-    val dateServables = for ((index, field) <- dateFields) yield {
-      val (agg, _) = dateColumnStatistics(index)
-      val (years, yearFrequencies) = agg.yearFrequencies.toList.sortBy(_._1).map { case (year, count) => {
-        (DateColumnStatisticsAggregator.calendarYearToString(year), count.toDouble)
-      }}.unzip
-      val yearBar = ScalaFunctions.createBar(yearFrequencies, years, field.name, s"Years in ${field.name}")
-      val (months, monthFrequencies) = agg.monthFrequencies.toList.sortBy(_._1).map { case (month, count) => {
-        (DateColumnStatisticsAggregator.calendarMonthToString(month), count.toDouble)
-      }}.unzip
-      val monthBar = ScalaFunctions.createBar(monthFrequencies, months, field.name, s"Months in ${field.name}")
-      val (days, dayFrequencies) = agg.dayOfWeekFrequencies.toList.sortBy(_._1).map { case (day, count) => {
-        (DateColumnStatisticsAggregator.calendarDayToString(day), count.toDouble)
-      }}.unzip
-      val dayBar = ScalaFunctions.createBar(dayFrequencies, days, field.name, s"Days in ${field.name}")
-      val table = ScalaFunctions.createKeyValuePairs(List(
-        ("Total Count", agg.totalCount),
-        ("Missing Count", agg.missingCount),
-        ("Non-Missing Count", agg.nonMissingCount),
-        ("Top Year", agg.topYear match { case (year, count) => (DateColumnStatisticsAggregator.calendarYearToString(year), count) }),
-        ("Top Month", agg.topMonth match { case (month, count) => (DateColumnStatisticsAggregator.calendarMonthToString(month), count) }),
-        ("Top Day", agg.topDayOfWeek match { case (day, count) => (DateColumnStatisticsAggregator.calendarDayToString(day), count) })
-      ), s"Summary statistics of ${field.name}")
-      if (table.isDefined && yearBar.isDefined && monthBar.isDefined && dayBar.isDefined) {
-        Option((index, List(table.get, yearBar.get, monthBar.get, dayBar.get)))
+      val nominalColumnStatistics = columnStatistics.nominalColumns
+      val nominalFields = getNominalFields(dataFrame)
+      val nominalServables = for ((index, field) <- nominalFields) yield {
+        val groupCounts = dataFrame.groupBy(new Column(field.name)).count.map(row =>
+          (if (row.isNullAt(0)) "NULL" else row.get(0).toString, row.getLong(1))
+        )
+        val cardinality = groupCounts.count
+        val orderedCounts = groupCounts.sortBy(x => x._2, ascending = false)
+        val mode = orderedCounts.first
+        val barTitle = s"Bar of ${field.name}"
+        val barPlot = if (cardinality <= 10) {
+          val (values, counts) = orderedCounts.collect.unzip
+          ScalaFunctions.createBar(counts.map(_.toDouble), values, field.name, barTitle)
+        } else {
+          val (top10Values, top10Counts) = orderedCounts.take(10).unzip
+          val top10CountsSum = top10Counts.sum
+          val totalCountsSum = orderedCounts.map { case (value, counts) => counts }.reduce(_ + _)
+          val otherCount = totalCountsSum - top10CountsSum
+          ScalaFunctions.createBar(
+            values = top10Counts.map(_.toDouble) ++ List(otherCount.toDouble),
+            categories = top10Values ++ List("..."),
+            seriesName = field.name,
+            title = barTitle
+          )
+        }
+        val (agg, _) = nominalColumnStatistics(index)
+        val table = ScalaFunctions.createKeyValuePairs(List(
+          ("Total Count", agg.totalCount),
+          ("Missing Count", agg.missingCount),
+          ("Non-Missing Count", agg.nonMissingCount),
+          ("Mode", mode),
+          ("Cardinality", cardinality)
+        ), s"Summary statistics of ${field.name}")
+        if (table.isDefined && barPlot.isDefined) {
+          Option((index, List(table.get, barPlot.get)))
+        } else {
+          Option.empty
+        }
+      }
+
+      if (numericServables.forall(_.isDefined) && dateServables.forall(_.isDefined) && nominalServables.forall(_.isDefined)) {
+        val allServables = numericServables.map(_.get) ++ dateServables.map(_.get) ++ nominalServables.map(_.get)
+        val sortedServables = allServables.toSeq.sortBy(_._1)
+        Option(Composite(title, sortedServables.map { case (index, servables) => servables }))
       } else {
+        println("Failed to create summary statistics")
         Option.empty
       }
-    }
-
-    val nominalColumnStatistics = columnStatistics.nominalColumns
-    val nominalFields = getNominalFields(dataFrame)
-    val nominalServables = for ((index, field) <- nominalFields) yield {
-      val groupCounts = dataFrame.groupBy(new Column(field.name)).count.map(row =>
-        (if (row.isNullAt(0)) "NULL" else row.get(0).toString, row.getLong(1))
-      )
-      val cardinality = groupCounts.count
-      val orderedCounts = groupCounts.sortBy(x => x._2, ascending = false)
-      val mode = orderedCounts.first
-      val barTitle = s"Bar of ${field.name}"
-      val barPlot = if (cardinality <= 10) {
-        val (values, counts) = orderedCounts.collect.unzip
-        ScalaFunctions.createBar(counts.map(_.toDouble), values, field.name, barTitle)
-      } else {
-        val (top10Values, top10Counts) = orderedCounts.take(10).unzip
-        val top10CountsSum = top10Counts.sum
-        val totalCountsSum = orderedCounts.map { case (value, counts) => counts }.reduce(_ + _)
-        val otherCount = totalCountsSum - top10CountsSum
-        ScalaFunctions.createBar(
-          values = top10Counts.map(_.toDouble) ++ List(otherCount.toDouble),
-          categories = top10Values ++ List("..."),
-          seriesName = field.name,
-          title = barTitle
-        )
-      }
-      val (agg, _) = nominalColumnStatistics(index)
-      val table = ScalaFunctions.createKeyValuePairs(List(
-        ("Total Count", agg.totalCount),
-        ("Missing Count", agg.missingCount),
-        ("Non-Missing Count", agg.nonMissingCount),
-        ("Mode", mode),
-        ("Cardinality", cardinality)
-      ), s"Summary statistics of ${field.name}")
-      if (table.isDefined && barPlot.isDefined) {
-        Option((index, List(table.get, barPlot.get)))
-      } else {
-        Option.empty
-      }
-    }
-
-    if (numericServables.forall(_.isDefined) && dateServables.forall(_.isDefined) && nominalServables.forall(_.isDefined)) {
-      val allServables = numericServables.map(_.get) ++ dateServables.map(_.get) ++ nominalServables.map(_.get)
-      val sortedServables = allServables.toSeq.sortBy(_._1)
-      Option(Composite(title, sortedServables.map { case (index, servables) => servables }))
     } else {
-      println("Failed to create summary statistics")
+      println("Not supported on empty data frames.")
       Option.empty
     }
   }
@@ -344,11 +380,20 @@ object SparkSqlFunctions {
     val title = s"Dashboard of ${DataFrameUtils.dfToString(dataFrame)}"
 
     def toCell(maybeServable: Option[Servable]) = maybeServable.map(servable => List(servable)).getOrElse(List.empty)
-    Option(Composite(title, List(
-      toCell(createShow(dataFrame, DDS.DEFAULT_SHOW_SAMPLE_SIZE)),
-      toCell(createCorrelation(dataFrame)) ++ toCell(createMutualInformation(dataFrame)),
-      toCell(createSummarize(dataFrame))
-    )))
+    val show = createShow(dataFrame, DDS.DEFAULT_SHOW_SAMPLE_SIZE)
+    val correlation = createCorrelation(dataFrame)
+    val mutualInformation = createMutualInformation(dataFrame)
+    val summary = createSummarize(dataFrame)
+    if (show.isEmpty && correlation.isEmpty && mutualInformation.isEmpty && summary.isEmpty) {
+      println("Dashboard not supported on empty data frames.")
+      Option.empty
+    } else {
+      Option(Composite(title, List(
+        toCell(show),
+        toCell(correlation) ++ toCell(mutualInformation),
+        toCell(summary)
+      )))
+    }
   }
 
   private def createSomethingOnNumericColumn(dataFrame: DataFrame, name: String)

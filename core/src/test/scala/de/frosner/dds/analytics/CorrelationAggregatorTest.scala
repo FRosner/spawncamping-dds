@@ -32,6 +32,13 @@ class CorrelationAggregatorTest extends FlatSpec with Matchers {
       (2, 4) -> 0d,
       (3, 4) -> 0d
     )
+    agg.isEmpty shouldBe true
+  }
+
+  it should "be non-empty after the first iterate" in {
+    val agg = new CorrelationAggregator(3)
+    agg.iterateWithoutNulls(List(1d,2d,3d))
+    agg.isEmpty shouldBe false
   }
 
   it should "iterate the numeric aggregators accordingly" in {
@@ -75,6 +82,20 @@ class CorrelationAggregatorTest extends FlatSpec with Matchers {
     agg.iterateWithoutNulls(List(3d,5d))
     val result = agg.runningCov.toMap
     result((0,1)) should be (256.91999999999996 +- epsilon)
+  }
+
+  it should "be non-empty after merging with an non-empty iterator" in {
+    val agg1 = new CorrelationAggregator(3)
+    val agg2 = new CorrelationAggregator(3)
+    agg2.iterateWithoutNulls(List(1d,2d,3d))
+    agg1.merge(agg2).isEmpty shouldBe false
+  }
+
+  it should "be non-empty after merging a non-empty with an empty iterator" in {
+    val agg1 = new CorrelationAggregator(3)
+    agg1.iterateWithoutNulls(List(1d,2d,3d))
+    val agg2 = new CorrelationAggregator(3)
+    agg1.merge(agg2).isEmpty shouldBe false
   }
 
   it should "merge two numerical aggregators correctly" in {

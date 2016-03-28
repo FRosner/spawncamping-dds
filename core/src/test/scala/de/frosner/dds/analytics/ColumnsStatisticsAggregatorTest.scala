@@ -32,6 +32,8 @@ class ColumnsStatisticsAggregatorTest extends FlatSpec with Matchers {
     val (actualNominalAggregator, actualNominalColumn) = actualNominalColumns(2)
     actualNominalAggregator.totalCount shouldBe 0l
     actualNominalColumn shouldBe stringColumn
+
+    agg.totalCount shouldBe 0l
   }
 
   it should "update the aggregators when iterating" in {
@@ -52,6 +54,8 @@ class ColumnsStatisticsAggregatorTest extends FlatSpec with Matchers {
 
       val (actualNominalAggregator, _) = agg.nominalColumns(2)
       actualNominalAggregator.totalCount shouldBe expectedCount
+
+      agg.totalCount shouldBe expectedCount
     }
   }
 
@@ -77,6 +81,8 @@ class ColumnsStatisticsAggregatorTest extends FlatSpec with Matchers {
 
     val (actualNominalAggregator, _) = merged.nominalColumns(2)
     actualNominalAggregator.totalCount shouldBe 3l
+
+    merged.totalCount shouldBe 3l
   }
 
   it should "only merge two aggregators having the same schema" in {
@@ -90,6 +96,22 @@ class ColumnsStatisticsAggregatorTest extends FlatSpec with Matchers {
     intercept[IllegalArgumentException] {
       agg1.merge(agg2)
     }
+  }
+
+  it should "use the total count of the first aggregator it finds" in {
+    def testTotalCount(types: Seq[DataType]) = {
+      val fields = types.zipWithIndex.map{ case (dataType, index) =>
+        StructField(
+          name = index.toString,
+          dataType = dataType,
+          nullable = true
+        )
+      }
+      val schema = StructType(fields)
+      val agg = ColumnsStatisticsAggregator(schema)
+      agg.totalCount shouldBe 0L
+    }
+    Set(DoubleType, StringType, DateType).subsets.map(_.toSeq).foreach(testTotalCount)
   }
 
 }
