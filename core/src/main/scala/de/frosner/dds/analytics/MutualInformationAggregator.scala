@@ -17,7 +17,7 @@ class MutualInformationAggregator(val numColumns: Int) extends Serializable {
     pXY
   }
 
-  def isEmpty = !iteratedOnce
+  def isEmpty: Boolean = !iteratedOnce
   private[this] var iteratedOnce = false
 
   def iterate(columns: Seq[Any]): MutualInformationAggregator = {

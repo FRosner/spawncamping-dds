@@ -74,7 +74,10 @@ object SparkSqlFunctions {
   }
 
   private[core] def createCorrelation(dataFrame: DataFrame): Option[Servable] = {
-    def showError = println("Correlation only supported for RDDs with multiple numerical columns.")
+    def showError = {
+      println("Correlation only supported for non-empty data frames with multiple numerical columns.")
+      Option.empty
+    }
     val schema = dataFrame.schema
     val fields = schema.fields
     val title = s"Correlation of ${DataFrameUtils.dfToString(dataFrame)}"
@@ -107,27 +110,29 @@ object SparkSqlFunctions {
           },
           (agg1, agg2) => agg1.merge(agg2)
         )
-        var corrMatrix: mutable.Seq[mutable.Seq[Double]] = new ArrayBuffer(corrAgg.numColumns) ++
-          List.fill(corrAgg.numColumns)(new ArrayBuffer[Double](corrAgg.numColumns) ++
-            List.fill(corrAgg.numColumns)(0d))
-        for (((i, j), corr) <- corrAgg.pearsonCorrelations) {
-          corrMatrix(i)(j) = corr
+        if (!corrAgg.isEmpty) {
+          var corrMatrix: mutable.Seq[mutable.Seq[Double]] = new ArrayBuffer(corrAgg.numColumns) ++
+            List.fill(corrAgg.numColumns)(new ArrayBuffer[Double](corrAgg.numColumns) ++
+              List.fill(corrAgg.numColumns)(0d))
+          for (((i, j), corr) <- corrAgg.pearsonCorrelations) {
+            corrMatrix(i)(j) = corr
+          }
+          val fieldNames = numericalFields.map { case (field, idx) => field.name }
+          ScalaFunctions.createHeatmap(
+            values = corrMatrix,
+            rowNames = fieldNames,
+            colNames = fieldNames,
+            zColorZeroes = Seq(-1d, 0d, 1d),
+            title = title
+          )
+        } else {
+          showError
         }
-        val fieldNames = numericalFields.map{ case (field, idx) => field.name }
-        ScalaFunctions.createHeatmap(
-          values = corrMatrix,
-          rowNames = fieldNames,
-          colNames = fieldNames,
-          zColorZeroes = Seq(-1d, 0d, 1d),
-          title = title
-        )
       } else {
         showError
-        Option.empty
       }
     } else {
       showError
-      Option.empty
     }
   }
 

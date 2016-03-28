@@ -104,6 +104,13 @@ class MutualInformationAggregatorTest extends FlatSpec with Matchers {
     agg1.merge(agg2).isEmpty shouldBe false
   }
 
+  it should "be non-empty after merging a non-empty with an empty one" in {
+    val agg1 = new MutualInformationAggregator(3)
+    val agg2 = new MutualInformationAggregator(3)
+    agg1.iterate(List("a","b","c"))
+    agg1.merge(agg2).isEmpty shouldBe false
+  }
+
   it should "merge two column counts correctly" in {
     val agg1 = new MutualInformationAggregator(3)
     agg1.iterate(List("a","b","c"))

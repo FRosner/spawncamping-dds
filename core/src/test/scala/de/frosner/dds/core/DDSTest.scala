@@ -1338,6 +1338,18 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     corrMatrix(1)(0) should not be (-1d +- epsilon)
   }
 
+  it should "not be served from an empty DataFrame" in {
+    DDS.setServer(mockedServer)
+    val rdd = sc.makeRDD(List.empty[Row])
+    val dataFrame = sql.createDataFrame(rdd, StructType(List(
+      StructField("first", DoubleType, false),
+      StructField("second", DoubleType, false)
+    )))
+    DDS.correlation(dataFrame)
+
+    mockedServer.lastServed.isEmpty shouldBe true
+  }
+
   /**
    * I used R to compute the expected mutual information values. E.g.:
    *
