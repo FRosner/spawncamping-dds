@@ -35,6 +35,7 @@ class MutualInformationAggregatorTest extends FlatSpec with Matchers {
     agg.columnCounts.map(_.toMap).toList shouldBe expectedColumnCounts
     agg.crossColumnCounts.map{ case ((key1, key2), value) => ((key1, key2), value.toMap) }.toMap shouldBe
       expectedCrossColumnCounts
+    agg.isEmpty shouldBe true
   }
 
   it should "compute the correct column counts" in {
@@ -57,6 +58,12 @@ class MutualInformationAggregatorTest extends FlatSpec with Matchers {
       Map[Any, Int](2d -> 1, 3d -> 2),
       Map[Any, Int](3d -> 1, (null, 2))
     )
+  }
+
+  it should "be nonEmpty after the first iterate" in {
+    val agg = new MutualInformationAggregator(3)
+    agg.iterate(List(1d,2d,3d))
+    agg.isEmpty shouldBe false
   }
 
   it should "compute the cross column counts" in {
@@ -88,6 +95,13 @@ class MutualInformationAggregatorTest extends FlatSpec with Matchers {
       (1, 2) -> Map[(Any, Any), Int](("b", "c") -> 2, ("c", null) -> 1),
       (2, 2) -> Map[(Any, Any), Int](("c", "c") -> 2, (null, null) -> 1)
     )
+  }
+
+  it should "be non-empty after merging with a non-empty one" in {
+    val agg1 = new MutualInformationAggregator(3)
+    val agg2 = new MutualInformationAggregator(3)
+    agg2.iterate(List("a","b","c"))
+    agg1.merge(agg2).isEmpty shouldBe false
   }
 
   it should "merge two column counts correctly" in {

@@ -134,7 +134,10 @@ object SparkSqlFunctions {
   private[core] def createMutualInformation(dataFrame: DataFrame,
                                             normalization: String = MutualInformationAggregator.DEFAULT_NORMALIZATION): Option[Servable] = {
     import MutualInformationAggregator.{isValidNormalization, DEFAULT_NORMALIZATION, METRIC_NORMALIZATION, NO_NORMALIZATION}
-    def showError = println("Mutual information only supported for RDDs with at least one column.")
+    def showError = {
+      println("Mutual information only supported for non-empty data frames with at least one column.")
+      Option.empty[Servable]
+    }
 
     // bin all numerical fields by first converting them to double and then perform equal-width binning using sturges
     val schema = dataFrame.schema
@@ -165,60 +168,69 @@ object SparkSqlFunctions {
       }
     }}.unzip
     val numericMinMaxCountValues = dfWithAllNumericColumnsAsDouble.select(numericMinMaxCountColumns:_*).collect
-    val numericMinMaxCountValuesMap = numericMinMaxCountIndexes.zip(numericMinMaxCountValues.head.toSeq).toMap
-    val dfWithBinnedDoubleValues = dfWithAllNumericColumnsAsDouble.select(
-      fields.zipWithIndex.map{ case (field, idx) => {
-        if (isNumeric(field.dataType)) {
-          val max = numericMinMaxCountValuesMap((idx, 0)).asInstanceOf[Double]
-          val min = numericMinMaxCountValuesMap((idx, 1)).asInstanceOf[Double]
-          val count = numericMinMaxCountValuesMap((idx, 2)).asInstanceOf[Long]
-          val optimalNumBins = ServableUtils.optimalNumberOfBins(count)
-          DataFrameUtils.binDoubleUdf(optimalNumBins, min, max)(new Column(field.name))
-        } else {
-          new Column(field.name)
+
+    if (numericMinMaxCountValues.nonEmpty) {
+      val numericMinMaxCountValuesMap = numericMinMaxCountIndexes.zip(numericMinMaxCountValues(0).toSeq).toMap
+      val dfWithBinnedDoubleValues = dfWithAllNumericColumnsAsDouble.select(
+        fields.zipWithIndex.map { case (field, idx) => {
+          if (isNumeric(field.dataType)) {
+            val max = numericMinMaxCountValuesMap((idx, 0)).asInstanceOf[Double]
+            val min = numericMinMaxCountValuesMap((idx, 1)).asInstanceOf[Double]
+            val count = numericMinMaxCountValuesMap((idx, 2)).asInstanceOf[Long]
+            val optimalNumBins = ServableUtils.optimalNumberOfBins(count)
+            DataFrameUtils.binDoubleUdf(optimalNumBins, min, max)(new Column(field.name))
+          } else {
+            new Column(field.name)
+          }
         }
-      }}:_*
-    )
-
-    // compute mutual information matrix
-    val binnedFields = dfWithBinnedDoubleValues.schema.fields
-    if (fields.size >= 1) {
-      val miAgg = dfWithBinnedDoubleValues.rdd.aggregate(new MutualInformationAggregator(binnedFields.size)) (
-        (agg, row) => agg.iterate(row.toSeq),
-        (agg1, agg2) => agg1.merge(agg2)
+        }: _*
       )
-      var mutualInformationMatrix: mutable.Seq[mutable.Seq[Double]] = new ArrayBuffer(miAgg.numColumns) ++
-        List.fill(miAgg.numColumns)(
-          new ArrayBuffer[Double](miAgg.numColumns) ++ List.fill(miAgg.numColumns)(0d)
+
+      // compute mutual information matrix
+      val binnedFields = dfWithBinnedDoubleValues.schema.fields
+      if (fields.length >= 1) {
+        val miAgg = dfWithBinnedDoubleValues.rdd.aggregate(new MutualInformationAggregator(binnedFields.length))(
+          (agg, row) => agg.iterate(row.toSeq),
+          (agg1, agg2) => agg1.merge(agg2)
         )
+        if (!miAgg.isEmpty) {
+          val mutualInformationMatrix: mutable.Seq[mutable.Seq[Double]] = new ArrayBuffer(miAgg.numColumns) ++
+            List.fill(miAgg.numColumns)(
+              new ArrayBuffer[Double](miAgg.numColumns) ++ List.fill(miAgg.numColumns)(0d)
+            )
 
-      val actualNormalization = if (isValidNormalization(normalization)) {
-        normalization
+          val actualNormalization = if (isValidNormalization(normalization)) {
+            normalization
+          } else {
+            println( s"""Not a valid normalization method: $normalization. Falling back to $DEFAULT_NORMALIZATION.""")
+            DEFAULT_NORMALIZATION
+          }
+
+          val title = s"Mutual Information ($actualNormalization) of ${DataFrameUtils.dfToString(dataFrame)}"
+
+          for (((i, j), mi) <- actualNormalization match {
+            case METRIC_NORMALIZATION => miAgg.mutualInformationMetric
+            case NO_NORMALIZATION => miAgg.mutualInformation
+          }) {
+            mutualInformationMatrix(i)(j) = mi
+          }
+
+          val fieldNames = fields.map(_.name)
+          ScalaFunctions.createHeatmap(
+            values = mutualInformationMatrix,
+            rowNames = fieldNames,
+            colNames = fieldNames,
+            zColorZeroes = Seq(0d),
+            title = title
+          )
+        } else {
+          showError
+        }
       } else {
-        println(s"""Not a valid normalization method: $normalization. Falling back to $DEFAULT_NORMALIZATION.""")
-        DEFAULT_NORMALIZATION
+        showError
       }
-
-      val title = s"Mutual Information ($actualNormalization) of ${DataFrameUtils.dfToString(dataFrame)}"
-
-      for (((i, j), mi) <- actualNormalization match {
-        case METRIC_NORMALIZATION => miAgg.mutualInformationMetric
-        case NO_NORMALIZATION => miAgg.mutualInformation
-      }) {
-        mutualInformationMatrix(i)(j) = mi
-      }
-
-      val fieldNames = fields.map(_.name)
-      ScalaFunctions.createHeatmap(
-        values = mutualInformationMatrix,
-        rowNames = fieldNames,
-        colNames = fieldNames,
-        zColorZeroes = Seq(0d),
-        title = title
-      )
     } else {
       showError
-      Option.empty
     }
   }
 
@@ -347,7 +359,7 @@ object SparkSqlFunctions {
         Option.empty
       }
     } else {
-      println("Cannot create summary statistics on an empty DataFrame")
+      println("Not supported on empty data frames.")
       Option.empty
     }
   }

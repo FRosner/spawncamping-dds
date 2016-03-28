@@ -1633,12 +1633,32 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     miMatrix(1)(1) should be (0d +- epsilon)
   }
 
-  it should "return None if called with empty dataframe as an argument" in {
+  it should "return None if called with a dataframe without a column" in {
     DDS.setServer(mockedServer)
     val rdd = sc.makeRDD(List(Row()))
     val dataFrame = sql.createDataFrame(rdd, StructType(List()))
     DDS.mutualInformation(dataFrame, MutualInformationAggregator.NO_NORMALIZATION)
     mockedServer.lastServed shouldBe None
+  }
+
+  it should "not be served from an empty DataFrame (numerical columns)" in {
+    DDS.setServer(mockedServer)
+    val rdd = sc.makeRDD(List.empty[Row])
+    val dataFrame = sql.createDataFrame(rdd, StructType(List(
+      StructField("first", DoubleType, false),
+      StructField("second", DoubleType, false)
+    )))
+    DDS.mutualInformation(dataFrame, MutualInformationAggregator.NO_NORMALIZATION)
+
+    mockedServer.lastServed.isEmpty shouldBe true
+  }
+
+  it should "not be served from an empty DataFrame (string columns)" in {
+    DDS.setServer(mockedServer)
+    val df = sc.makeRDD(List.empty[String]).toDF()
+    DDS.mutualInformation(df)
+
+    val resultTable = mockedServer.lastServed.isEmpty shouldBe true
   }
 
   "A correct dashboard" should "be served" in {
@@ -1704,7 +1724,7 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
 
   it should "not be served from an empty DataFrame" in {
     DDS.setServer(mockedServer)
-    val df = sc.makeRDD(List.empty[String]).toDF()
+    val df = sc.makeRDD(List.empty[(String, Double, Date)]).toDF()
     DDS.dashboard(df)
 
     val resultTable = mockedServer.lastServed.isEmpty shouldBe true
