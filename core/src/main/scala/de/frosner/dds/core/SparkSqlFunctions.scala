@@ -235,105 +235,119 @@ object SparkSqlFunctions {
       (agg1, agg2) => agg1.merge(agg2)
     )
 
-    val numericColumnStatistics = columnStatistics.numericColumns
-    val numericFields = getNumericFields(dataFrame)
-    val numericServables = for ((index, field) <- numericFields) yield {
-      val hist = createHistogram(dataFrame.select(new Column(field.name)), Option(10))
-      val (agg, _) = numericColumnStatistics(index)
-      val table = ScalaFunctions.createKeyValuePairs(
-        title = s"Summary statistics of ${field.name}",
-        pairs = List(
+    if (columnStatistics.totalCount > 0) {
+      val numericColumnStatistics = columnStatistics.numericColumns
+      val numericFields = getNumericFields(dataFrame)
+      val numericServables = for ((index, field) <- numericFields) yield {
+        val hist = createHistogram(dataFrame.select(new Column(field.name)), Option(10))
+        val (agg, _) = numericColumnStatistics(index)
+        val table = ScalaFunctions.createKeyValuePairs(
+          title = s"Summary statistics of ${field.name}",
+          pairs = List(
+            ("Total Count", agg.totalCount),
+            ("Missing Count", agg.missingCount),
+            ("Non-Missing Count", agg.nonMissingCount),
+            ("Sum", agg.sum),
+            ("Min", agg.min),
+            ("Max", agg.max),
+            ("Mean", agg.mean),
+            ("Stdev", agg.stdev),
+            ("Variance", agg.variance)
+          )
+        )
+        Option((index, List(table.getOrElse(Blank), hist.getOrElse(Blank))))
+      }
+
+      val dateColumnStatistics = columnStatistics.dateColumns
+      val dateFields = getDateFields(dataFrame)
+      val dateServables = for ((index, field) <- dateFields) yield {
+        val (agg, _) = dateColumnStatistics(index)
+        val (years, yearFrequencies) = agg.yearFrequencies.toList.sortBy(_._1).map { case (year, count) => {
+          (DateColumnStatisticsAggregator.calendarYearToString(year), count.toDouble)
+        }
+        }.unzip
+        val yearBar = ScalaFunctions.createBar(yearFrequencies, years, field.name, s"Years in ${field.name}")
+        val (months, monthFrequencies) = agg.monthFrequencies.toList.sortBy(_._1).map { case (month, count) => {
+          (DateColumnStatisticsAggregator.calendarMonthToString(month), count.toDouble)
+        }
+        }.unzip
+        val monthBar = ScalaFunctions.createBar(monthFrequencies, months, field.name, s"Months in ${field.name}")
+        val (days, dayFrequencies) = agg.dayOfWeekFrequencies.toList.sortBy(_._1).map { case (day, count) => {
+          (DateColumnStatisticsAggregator.calendarDayToString(day), count.toDouble)
+        }
+        }.unzip
+        val dayBar = ScalaFunctions.createBar(dayFrequencies, days, field.name, s"Days in ${field.name}")
+        val table = ScalaFunctions.createKeyValuePairs(List(
           ("Total Count", agg.totalCount),
           ("Missing Count", agg.missingCount),
           ("Non-Missing Count", agg.nonMissingCount),
-          ("Sum", agg.sum),
-          ("Min", agg.min),
-          ("Max", agg.max),
-          ("Mean", agg.mean),
-          ("Stdev", agg.stdev),
-          ("Variance", agg.variance)
-        )
-      )
-      Option((index, List(table.getOrElse(Blank), hist.getOrElse(Blank))))
-    }
+          ("Top Year", agg.topYear match {
+            case (year, count) => (DateColumnStatisticsAggregator.calendarYearToString(year), count)
+          }),
+          ("Top Month", agg.topMonth match {
+            case (month, count) => (DateColumnStatisticsAggregator.calendarMonthToString(month), count)
+          }),
+          ("Top Day", agg.topDayOfWeek match {
+            case (day, count) => (DateColumnStatisticsAggregator.calendarDayToString(day), count)
+          })
+        ), s"Summary statistics of ${field.name}")
+        if (table.isDefined && yearBar.isDefined && monthBar.isDefined && dayBar.isDefined) {
+          Option((index, List(table.get, yearBar.get, monthBar.get, dayBar.get)))
+        } else {
+          Option.empty
+        }
+      }
 
-    val dateColumnStatistics = columnStatistics.dateColumns
-    val dateFields = getDateFields(dataFrame)
-    val dateServables = for ((index, field) <- dateFields) yield {
-      val (agg, _) = dateColumnStatistics(index)
-      val (years, yearFrequencies) = agg.yearFrequencies.toList.sortBy(_._1).map { case (year, count) => {
-        (DateColumnStatisticsAggregator.calendarYearToString(year), count.toDouble)
-      }}.unzip
-      val yearBar = ScalaFunctions.createBar(yearFrequencies, years, field.name, s"Years in ${field.name}")
-      val (months, monthFrequencies) = agg.monthFrequencies.toList.sortBy(_._1).map { case (month, count) => {
-        (DateColumnStatisticsAggregator.calendarMonthToString(month), count.toDouble)
-      }}.unzip
-      val monthBar = ScalaFunctions.createBar(monthFrequencies, months, field.name, s"Months in ${field.name}")
-      val (days, dayFrequencies) = agg.dayOfWeekFrequencies.toList.sortBy(_._1).map { case (day, count) => {
-        (DateColumnStatisticsAggregator.calendarDayToString(day), count.toDouble)
-      }}.unzip
-      val dayBar = ScalaFunctions.createBar(dayFrequencies, days, field.name, s"Days in ${field.name}")
-      val table = ScalaFunctions.createKeyValuePairs(List(
-        ("Total Count", agg.totalCount),
-        ("Missing Count", agg.missingCount),
-        ("Non-Missing Count", agg.nonMissingCount),
-        ("Top Year", agg.topYear match { case (year, count) => (DateColumnStatisticsAggregator.calendarYearToString(year), count) }),
-        ("Top Month", agg.topMonth match { case (month, count) => (DateColumnStatisticsAggregator.calendarMonthToString(month), count) }),
-        ("Top Day", agg.topDayOfWeek match { case (day, count) => (DateColumnStatisticsAggregator.calendarDayToString(day), count) })
-      ), s"Summary statistics of ${field.name}")
-      if (table.isDefined && yearBar.isDefined && monthBar.isDefined && dayBar.isDefined) {
-        Option((index, List(table.get, yearBar.get, monthBar.get, dayBar.get)))
+      val nominalColumnStatistics = columnStatistics.nominalColumns
+      val nominalFields = getNominalFields(dataFrame)
+      val nominalServables = for ((index, field) <- nominalFields) yield {
+        val groupCounts = dataFrame.groupBy(new Column(field.name)).count.map(row =>
+          (if (row.isNullAt(0)) "NULL" else row.get(0).toString, row.getLong(1))
+        )
+        val cardinality = groupCounts.count
+        val orderedCounts = groupCounts.sortBy(x => x._2, ascending = false)
+        val mode = orderedCounts.first
+        val barTitle = s"Bar of ${field.name}"
+        val barPlot = if (cardinality <= 10) {
+          val (values, counts) = orderedCounts.collect.unzip
+          ScalaFunctions.createBar(counts.map(_.toDouble), values, field.name, barTitle)
+        } else {
+          val (top10Values, top10Counts) = orderedCounts.take(10).unzip
+          val top10CountsSum = top10Counts.sum
+          val totalCountsSum = orderedCounts.map { case (value, counts) => counts }.reduce(_ + _)
+          val otherCount = totalCountsSum - top10CountsSum
+          ScalaFunctions.createBar(
+            values = top10Counts.map(_.toDouble) ++ List(otherCount.toDouble),
+            categories = top10Values ++ List("..."),
+            seriesName = field.name,
+            title = barTitle
+          )
+        }
+        val (agg, _) = nominalColumnStatistics(index)
+        val table = ScalaFunctions.createKeyValuePairs(List(
+          ("Total Count", agg.totalCount),
+          ("Missing Count", agg.missingCount),
+          ("Non-Missing Count", agg.nonMissingCount),
+          ("Mode", mode),
+          ("Cardinality", cardinality)
+        ), s"Summary statistics of ${field.name}")
+        if (table.isDefined && barPlot.isDefined) {
+          Option((index, List(table.get, barPlot.get)))
+        } else {
+          Option.empty
+        }
+      }
+
+      if (numericServables.forall(_.isDefined) && dateServables.forall(_.isDefined) && nominalServables.forall(_.isDefined)) {
+        val allServables = numericServables.map(_.get) ++ dateServables.map(_.get) ++ nominalServables.map(_.get)
+        val sortedServables = allServables.toSeq.sortBy(_._1)
+        Option(Composite(title, sortedServables.map { case (index, servables) => servables }))
       } else {
+        println("Failed to create summary statistics")
         Option.empty
       }
-    }
-
-    val nominalColumnStatistics = columnStatistics.nominalColumns
-    val nominalFields = getNominalFields(dataFrame)
-    val nominalServables = for ((index, field) <- nominalFields) yield {
-      val groupCounts = dataFrame.groupBy(new Column(field.name)).count.map(row =>
-        (if (row.isNullAt(0)) "NULL" else row.get(0).toString, row.getLong(1))
-      )
-      val cardinality = groupCounts.count
-      val orderedCounts = groupCounts.sortBy(x => x._2, ascending = false)
-      val mode = orderedCounts.first
-      val barTitle = s"Bar of ${field.name}"
-      val barPlot = if (cardinality <= 10) {
-        val (values, counts) = orderedCounts.collect.unzip
-        ScalaFunctions.createBar(counts.map(_.toDouble), values, field.name, barTitle)
-      } else {
-        val (top10Values, top10Counts) = orderedCounts.take(10).unzip
-        val top10CountsSum = top10Counts.sum
-        val totalCountsSum = orderedCounts.map { case (value, counts) => counts }.reduce(_ + _)
-        val otherCount = totalCountsSum - top10CountsSum
-        ScalaFunctions.createBar(
-          values = top10Counts.map(_.toDouble) ++ List(otherCount.toDouble),
-          categories = top10Values ++ List("..."),
-          seriesName = field.name,
-          title = barTitle
-        )
-      }
-      val (agg, _) = nominalColumnStatistics(index)
-      val table = ScalaFunctions.createKeyValuePairs(List(
-        ("Total Count", agg.totalCount),
-        ("Missing Count", agg.missingCount),
-        ("Non-Missing Count", agg.nonMissingCount),
-        ("Mode", mode),
-        ("Cardinality", cardinality)
-      ), s"Summary statistics of ${field.name}")
-      if (table.isDefined && barPlot.isDefined) {
-        Option((index, List(table.get, barPlot.get)))
-      } else {
-        Option.empty
-      }
-    }
-
-    if (numericServables.forall(_.isDefined) && dateServables.forall(_.isDefined) && nominalServables.forall(_.isDefined)) {
-      val allServables = numericServables.map(_.get) ++ dateServables.map(_.get) ++ nominalServables.map(_.get)
-      val sortedServables = allServables.toSeq.sortBy(_._1)
-      Option(Composite(title, sortedServables.map { case (index, servables) => servables }))
     } else {
-      println("Failed to create summary statistics")
+      println("Cannot create summary statistics on an empty DataFrame")
       Option.empty
     }
   }

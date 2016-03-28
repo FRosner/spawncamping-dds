@@ -7,6 +7,14 @@ import scala.collection.mutable
 
 case class ColumnsStatisticsAggregator(schema: StructType) extends Serializable {
 
+  def totalCount = {
+    // This assumes that all aggregators have the same count (which should be the case)
+    val allAggregators = numericAggregators.map{ case (idx, (agg, field)) => agg } ++
+      dateAggregators.map{ case (idx, (agg, field)) => agg } ++
+      nominalAggregators.map{ case (idx, (agg, field)) => agg }
+    allAggregators.headOption.map(_.asInstanceOf[{ def totalCount: Long }].totalCount).getOrElse(0L)
+  }
+
   private var numericAggregators: mutable.Map[Int, (NumericColumnStatisticsAggregator, StructField)] = {
     val numericFields = getNumericFields(schema)
     val numericAggregators = numericFields.map{ case (index, field) => (index, (new NumericColumnStatisticsAggregator(), field))}

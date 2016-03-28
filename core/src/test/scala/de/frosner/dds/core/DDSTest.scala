@@ -1864,6 +1864,15 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     thirdDayBar.heights shouldBe Seq(Seq(3d))
   }
 
+  it should "not be served from an empty DataFrame" in {
+    DDS.setServer(mockedServer)
+    import sql.implicits._
+    val df = sc.makeRDD(List.empty[String]).toDF()
+    DDS.summarize(df)
+
+    val resultTable = mockedServer.lastServed.isEmpty shouldBe true
+  }
+
 }
 
 /**
