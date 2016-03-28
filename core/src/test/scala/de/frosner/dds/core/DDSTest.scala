@@ -34,6 +34,7 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     new SparkContext(conf)
   }
   private val sql: SQLContext = new SQLContext(sc)
+  import sql.implicits._
 
   override def afterAll() = {
     sc.stop()
@@ -1701,6 +1702,14 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     column3Table.title shouldBe "Summary statistics of third"
   }
 
+  it should "not be served from an empty DataFrame" in {
+    DDS.setServer(mockedServer)
+    val df = sc.makeRDD(List.empty[String]).toDF()
+    DDS.dashboard(df)
+
+    val resultTable = mockedServer.lastServed.isEmpty shouldBe true
+  }
+
   "A correct column statistics" should "be served for normal data frames" in {
     DDS.setServer(mockedServer)
     val rdd = sc.parallelize(List(Row(5, "5", new Date(1)), Row(5, "g", new Date(0)), Row(5, "g", null)))
@@ -1866,7 +1875,6 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
 
   it should "not be served from an empty DataFrame" in {
     DDS.setServer(mockedServer)
-    import sql.implicits._
     val df = sc.makeRDD(List.empty[String]).toDF()
     DDS.summarize(df)
 
