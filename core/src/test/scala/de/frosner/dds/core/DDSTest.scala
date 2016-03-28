@@ -1739,7 +1739,7 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     val df = sc.makeRDD(List.empty[(String, Double, Date)]).toDF()
     DDS.dashboard(df)
 
-    val resultTable = mockedServer.lastServed.isEmpty shouldBe true
+    mockedServer.lastServed.isEmpty shouldBe true
   }
 
   "A correct column statistics" should "be served for normal data frames" in {

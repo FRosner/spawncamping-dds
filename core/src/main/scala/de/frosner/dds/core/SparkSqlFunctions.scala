@@ -70,7 +70,12 @@ object SparkSqlFunctions {
     val fields = schema.fields
     val title = s"""Sample of ${DataFrameUtils.dfToString(dataFrame)}"""
     val values = dataFrame.take(sampleSize)
-    ScalaFunctions.createTable(schema, values, title)
+    if (values.nonEmpty) {
+      ScalaFunctions.createTable(schema, values, title)
+    } else {
+      println("You are trying to show an empty data frame.")
+      Option.empty
+    }
   }
 
   private[core] def createCorrelation(dataFrame: DataFrame): Option[Servable] = {
@@ -375,11 +380,20 @@ object SparkSqlFunctions {
     val title = s"Dashboard of ${DataFrameUtils.dfToString(dataFrame)}"
 
     def toCell(maybeServable: Option[Servable]) = maybeServable.map(servable => List(servable)).getOrElse(List.empty)
-    Option(Composite(title, List(
-      toCell(createShow(dataFrame, DDS.DEFAULT_SHOW_SAMPLE_SIZE)),
-      toCell(createCorrelation(dataFrame)) ++ toCell(createMutualInformation(dataFrame)),
-      toCell(createSummarize(dataFrame))
-    )))
+    val show = createShow(dataFrame, DDS.DEFAULT_SHOW_SAMPLE_SIZE)
+    val correlation = createCorrelation(dataFrame)
+    val mutualInformation = createMutualInformation(dataFrame)
+    val summary = createSummarize(dataFrame)
+    if (show.isEmpty && correlation.isEmpty && mutualInformation.isEmpty && summary.isEmpty) {
+      println("Dashboard not supported on empty data frames.")
+      Option.empty
+    } else {
+      Option(Composite(title, List(
+        toCell(show),
+        toCell(correlation) ++ toCell(mutualInformation),
+        toCell(summary)
+      )))
+    }
   }
 
   private def createSomethingOnNumericColumn(dataFrame: DataFrame, name: String)
