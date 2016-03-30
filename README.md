@@ -50,6 +50,7 @@ when working on the cluster with the Spark REPL. It does not offer a fully flexi
     ```
 
 See the [User Guide](https://github.com/FRosner/spawncamping-dds/wiki/User-Guide) for a detailed explanation of the provided functionality.
+To achieve the best user experience for the web UI, we recommend using [Google Chrome](https://www.google.com/chrome/).
 
 ### Get Data-Driven Spark
 
