@@ -8,8 +8,6 @@ when working on the cluster with the Spark REPL. It does not offer a fully flexi
 
 ### Usage
 
-To achieve the best user experience with spawncamping-dds, we recommend using the [Chrome web browser](https://www.google.com/chrome/).
-
 1. Add spawncamping-dds jar to Spark classpath
 
     ```sh
@@ -52,6 +50,7 @@ To achieve the best user experience with spawncamping-dds, we recommend using th
     ```
 
 See the [User Guide](https://github.com/FRosner/spawncamping-dds/wiki/User-Guide) for a detailed explanation of the provided functionality.
+To achieve the best user experience for the web UI, we recommend using [Google Chrome](https://www.google.com/chrome/).
 
 ### Get Data-Driven Spark
 
