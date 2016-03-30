@@ -873,6 +873,14 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
     resultTable.content shouldBe Seq(Row(Row(1, "a").toString), Row(Row(2, "b").toString))
   }
 
+  it should "be printed from an empty sequence" in {
+    DDS.setServer(mockedServer)
+    val sequence = List.empty
+    DDS.show(sequence)
+    
+    mockedServer.lastServed.isEmpty shouldBe true
+  }
+
   it should "be printed from a sequence of single values" in {
     DDS.setServer(mockedServer)
     val sequence = List(1, 2)
