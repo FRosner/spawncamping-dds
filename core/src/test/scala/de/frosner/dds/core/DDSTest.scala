@@ -874,7 +874,7 @@ class DDSTest extends FlatSpec with Matchers with MockFactory with BeforeAndAfte
   }
 
   it should "be printed from an empty sequence" in {
-    DDS.start(mockedServer)
+    DDS.setServer(mockedServer)
     val sequence = List.empty
     DDS.show(sequence)
     
