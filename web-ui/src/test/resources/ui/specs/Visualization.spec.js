@@ -1,13 +1,6 @@
 define(['Visualization'], function(Visualization) {
 
   describe('Visualization', function() {
-
-    it('has a working title setter and getter', function() {
-        var vis = new Visualization();
-        vis.title("test");
-        expect(vis.title()).toEqual("test");
-    });
-
     it('has a working header setter and getter', function() {
         // TODO: refactoring; not testable because of dependency to global document variable
     });

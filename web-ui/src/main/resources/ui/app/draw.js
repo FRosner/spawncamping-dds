@@ -2,7 +2,8 @@ define(function(require) {
 
   function drawServable(servableIdAndType, headerId, contentId) {
     var Visualization = require("Visualization"),
-      C3Chart = require("C3Chart"),
+      Bar = require("Bar"),
+      Pie = require("Pie"),
       Empty = require("Empty"),
       Composite = require("Composite"),
       Graph = require("Graph"),
@@ -32,50 +33,9 @@ define(function(require) {
       toDraw = new KeyValueSequence()
         .data(servable);
     } else if (servableType == "bar") {
-      var c3Chart = {
-        data : {
-          columns : servable.series.map(function(label, idx) {
-            return [label].concat(servable.heights[idx]);
-          }),
-          types : servable.series.reduce(function(agg, label) {
-            agg[label] = "bar";
-            return agg;
-          }, {})
-        },
-        axis : {
-          x : {
-            type : "category",
-            categories : servable.xDomain
-          }
-        }
-      }
-      servable.c3 = c3Chart;
-      toDraw = new C3Chart()
-        .margin({
-          top: 5,
-          right: 15,
-          left: 60
-        })
-        .data(servable);
+      toDraw = new Bar().data(servable);
     } else if (servableType == "pie") {
-      var c3Chart = {
-        data : {
-          columns : servable.categoryCountPairs.map(function(categoryCountPair) {
-            var category = categoryCountPair[0];
-            var count = categoryCountPair[1];
-            return [category, count];
-          }),
-          type : "pie"
-        }
-      }
-      servable.c3 = c3Chart;
-      toDraw = new C3Chart()
-        .margin({
-          top: 5,
-          right: 15,
-          left: 60
-        })
-        .data(servable);
+      toDraw = new Pie().data(servable);
     } else if (servableType == "table") {
       toDraw = new Table(id)
         .margin({
@@ -121,7 +81,6 @@ define(function(require) {
     if (toDraw != null) {
       toDraw = toDraw.header(headerId)
         .content(contentId)
-        .title(servable.title)
         .draw();
       return toDraw;
     }

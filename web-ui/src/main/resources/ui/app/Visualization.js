@@ -42,9 +42,7 @@
  *   - _clear() Subclass implementation of clear method (NEEDS TO BE IMPLEMENTED BY SUBCLASS)
  *
  */
- define(function(require) {
-
-  var Util = require("util")
+ define(function() {
 
   function Visualization() {
     this._defaultMargin = {
@@ -55,15 +53,6 @@
     };
     this._margin = this._defaultMargin;
     this._title = "";
-  }
-
-  Visualization.prototype.title = function(newTitle) {
-    if (newTitle != null) {
-      this._title = newTitle;
-      return this;
-    } else {
-      return this._title;
-    }
   }
 
   Visualization.prototype.header = function(newHeaderId) {
@@ -160,16 +149,11 @@
 
   Visualization.prototype.draw = function() {
     this._verify();
-    var titleSpan = Util.generateSpan(this._header, this._content.id + "-title")
-    titleSpan.innerHTML = this._title;
-    titleSpan.className = "servable-title";
-    this._titleSpan = titleSpan;
     this._draw(this._data);
     return this;
   }
 
   Visualization.prototype.clear = function() {
-    Util.removeElementIfExists(this._titleSpan);
     this._clear();
   }
 
