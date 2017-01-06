@@ -325,15 +325,13 @@ object SparkSqlFunctions {
       val nominalColumnStatistics = columnStatistics.nominalColumns
       val nominalFields = getNominalFields(dataFrame)
       val nominalServables = for ((index, field) <- nominalFields) yield {
-        //val groupCounts = dataFrame.groupBy(new Column(field.name)).count() //.map { x => println(x) }
-        //.count.map(row =>
-         // (if (row.isNullAt(0)) "NULL" else row.get(0).toString, row.getLong(1))
-        //)
+        //The Spark 2.0 does not support implicit encoding of structure fields other than for 
+        //basic types. The only other way is using a predefined case class.
         val groupCounts = dataFrame.groupBy(new Column(field.name)).count().rdd.map(row =>
           (if (row.isNullAt(0)) "NULL" else row.get(0).toString, row.getLong(1))
         )
         val cardinality = groupCounts.count
-        val orderedCounts = groupCounts // .sortBy(x => x._2, ascending = false)
+        val orderedCounts = groupCounts.sortBy(x => x._2, ascending = false)
         val mode = orderedCounts.first
         val barTitle = s"Bar of ${field.name}"
         val barPlot = if (cardinality <= 10) {
