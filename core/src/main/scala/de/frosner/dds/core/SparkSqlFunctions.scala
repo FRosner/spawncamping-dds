@@ -12,6 +12,8 @@ import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
+import org.apache.spark.sql.types.StructType
+
 import de.frosner.dds.util.DataFrameUtils._
 
 object SparkSqlFunctions {
@@ -323,11 +325,15 @@ object SparkSqlFunctions {
       val nominalColumnStatistics = columnStatistics.nominalColumns
       val nominalFields = getNominalFields(dataFrame)
       val nominalServables = for ((index, field) <- nominalFields) yield {
-        val groupCounts = dataFrame.groupBy(new Column(field.name)).count.map(row =>
+        //val groupCounts = dataFrame.groupBy(new Column(field.name)).count() //.map { x => println(x) }
+        //.count.map(row =>
+         // (if (row.isNullAt(0)) "NULL" else row.get(0).toString, row.getLong(1))
+        //)
+        val groupCounts = dataFrame.groupBy(new Column(field.name)).count().rdd.map(row =>
           (if (row.isNullAt(0)) "NULL" else row.get(0).toString, row.getLong(1))
         )
         val cardinality = groupCounts.count
-        val orderedCounts = groupCounts.sortBy(x => x._2, ascending = false)
+        val orderedCounts = groupCounts // .sortBy(x => x._2, ascending = false)
         val mode = orderedCounts.first
         val barTitle = s"Bar of ${field.name}"
         val barPlot = if (cardinality <= 10) {
