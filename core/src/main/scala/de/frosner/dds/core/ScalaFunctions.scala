@@ -4,7 +4,6 @@ import de.frosner.dds.servables._
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.ScalaReflection.Schema
 import org.apache.spark.sql.catalyst.{CatalystTypeConverters, CatalystTypeConvertersAdapter, ScalaReflection}
-import org.apache.spark.sql.catalyst.expressions.GenericMutableRow
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.unsafe.types.UTF8String
 

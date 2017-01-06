@@ -3,8 +3,8 @@ import sbt._
 object Dependencies {
 
   // Versions
-  lazy val sparkVersion = "1.5.0"
-  lazy val sprayVersion = "1.3.2"
+  lazy val sparkVersion = "2.1.0"
+  lazy val sprayVersion = "1.3.3"
   lazy val replHelperVersion = "2.0.0"
 
   // Dependencies
@@ -26,7 +26,7 @@ object Dependencies {
   val datasetsDependencies = sparkDependencies ++ scalaTestDependencies
   val webUiDependencies = scalaTestDependencies ++ sparkDependencies ++ Seq(
     "io.spray"           %% "spray-can"     % sprayVersion,
-    "io.spray"           %% "spray-routing" % sprayVersion,
+    "io.spray"           %% "spray-routing-shapeless2" % sprayVersion,
     "io.spray"           %% "spray-caching" % sprayVersion,
     "io.spray"           %% "spray-json"    % "1.3.1",
     "com.typesafe.akka"  %% "akka-actor"    % "2.3.6",

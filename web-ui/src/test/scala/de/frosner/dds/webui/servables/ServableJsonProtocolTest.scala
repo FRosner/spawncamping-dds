@@ -62,7 +62,8 @@ class ServableJsonProtocolTest extends FlatSpec with Matchers {
           StructField("9", FloatType, true),
           StructField("10", DoubleType, false),
           StructField("11", DoubleType, true),
-          StructField("12", DecimalType.Unlimited, true),
+          //https://github.com/apache/spark/pull/7605/files#diff-89643554d9757dd3e91abff1cc6096c7L134
+          StructField("12", DecimalType.SYSTEM_DEFAULT, true),
           StructField("13", StringType, true),
           StructField("15", BooleanType, false),
           StructField("16", BooleanType, true),
