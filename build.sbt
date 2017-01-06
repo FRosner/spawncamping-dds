@@ -14,7 +14,7 @@ lazy val rootProjectName = settingKey[String]("Name of the root project")
 
 lazy val commonMetaInformationSettings = Seq(
   organization      := "de.frosner",
-  version           := "4.0.0-gamma-SNAPSHOT",
+  version           := "5.0.0-gamma-SNAPSHOT",
   scalaVersion      := "2.11.8",
   rootProjectName   := "spawncamping-dds"
 )
